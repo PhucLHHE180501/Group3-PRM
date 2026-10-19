@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'barber/barber_list_screen.dart';
 import 'home/home_screen.dart';
 import 'profile/profile_screen.dart';
-import 'transaction/transaction_history_screen.dart';
+import 'history/transaction_history_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});

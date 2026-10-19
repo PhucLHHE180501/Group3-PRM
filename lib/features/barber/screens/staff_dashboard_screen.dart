@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../services/mock_data_service.dart';
-import '../auth/login_screen.dart';
+import 'package:barber_booking_app/features/auth/screens/login_screen.dart';
+import 'package:barber_booking_app/shared/services/mock_data_service.dart';
 
 class StaffDashboardScreen extends StatefulWidget {
   const StaffDashboardScreen({super.key});

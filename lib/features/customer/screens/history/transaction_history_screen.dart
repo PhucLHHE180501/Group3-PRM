@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../models/transaction_model.dart';
-import '../../services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/mock_data_service.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});

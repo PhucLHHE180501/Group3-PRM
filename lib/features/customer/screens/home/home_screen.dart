@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/user_model.dart';
-import '../../services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/models/user_model.dart';
+import 'package:barber_booking_app/shared/services/mock_data_service.dart';
 import '../barber/barber_detail_screen.dart';
 import '../barber/barber_list_screen.dart';
 import '../booking/booking_screen.dart';

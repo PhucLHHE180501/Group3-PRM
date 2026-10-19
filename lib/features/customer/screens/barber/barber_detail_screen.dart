@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../models/barber_model.dart';
-import '../../services/mock_data_service.dart';
-import '../../widgets/add_review_dialog.dart';
+import 'package:barber_booking_app/shared/models/barber_model.dart';
+import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/widgets/add_review_dialog.dart';
 import '../booking/booking_screen.dart';
 
 class BarberDetailScreen extends StatefulWidget {

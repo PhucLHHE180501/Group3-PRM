@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../models/user_model.dart';
-import '../../services/mock_data_service.dart';
-import '../barber_dashboard/staff_dashboard_screen.dart';
-import '../main_navigation_screen.dart';
-import '../receptionist_dashboard/receptionist_dashboard_screen.dart';
+import 'package:barber_booking_app/features/barber/screens/staff_dashboard_screen.dart';
+import 'package:barber_booking_app/features/customer/screens/main_navigation_screen.dart';
+import 'package:barber_booking_app/features/receptionist/screens/receptionist_dashboard_screen.dart';
+import 'package:barber_booking_app/shared/models/user_model.dart';
+import 'package:barber_booking_app/shared/services/mock_data_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
