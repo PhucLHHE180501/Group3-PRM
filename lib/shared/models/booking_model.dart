@@ -31,6 +31,26 @@ class BookingModel {
     required this.createdAt,
   });
 
+  factory BookingModel.fromJson(Map<String, dynamic> json) {
+    return BookingModel(
+      id: (json['id'] as num).toInt(),
+      customerId: (json['customerId'] as num).toInt(),
+      staffId: (json['staffId'] as num).toInt(),
+      staffName: json['staffName'] as String? ?? '',
+      staffAvatar: json['staffAvatar'] as String?,
+      bookingDate: DateTime.parse(json['bookingDate'] as String),
+      startTime: json['startTime'] as String,
+      endTime: json['endTime'] as String,
+      status: json['status'] as String,
+      totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0,
+      services: (json['services'] as List<dynamic>? ?? [])
+          .map((e) => ServiceModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      note: json['note'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+
   BookingModel copyWith({
     String? status,
   }) {

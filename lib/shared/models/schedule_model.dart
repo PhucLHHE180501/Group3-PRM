@@ -16,4 +16,16 @@ class StaffScheduleModel {
     this.isDayOff = false,
     this.note,
   });
+
+  factory StaffScheduleModel.fromJson(Map<String, dynamic> json) {
+    return StaffScheduleModel(
+      id: (json['id'] as num).toInt(),
+      staffId: (json['staffId'] as num).toInt(),
+      workDate: DateTime.parse(json['workDate'] as String),
+      startTime: json['startTime'] as String,
+      endTime: json['endTime'] as String,
+      isDayOff: json['isDayOff'] as bool? ?? false,
+      note: json['note'] as String?,
+    );
+  }
 }

@@ -20,4 +20,18 @@ class ReviewModel {
     required this.comment,
     required this.createdAt,
   });
+
+  factory ReviewModel.fromJson(Map<String, dynamic> json) {
+    return ReviewModel(
+      id: (json['id'] as num).toInt(),
+      bookingId: (json['bookingId'] as num).toInt(),
+      customerId: (json['customerId'] as num).toInt(),
+      customerName: json['customerName'] as String? ?? '',
+      customerAvatar: json['customerAvatar'] as String?,
+      staffId: (json['staffId'] as num).toInt(),
+      rating: (json['rating'] as num).toInt(),
+      comment: json['comment'] as String? ?? '',
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
 }

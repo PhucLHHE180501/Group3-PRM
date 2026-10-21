@@ -23,6 +23,21 @@ class UserModel {
     this.isActive = true,
   });
 
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: (json['id'] as num).toInt(),
+      role: json['role'] as String,
+      fullName: json['fullName'] as String,
+      phone: json['phone'] as String,
+      email: json['email'] as String?,
+      avatarUrl: json['avatarUrl'] as String?,
+      gender: json['gender'] as String?,
+      dateOfBirth: json['dateOfBirth'] as String?,
+      address: json['address'] as String?,
+      isActive: json['isActive'] as bool? ?? true,
+    );
+  }
+
   UserModel copyWith({
     int? id,
     String? role,

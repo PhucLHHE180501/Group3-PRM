@@ -4,6 +4,8 @@ import 'package:barber_booking_app/features/barber/screens/staff_dashboard_scree
 import 'package:barber_booking_app/features/customer/screens/main_navigation_screen.dart';
 import 'package:barber_booking_app/features/receptionist/screens/receptionist_dashboard_screen.dart';
 import 'package:barber_booking_app/shared/models/user_model.dart';
+import 'package:barber_booking_app/shared/services/api_service.dart';
+import 'package:barber_booking_app/shared/services/auth_session.dart';
 import 'package:barber_booking_app/shared/services/mock_data_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,9 +17,12 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final MockDataService _dataService = MockDataService();
-  final _phoneController = TextEditingController(text: '0987654321');
+  final AuthSession _session = AuthSession();
+  final ApiService _api = ApiService();
+  final _phoneController = TextEditingController(text: '0900000002');
   final _passwordController = TextEditingController(text: '123456');
   bool _obscurePassword = true;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -47,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     final phone = _phoneController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -58,21 +63,42 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final user = _dataService.login(phone, password);
-    if (user != null) {
+    setState(() => _isSubmitting = true);
+    try {
+      final user = await _api.login(phone, password);
+      _session.setUser(user);
+      _dataService.currentUser = user;
+      if (!mounted) return;
       _navigateToRoleScreen(user);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Số điện thoại hoặc Mật khẩu không đúng!'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+    } catch (e) {
+      final user = _dataService.login(phone, password);
+      if (!mounted) return;
+      if (user != null) {
+        _session.setUser(user);
+        _navigateToRoleScreen(user);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
-  void _handleQuickRoleLogin(String role) {
+  Future<void> _handleQuickRoleLogin(String role) async {
+    if (role == 'staff') {
+      _phoneController.text = '0900000002';
+      _passwordController.text = '123456';
+      await _handleLogin();
+      return;
+    }
+
     final user = _dataService.loginAsRole(role);
+    _session.setUser(user);
     _navigateToRoleScreen(user);
   }
 
@@ -173,8 +199,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _handleLogin,
-                  child: const Text('ĐĂNG NHẬP'),
+                  onPressed: _isSubmitting ? null : _handleLogin,
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('ĐĂNG NHẬP'),
                 ),
               ),
               const SizedBox(height: 40),
@@ -204,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
               _buildRoleTile(
                 icon: Icons.content_cut,
                 title: 'Thợ Cắt Tóc (Barber Staff)',
-                subtitle: 'SĐT: 0912345678 • Pass: 123456',
+                    subtitle: 'SĐT: 0900000002 • Pass: 123456 (SQL Server)',
                 color: const Color(0xFFD4AF37),
                 onTap: () => _handleQuickRoleLogin('staff'),
               ),
