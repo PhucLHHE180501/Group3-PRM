@@ -3,6 +3,9 @@ import 'service_model.dart';
 class BookingModel {
   final int id;
   final int customerId;
+  final String? customerName;
+  final String? customerPhone;
+  final bool isWalkIn;
   final int staffId;
   final String staffName;
   final String? staffAvatar;
@@ -18,6 +21,9 @@ class BookingModel {
   BookingModel({
     required this.id,
     required this.customerId,
+    this.customerName,
+    this.customerPhone,
+    this.isWalkIn = false,
     required this.staffId,
     required this.staffName,
     this.staffAvatar,
@@ -35,6 +41,9 @@ class BookingModel {
     return BookingModel(
       id: (json['id'] as num).toInt(),
       customerId: (json['customerId'] as num).toInt(),
+      customerName: json['customerName'] as String?,
+      customerPhone: json['customerPhone'] as String?,
+      isWalkIn: (json['isWalkIn'] as bool?) ?? false,
       staffId: (json['staffId'] as num).toInt(),
       staffName: json['staffName'] as String? ?? '',
       staffAvatar: json['staffAvatar'] as String?,
@@ -52,22 +61,39 @@ class BookingModel {
   }
 
   BookingModel copyWith({
+    int? customerId,
+    String? customerName,
+    String? customerPhone,
+    bool? isWalkIn,
+    int? staffId,
+    String? staffName,
+    String? staffAvatar,
+    DateTime? bookingDate,
+    String? startTime,
+    String? endTime,
     String? status,
+    double? totalPrice,
+    List<ServiceModel>? services,
+    String? note,
+    DateTime? createdAt,
   }) {
     return BookingModel(
       id: id,
-      customerId: customerId,
-      staffId: staffId,
-      staffName: staffName,
-      staffAvatar: staffAvatar,
-      bookingDate: bookingDate,
-      startTime: startTime,
-      endTime: endTime,
+      customerId: customerId ?? this.customerId,
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
+      isWalkIn: isWalkIn ?? this.isWalkIn,
+      staffId: staffId ?? this.staffId,
+      staffName: staffName ?? this.staffName,
+      staffAvatar: staffAvatar ?? this.staffAvatar,
+      bookingDate: bookingDate ?? this.bookingDate,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
       status: status ?? this.status,
-      totalPrice: totalPrice,
-      services: services,
-      note: note,
-      createdAt: createdAt,
+      totalPrice: totalPrice ?? this.totalPrice,
+      services: services ?? this.services,
+      note: note ?? this.note,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

@@ -104,7 +104,7 @@ class MockDataService extends ChangeNotifier {
       bio: 'Chuyên gia tạo kiểu tóc nam ngắn, Fade, Undercut với hơn 6 năm kinh nghiệm.',
       specialty: 'Fade, Undercut, Modern Pompadour',
       yearsExperience: 6,
-      status: 'available',
+      status: 'busy',
       avgRating: 4.9,
       reviewCount: 28,
       portfolioImages: [
@@ -189,13 +189,16 @@ class MockDataService extends ChangeNotifier {
     BookingModel(
       id: 1001,
       customerId: 1,
+      customerName: 'Nguyễn Văn An',
+      customerPhone: '0987654321',
+      isWalkIn: false,
       staffId: 101,
       staffName: 'Trần Văn Quốc (Quốc Barber)',
       staffAvatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400',
       bookingDate: DateTime.now(),
       startTime: '09:00',
       endTime: '09:45',
-      status: 'confirmed',
+      status: 'in_progress',
       totalPrice: 120000,
       services: [
         ServiceModel(
@@ -213,13 +216,16 @@ class MockDataService extends ChangeNotifier {
     BookingModel(
       id: 1002,
       customerId: 2,
+      customerName: 'Trần Hoàng Bảo',
+      customerPhone: '0933221100',
+      isWalkIn: false,
       staffId: 101,
       staffName: 'Trần Văn Quốc (Quốc Barber)',
       staffAvatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400',
       bookingDate: DateTime.now(),
       startTime: '10:00',
       endTime: '11:00',
-      status: 'pending',
+      status: 'confirmed',
       totalPrice: 350000,
       services: [
         ServiceModel(
@@ -232,6 +238,41 @@ class MockDataService extends ChangeNotifier {
         )
       ],
       createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+    ),
+    BookingModel(
+      id: 1003,
+      customerId: 0,
+      customerName: 'Anh Phúc (Khách Vãng Lai)',
+      customerPhone: '0918889999',
+      isWalkIn: true,
+      staffId: 102,
+      staffName: 'Lê Hoàng Nam (Nam Barber)',
+      staffAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
+      bookingDate: DateTime.now(),
+      startTime: '14:00',
+      endTime: '14:45',
+      status: 'confirmed',
+      totalPrice: 180000,
+      services: [
+        ServiceModel(
+          id: 1,
+          name: 'Cắt Tóc Nam Combo 7 Bước',
+          description: '',
+          price: 120000,
+          durationMin: 45,
+          imageUrl: '',
+        ),
+        ServiceModel(
+          id: 4,
+          name: 'Cạo Râu & Khăn Nóng',
+          description: '',
+          price: 60000,
+          durationMin: 20,
+          imageUrl: '',
+        ),
+      ],
+      note: 'Khách đến quầy đăng ký trực tiếp',
+      createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
     ),
   ];
 
@@ -247,6 +288,28 @@ class MockDataService extends ChangeNotifier {
       status: 'unpaid',
       createdAt: DateTime.now(),
       serviceSummary: 'Cắt Tóc Nam Combo 7 Bước',
+    ),
+    TransactionModel(
+      id: 5002,
+      bookingId: 1002,
+      customerId: 2,
+      amount: 350000,
+      discount: 0,
+      method: 'cash',
+      status: 'unpaid',
+      createdAt: DateTime.now(),
+      serviceSummary: 'Uốn Tóc Thời Trang (Texture)',
+    ),
+    TransactionModel(
+      id: 5003,
+      bookingId: 1003,
+      customerId: 0,
+      amount: 180000,
+      discount: 0,
+      method: 'cash',
+      status: 'unpaid',
+      createdAt: DateTime.now(),
+      serviceSummary: 'Cắt Tóc Nam Combo 7 Bước, Cạo Râu & Khăn Nóng',
     ),
   ];
 
@@ -272,6 +335,39 @@ class MockDataService extends ChangeNotifier {
   ];
 
   // --- METHODS ---
+
+  // Dynamic status of a barber taking current active bookings into account
+  String getBarberDynamicStatus(int staffId) {
+    final now = DateTime.now();
+    final hasInProgress = bookings.any((b) =>
+        b.staffId == staffId &&
+        b.bookingDate.year == now.year &&
+        b.bookingDate.month == now.month &&
+        b.bookingDate.day == now.day &&
+        b.status == 'in_progress');
+    if (hasInProgress) return 'busy';
+
+    final barber = barbers.firstWhere(
+      (b) => b.userId == staffId,
+      orElse: () => barbers.first,
+    );
+    return barber.status;
+  }
+
+  // Get active current booking being served by staff
+  BookingModel? getBarberCurrentJob(int staffId) {
+    final now = DateTime.now();
+    return bookings.cast<BookingModel?>().firstWhere(
+      (b) =>
+          b != null &&
+          b.staffId == staffId &&
+          b.bookingDate.year == now.year &&
+          b.bookingDate.month == now.month &&
+          b.bookingDate.day == now.day &&
+          (b.status == 'in_progress' || b.status == 'checked_in'),
+      orElse: () => null,
+    );
+  }
 
   // Update barber working status ('available', 'busy', 'break', 'off')
   void updateBarberStatus(int staffId, String newStatus) {
@@ -299,7 +395,21 @@ class MockDataService extends ChangeNotifier {
   void updateBookingStatus(int bookingId, String newStatus) {
     final index = bookings.indexWhere((b) => b.id == bookingId);
     if (index != -1) {
-      bookings[index] = bookings[index].copyWith(status: newStatus);
+      final oldBooking = bookings[index];
+      bookings[index] = oldBooking.copyWith(status: newStatus);
+
+      // If completed or cancelled, release barber to available if no other in_progress
+      if (newStatus == 'completed' || newStatus == 'cancelled') {
+        final remainingBusy = bookings.any((b) =>
+            b.id != bookingId &&
+            b.staffId == oldBooking.staffId &&
+            b.status == 'in_progress');
+        if (!remainingBusy) {
+          updateBarberStatus(oldBooking.staffId, 'available');
+        }
+      } else if (newStatus == 'in_progress') {
+        updateBarberStatus(oldBooking.staffId, 'busy');
+      }
 
       // If completed, update corresponding transaction to paid
       if (newStatus == 'completed') {
@@ -347,11 +457,117 @@ class MockDataService extends ChangeNotifier {
         createdAt: tx.createdAt,
         serviceSummary: tx.serviceSummary,
       );
+      // Auto complete the booking if paid
+      updateBookingStatus(bookingId, 'completed');
       notifyListeners();
     }
   }
 
-  // Available slots logic
+  // Walk-in booking directly created at reception desk
+  BookingModel createWalkInBooking({
+    required String customerName,
+    String? customerPhone,
+    required BarberModel barber,
+    required List<ServiceModel> selectedServices,
+    required DateTime date,
+    required String timeSlot,
+    String? note,
+    bool immediateStart = false,
+  }) {
+    final totalPrice = selectedServices.fold<double>(0, (sum, item) => sum + item.price);
+    final bookingId = 1000 + bookings.length + 1;
+    final initialStatus = immediateStart ? 'in_progress' : 'confirmed';
+
+    final newBooking = BookingModel(
+      id: bookingId,
+      customerId: 0,
+      customerName: customerName,
+      customerPhone: customerPhone,
+      isWalkIn: true,
+      staffId: barber.userId,
+      staffName: barber.fullName,
+      staffAvatar: barber.avatarUrl,
+      bookingDate: date,
+      startTime: timeSlot,
+      endTime: timeSlot,
+      status: initialStatus,
+      totalPrice: totalPrice,
+      services: selectedServices,
+      note: note,
+      createdAt: DateTime.now(),
+    );
+
+    bookings.insert(0, newBooking);
+
+    final newTransaction = TransactionModel(
+      id: 5000 + transactions.length + 1,
+      bookingId: bookingId,
+      customerId: 0,
+      amount: totalPrice,
+      discount: 0,
+      method: 'cash',
+      status: 'unpaid',
+      createdAt: DateTime.now(),
+      serviceSummary: selectedServices.map((s) => s.name).join(', '),
+    );
+
+    transactions.insert(0, newTransaction);
+
+    if (immediateStart) {
+      updateBarberStatus(barber.userId, 'busy');
+    }
+
+    notifyListeners();
+    return newBooking;
+  }
+
+  // Reassign barber for an existing booking
+  void reassignBookingBarber(int bookingId, BarberModel newBarber) {
+    final index = bookings.indexWhere((b) => b.id == bookingId);
+    if (index != -1) {
+      final old = bookings[index];
+      bookings[index] = old.copyWith(
+        staffId: newBarber.userId,
+        staffName: newBarber.fullName,
+        staffAvatar: newBarber.avatarUrl,
+      );
+      notifyListeners();
+    }
+  }
+
+  // Reschedule booking date/time
+  void rescheduleBooking(int bookingId, DateTime newDate, String newTimeSlot) {
+    final index = bookings.indexWhere((b) => b.id == bookingId);
+    if (index != -1) {
+      final old = bookings[index];
+      bookings[index] = old.copyWith(
+        bookingDate: newDate,
+        startTime: newTimeSlot,
+        endTime: newTimeSlot,
+      );
+      notifyListeners();
+    }
+  }
+
+  // Cancel booking
+  void cancelBooking(int bookingId, {String? reason}) {
+    final index = bookings.indexWhere((b) => b.id == bookingId);
+    if (index != -1) {
+      final old = bookings[index];
+      final noteWithReason = reason != null && reason.trim().isNotEmpty
+          ? '${old.note != null && old.note!.isNotEmpty ? "${old.note} | " : ""}[Đã hủy: ${reason.trim()}]'
+          : old.note;
+      bookings[index] = old.copyWith(
+        status: 'cancelled',
+        note: noteWithReason,
+      );
+      // Free barber status
+      updateBarberStatus(old.staffId, 'available');
+      notifyListeners();
+    }
+  }
+
+  // Available slots logic for a barber on specific date
   List<String> getAvailableTimeSlots(int staffId, DateTime date) {
     final existingBookedSlots = bookings.where((b) {
       final isSameStaff = b.staffId == staffId;
@@ -363,6 +579,16 @@ class MockDataService extends ChangeNotifier {
     }).map((b) => b.startTime).toSet();
 
     return allTimeSlots.where((slot) => !existingBookedSlots.contains(slot)).toList();
+  }
+
+  // Get all bookings on specific date (not cancelled)
+  List<BookingModel> getBookingsForDate(DateTime date) {
+    return bookings.where((b) {
+      return b.bookingDate.year == date.year &&
+          b.bookingDate.month == date.month &&
+          b.bookingDate.day == date.day &&
+          b.status != 'cancelled';
+    }).toList();
   }
 
   bool canUserReviewBarber(int staffId) {
@@ -457,6 +683,9 @@ class MockDataService extends ChangeNotifier {
     final newBooking = BookingModel(
       id: bookingId,
       customerId: currentUser?.id ?? 1,
+      customerName: currentUser?.fullName ?? 'Khách Đặt Online',
+      customerPhone: currentUser?.phone,
+      isWalkIn: false,
       staffId: barber.userId,
       staffName: barber.fullName,
       staffAvatar: barber.avatarUrl,
