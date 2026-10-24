@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -9,7 +9,7 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final MockDataService _dataService = MockDataService();
+  final FirebaseService _dataService = FirebaseService();
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _nameController;
@@ -60,7 +60,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Cập nhật hồ sơ thành công!'),
+          content: Text('C?p nh?t h? so th�nh c�ng!'),
           backgroundColor: Colors.green,
         ),
       );
@@ -73,7 +73,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chỉnh Sửa Hồ Sơ'),
+        title: const Text('Ch?nh S?a H? So'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -83,7 +83,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Hình Ảnh Đại Diện (URL)',
+                'H�nh ?nh �?i Di?n (URL)',
                 style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -98,7 +98,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 20),
 
               const Text(
-                'Họ và Tên (*)',
+                'H? v� T�n (*)',
                 style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -110,7 +110,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Vui lòng nhập họ và tên';
+                    return 'Vui l�ng nh?p h? v� t�n';
                   }
                   return null;
                 },
@@ -118,7 +118,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 20),
 
               const Text(
-                'Số Điện Thoại (*)',
+                'S? �i?n Tho?i (*)',
                 style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -131,7 +131,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Vui lòng nhập số điện thoại';
+                    return 'Vui l�ng nh?p s? di?n tho?i';
                   }
                   return null;
                 },
@@ -154,7 +154,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 20),
 
               const Text(
-                'Địa Chỉ',
+                '�?a Ch?',
                 style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -173,7 +173,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: _saveProfile,
-                  child: const Text('Lưu Thay Đổi'),
+                  child: const Text('Luu Thay �?i'),
                 ),
               ),
             ],

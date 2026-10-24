@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1044961026559",
+    "project_id": "barber-shop-management-s-46e4d",
+    "storage_bucket": "barber-shop-management-s-46e4d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1044961026559:android:b13339cf73759afc8987ca",
+        "android_client_info": {
+          "package_name": "com.example.barber_booking_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1044961026559-osnbi0ik4fsao7eqla8bsnsgk5e4j4da.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCV8yMx9F8GgIOVqzVvbDX8fzuqobcZdGc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1044961026559-osnbi0ik4fsao7eqla8bsnsgk5e4j4da.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

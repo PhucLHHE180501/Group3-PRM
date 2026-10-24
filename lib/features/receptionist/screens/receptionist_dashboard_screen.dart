@@ -7,7 +7,7 @@ import 'package:barber_booking_app/features/receptionist/widgets/salon_schedule_
 import 'package:barber_booking_app/features/receptionist/widgets/walk_in_booking_dialog.dart';
 import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/models/booking_model.dart';
-import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_service.dart';
 
 class ReceptionistDashboardScreen extends StatefulWidget {
   const ReceptionistDashboardScreen({super.key});
@@ -17,7 +17,7 @@ class ReceptionistDashboardScreen extends StatefulWidget {
 }
 
 class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScreen> {
-  final MockDataService _dataService = MockDataService();
+  final FirebaseService _dataService = FirebaseService();
   int _currentIndex = 0;
 
   String _selectedStatusFilter = 'all';
@@ -42,7 +42,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
   }
 
   String _formatPrice(double price) {
-    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ';
+    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} d';
   }
 
   Color _getStatusColor(String status) {
@@ -65,17 +65,17 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
   String _getStatusText(String status) {
     switch (status) {
       case 'pending':
-        return 'Chờ xác nhận';
+        return 'Ch? x�c nh?n';
       case 'confirmed':
-        return 'Đã xác nhận';
+        return '�� x�c nh?n';
       case 'checked_in':
-        return 'Đã Check-in';
+        return '�� Check-in';
       case 'in_progress':
-        return 'Đang cắt';
+        return '�ang c?t';
       case 'completed':
-        return 'Hoàn thành';
+        return 'Ho�n th�nh';
       case 'cancelled':
-        return 'Đã hủy';
+        return '�� h?y';
       default:
         return status;
     }
@@ -150,7 +150,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
-                          'Lịch làm việc hôm nay (${now.day}/${now.month})',
+                          'L?ch l�m vi?c h�m nay (${now.day}/${now.month})',
                           style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
                         ),
                       ],
@@ -168,7 +168,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                   padding: EdgeInsets.symmetric(vertical: 24),
                   child: Center(
                     child: Text(
-                      'Thợ chưa có ca hẹn nào hôm nay.',
+                      'Th? chua c� ca h?n n�o h�m nay.',
                       style: TextStyle(color: Colors.white54),
                     ),
                   ),
@@ -196,7 +196,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '${b.startTime} - ${b.customerName ?? "Khách #${b.customerId}"}',
+                                  '${b.startTime} - ${b.customerName ?? "Kh�ch #${b.customerId}"}',
                                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
                                 Text(
@@ -288,7 +288,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                   ),
           ),
           title: Text(
-            user?.fullName ?? 'Lê Thị Mai (Lễ Tân)',
+            user?.fullName ?? 'L� Th? Mai (L? T�n)',
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -298,7 +298,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: const Text(
-            'Lễ Tân Điều Phối Salon',
+            'L? T�n �i?u Ph?i Salon',
             style: TextStyle(
               color: Color(0xFFD4AF37),
               fontSize: 11,
@@ -308,12 +308,12 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white70),
-            tooltip: 'Làm mới dữ liệu',
+            tooltip: 'L�m m?i d? li?u',
             onPressed: () => setState(() {}),
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.redAccent),
-            tooltip: 'Đăng xuất',
+            tooltip: '�ang xu?t',
             onPressed: () {
               _dataService.logout();
               Navigator.pushReplacement(
@@ -330,7 +330,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         elevation: 6,
         icon: const Icon(Icons.person_add_alt_1, size: 20),
         label: const Text(
-          'Tiếp Khách Vãng Lai',
+          'Ti?p Kh�ch V�ng Lai',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
         ),
         onPressed: () => _openWalkInDialog(),
@@ -376,17 +376,17 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             BottomNavigationBarItem(
               icon: Icon(Icons.grid_on),
               activeIcon: Icon(Icons.grid_on, color: Color(0xFFD4AF37)),
-              label: 'Lưới Lịch Quán',
+              label: 'Lu?i L?ch Qu�n',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.group),
               activeIcon: Icon(Icons.group, color: Color(0xFFD4AF37)),
-              label: 'Trạng Thái Thợ',
+              label: 'Tr?ng Th�i Th?',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.list_alt),
               activeIcon: Icon(Icons.list_alt, color: Color(0xFFD4AF37)),
-              label: 'Đơn Tiếp Đón',
+              label: '�on Ti?p ��n',
             ),
           ],
         ),
@@ -408,7 +408,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           children: [
             Expanded(
               child: _buildMetricCard(
-                title: 'Tổng Số Thợ',
+                title: 'T?ng S? Th?',
                 value: '${barbers.length}',
                 color: Colors.white,
                 icon: Icons.people,
@@ -417,7 +417,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             const SizedBox(width: 10),
             Expanded(
               child: _buildMetricCard(
-                title: 'Đang Rảnh',
+                title: '�ang R?nh',
                 value: '$availableCount',
                 color: Colors.greenAccent,
                 icon: Icons.check_circle,
@@ -426,7 +426,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             const SizedBox(width: 10),
             Expanded(
               child: _buildMetricCard(
-                title: 'Đang Cắt',
+                title: '�ang C?t',
                 value: '$busyCount',
                 color: Colors.orangeAccent,
                 icon: Icons.content_cut,
@@ -437,7 +437,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         const SizedBox(height: 16),
 
         const Text(
-          'Giám sát thợ cắt tóc thời gian thực:',
+          'Gi�m s�t th? c?t t�c th?i gian th?c:',
           style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 15),
         ),
         const SizedBox(height: 10),
@@ -499,7 +499,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             controller: _searchController,
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              hintText: 'Tìm theo SĐT, Tên khách hoặc Mã booking...',
+              hintText: 'T�m theo S�T, T�n kh�ch ho?c M� booking...',
               hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
               prefixIcon: const Icon(Icons.search, color: Color(0xFFD4AF37), size: 20),
               suffixIcon: _searchQuery.isNotEmpty
@@ -531,17 +531,17 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              _buildFilterChip('Tất cả', 'all'),
+              _buildFilterChip('T?t c?', 'all'),
               const SizedBox(width: 8),
-              _buildFilterChip('Đã xác nhận', 'confirmed'),
+              _buildFilterChip('�� x�c nh?n', 'confirmed'),
               const SizedBox(width: 8),
-              _buildFilterChip('Đã Check-in', 'checked_in'),
+              _buildFilterChip('�� Check-in', 'checked_in'),
               const SizedBox(width: 8),
-              _buildFilterChip('Đang cắt', 'in_progress'),
+              _buildFilterChip('�ang c?t', 'in_progress'),
               const SizedBox(width: 8),
-              _buildFilterChip('Hoàn thành', 'completed'),
+              _buildFilterChip('Ho�n th�nh', 'completed'),
               const SizedBox(width: 8),
-              _buildFilterChip('Đã hủy', 'cancelled'),
+              _buildFilterChip('�� h?y', 'cancelled'),
             ],
           ),
         ),
@@ -555,7 +555,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                     children: [
                       Icon(Icons.event_busy, color: Colors.white24, size: 48),
                       SizedBox(height: 10),
-                      Text('Không tìm thấy lịch hẹn phù hợp.', style: TextStyle(color: Colors.grey)),
+                      Text('Kh�ng t�m th?y l?ch h?n ph� h?p.', style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                 )
@@ -602,7 +602,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               Row(
                 children: [
                   Text(
-                    '#${booking.id} • ${booking.startTime}',
+                    '#${booking.id} � ${booking.startTime}',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                   if (booking.isWalkIn) ...[
@@ -615,7 +615,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                         border: Border.all(color: Colors.orangeAccent),
                       ),
                       child: const Text(
-                        'Walk-in Tại Quầy',
+                        'Walk-in T?i Qu?y',
                         style: TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -644,7 +644,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               const Icon(Icons.person, color: Colors.white70, size: 16),
               const SizedBox(width: 6),
               Text(
-                booking.customerName ?? 'Khách #${booking.customerId}',
+                booking.customerName ?? 'Kh�ch #${booking.customerId}',
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
               ),
               if (booking.customerPhone != null) ...[
@@ -664,7 +664,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               const Icon(Icons.content_cut, color: Color(0xFFD4AF37), size: 15),
               const SizedBox(width: 6),
               Text(
-                'Thợ: ${booking.staffName}',
+                'Th?: ${booking.staffName}',
                 style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ],
@@ -673,13 +673,13 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
 
           // Services
           Text(
-            'Dịch vụ: ${booking.services.map((s) => s.name).join(', ')}',
+            'D?ch v?: ${booking.services.map((s) => s.name).join(', ')}',
             style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
           if (booking.note != null && booking.note!.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
-              'Ghi chú: ${booking.note}',
+              'Ghi ch�: ${booking.note}',
               style: const TextStyle(color: Colors.white38, fontSize: 12, fontStyle: FontStyle.italic),
             ),
           ],
@@ -690,7 +690,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Tổng tiền: ${_formatPrice(booking.totalPrice)}',
+                'T?ng ti?n: ${_formatPrice(booking.totalPrice)}',
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
               ),
               Container(
@@ -700,7 +700,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  isPaid ? 'ĐÃ THU TIỀN' : 'CHƯA THU TIỀN',
+                  isPaid ? '�� THU TI?N' : 'CHUA THU TI?N',
                   style: TextStyle(
                     color: isPaid ? Colors.greenAccent : Colors.redAccent,
                     fontSize: 11,
@@ -727,7 +727,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   ),
                   icon: const Icon(Icons.sync_alt, size: 15),
-                  label: const Text('Đổi thợ/giờ', style: TextStyle(fontSize: 12)),
+                  label: const Text('�?i th?/gi?', style: TextStyle(fontSize: 12)),
                   onPressed: () => _openReassignDialog(booking),
                 ),
 
@@ -735,7 +735,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               if (booking.status == 'confirmed')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.qr_code_scanner, size: 16, color: Colors.black),
-                  label: const Text('Check-in Khách'),
+                  label: const Text('Check-in Kh�ch'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purpleAccent,
                     foregroundColor: Colors.black,
@@ -749,7 +749,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               if (booking.status == 'checked_in')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.play_arrow, size: 16, color: Colors.black),
-                  label: const Text('Vào Ghế Cắt'),
+                  label: const Text('V�o Gh? C?t'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     foregroundColor: Colors.black,
@@ -763,7 +763,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               if (!isPaid && booking.status != 'cancelled')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.attach_money, size: 16, color: Colors.black),
-                  label: const Text('Thu Tiền & Đóng Đơn'),
+                  label: const Text('Thu Ti?n & ��ng �on'),
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37)),
                   onPressed: () => _openCheckoutDialog(booking),
                 ),
@@ -793,7 +793,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Chi Tiết Đơn #${booking.id}',
+                    'Chi Ti?t �on #${booking.id}',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   IconButton(
@@ -804,14 +804,14 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               ),
               const Divider(color: Colors.white12),
               const SizedBox(height: 8),
-              _buildDetailRow('Khách hàng:', booking.customerName ?? 'Khách #${booking.customerId}'),
+              _buildDetailRow('Kh�ch h�ng:', booking.customerName ?? 'Kh�ch #${booking.customerId}'),
               if (booking.customerPhone != null)
-                _buildDetailRow('Số điện thoại:', booking.customerPhone!),
-              _buildDetailRow('Thợ phục vụ:', booking.staffName),
-              _buildDetailRow('Khung giờ:', '${booking.startTime} - ${booking.endTime}'),
-              _buildDetailRow('Trạng thái:', _getStatusText(booking.status)),
-              _buildDetailRow('Dịch vụ:', booking.services.map((s) => s.name).join(', ')),
-              _buildDetailRow('Tổng tiền:', _formatPrice(booking.totalPrice)),
+                _buildDetailRow('S? di?n tho?i:', booking.customerPhone!),
+              _buildDetailRow('Th? ph?c v?:', booking.staffName),
+              _buildDetailRow('Khung gi?:', '${booking.startTime} - ${booking.endTime}'),
+              _buildDetailRow('Tr?ng th�i:', _getStatusText(booking.status)),
+              _buildDetailRow('D?ch v?:', booking.services.map((s) => s.name).join(', ')),
+              _buildDetailRow('T?ng ti?n:', _formatPrice(booking.totalPrice)),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -822,7 +822,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                         Navigator.pop(context);
                         _openReassignDialog(booking);
                       },
-                      child: const Text('Đổi thợ/giờ', style: TextStyle(color: Colors.white70)),
+                      child: const Text('�?i th?/gi?', style: TextStyle(color: Colors.white70)),
                     ),
                     const SizedBox(width: 8),
                   ],
@@ -843,7 +843,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                       Navigator.pop(context);
                       _openCheckoutDialog(booking);
                     },
-                    child: const Text('Thu Tiền', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                    child: const Text('Thu Ti?n', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

@@ -4,9 +4,9 @@ import 'package:barber_booking_app/features/barber/screens/staff_dashboard_scree
 import 'package:barber_booking_app/features/customer/screens/main_navigation_screen.dart';
 import 'package:barber_booking_app/features/receptionist/screens/receptionist_dashboard_screen.dart';
 import 'package:barber_booking_app/shared/models/user_model.dart';
-import 'package:barber_booking_app/shared/services/api_service.dart';
 import 'package:barber_booking_app/shared/services/auth_session.dart';
-import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_auth_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,9 +16,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final MockDataService _dataService = MockDataService();
+  final FirebaseService _dataService = FirebaseService();
   final AuthSession _session = AuthSession();
-  final ApiService _api = ApiService();
+  final FirebaseAuthService _firebaseAuth = FirebaseAuthService();
   final _phoneController = TextEditingController(text: '0900000002');
   final _passwordController = TextEditingController(text: '123456');
   bool _obscurePassword = true;
@@ -65,41 +65,37 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isSubmitting = true);
     try {
-      final user = await _api.login(phone, password);
+      final user = await _firebaseAuth.login(phone, password);
       _session.setUser(user);
       _dataService.currentUser = user;
+      await _dataService.start();
       if (!mounted) return;
       _navigateToRoleScreen(user);
     } catch (e) {
-      final user = _dataService.login(phone, password);
       if (!mounted) return;
-      if (user != null) {
-        _session.setUser(user);
-        _navigateToRoleScreen(user);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
   Future<void> _handleQuickRoleLogin(String role) async {
-    if (role == 'staff') {
-      _phoneController.text = '0900000002';
-      _passwordController.text = '123456';
-      await _handleLogin();
-      return;
+    switch (role) {
+      case 'staff':
+        _phoneController.text = '0900000002';
+      case 'receptionist':
+        _phoneController.text = '0900000000';
+      case 'customer':
+      default:
+        _phoneController.text = '0987654321';
     }
-
-    final user = _dataService.loginAsRole(role);
-    _session.setUser(user);
-    _navigateToRoleScreen(user);
+    _passwordController.text = '123456';
+    await _handleLogin();
   }
 
   @override
@@ -236,7 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
               _buildRoleTile(
                 icon: Icons.content_cut,
                 title: 'Thợ Cắt Tóc (Barber Staff)',
-                    subtitle: 'SĐT: 0900000002 • Pass: 123456 (SQL Server)',
+                    subtitle: 'SĐT: 0900000002 • Pass: 123456 (Firebase)',
                 color: const Color(0xFFD4AF37),
                 onTap: () => _handleQuickRoleLogin('staff'),
               ),

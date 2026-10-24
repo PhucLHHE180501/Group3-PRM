@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:barber_booking_app/shared/models/booking_model.dart';
-import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_service.dart';
 
 class QuickCheckoutDialog extends StatefulWidget {
   final BookingModel booking;
@@ -15,11 +15,11 @@ class QuickCheckoutDialog extends StatefulWidget {
 }
 
 class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
-  final MockDataService _dataService = MockDataService();
+  final FirebaseService _dataService = FirebaseService();
   String _paymentMethod = 'cash'; // 'cash' or 'bank_transfer'
 
   String _formatPrice(double price) {
-    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ';
+    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} d';
   }
 
   void _handleConfirmPayment() {
@@ -28,7 +28,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Đã thu ${_formatPrice(widget.booking.totalPrice)} (${_paymentMethod == "cash" ? "Tiền mặt" : "Chuyển khoản QR"}) thành công!',
+          '�� thu ${_formatPrice(widget.booking.totalPrice)} (${_paymentMethod == "cash" ? "Ti?n m?t" : "Chuy?n kho?n QR"}) th�nh c�ng!',
         ),
         backgroundColor: Colors.green,
       ),
@@ -54,7 +54,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                     Icon(Icons.point_of_sale, color: Color(0xFFD4AF37)),
                     SizedBox(width: 8),
                     Text(
-                      'Thanh Toán & Hóa Đơn',
+                      'Thanh To�n & H�a �on',
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                   ],
@@ -73,17 +73,17 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Khách: ${widget.booking.customerName ?? "Khách #${widget.booking.customerId}"}',
+                  'Kh�ch: ${widget.booking.customerName ?? "Kh�ch #${widget.booking.customerId}"}',
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 Text(
-                  'Mã: #${widget.booking.id}',
+                  'M�: #${widget.booking.id}',
                   style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
                 ),
               ],
             ),
             Text(
-              'Thợ cắt: ${widget.booking.staffName}',
+              'Th? c?t: ${widget.booking.staffName}',
               style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
             const SizedBox(height: 12),
@@ -114,7 +114,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('TỔNG CỘNG:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      const Text('T?NG C?NG:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       Text(
                         _formatPrice(widget.booking.totalPrice),
                         style: const TextStyle(
@@ -131,7 +131,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
 
             const SizedBox(height: 16),
             const Text(
-              'Phương thức thanh toán:',
+              'Phuong th?c thanh to�n:',
               style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 13),
             ),
             const SizedBox(height: 8),
@@ -162,7 +162,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Tiền mặt',
+                            'Ti?n m?t',
                             style: TextStyle(
                               color: _paymentMethod == 'cash' ? Colors.white : Colors.white70,
                               fontWeight: _paymentMethod == 'cash' ? FontWeight.bold : FontWeight.normal,
@@ -198,7 +198,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Chuyển khoản QR',
+                            'Chuy?n kho?n QR',
                             style: TextStyle(
                               color: _paymentMethod == 'bank_transfer' ? Colors.white : Colors.white70,
                               fontWeight: _paymentMethod == 'bank_transfer' ? FontWeight.bold : FontWeight.normal,
@@ -219,7 +219,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Đóng', style: TextStyle(color: Colors.white54)),
+                  child: const Text('��ng', style: TextStyle(color: Colors.white54)),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton.icon(
@@ -228,7 +228,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                     foregroundColor: Colors.black,
                   ),
                   icon: const Icon(Icons.check_circle, size: 18),
-                  label: const Text('Xác Nhận Đã Thu Tiền', style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: const Text('X�c Nh?n �� Thu Ti?n', style: TextStyle(fontWeight: FontWeight.bold)),
                   onPressed: _handleConfirmPayment,
                 ),
               ],

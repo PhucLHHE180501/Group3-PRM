@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/models/service_model.dart';
-import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_service.dart';
 
 class BookingScreen extends StatefulWidget {
   final BarberModel? initialBarber;
@@ -17,7 +17,7 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  final MockDataService _dataService = MockDataService();
+  final FirebaseService _dataService = FirebaseService();
 
   BarberModel? _selectedBarber;
   DateTime _selectedDate = DateTime.now();
@@ -28,21 +28,33 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   void initState() {
     super.initState();
+    _dataService.addListener(_onDataChanged);
     _selectedBarber = widget.initialBarber ?? (_dataService.barbers.isNotEmpty ? _dataService.barbers.first : null);
-    // Pre-select first service by default
     if (_dataService.services.isNotEmpty) {
       _selectedServices.add(_dataService.services.first);
     }
   }
 
+  void _onDataChanged() {
+    if (!mounted) return;
+    setState(() {
+      _selectedBarber ??=
+          _dataService.barbers.isNotEmpty ? _dataService.barbers.first : null;
+      if (_selectedServices.isEmpty && _dataService.services.isNotEmpty) {
+        _selectedServices.add(_dataService.services.first);
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _dataService.removeListener(_onDataChanged);
     _noteController.dispose();
     super.dispose();
   }
 
   String _formatPrice(double price) {
-    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ';
+    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} d';
   }
 
   double get totalPrice {
@@ -52,21 +64,21 @@ class _BookingScreenState extends State<BookingScreen> {
   void _confirmBooking() {
     if (_selectedBarber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn Barber cắt tóc!')),
+        const SnackBar(content: Text('Vui l�ng ch?n Barber c?t t�c!')),
       );
       return;
     }
 
     if (_selectedServices.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn ít nhất 1 dịch vụ!')),
+        const SnackBar(content: Text('Vui l�ng ch?n �t nh?t 1 d?ch v?!')),
       );
       return;
     }
 
     if (_selectedTimeSlot == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn khung giờ hẹn còn trống!')),
+        const SnackBar(content: Text('Vui l�ng ch?n khung gi? h?n c�n tr?ng!')),
       );
       return;
     }
@@ -88,19 +100,19 @@ class _BookingScreenState extends State<BookingScreen> {
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 28),
             SizedBox(width: 10),
-            Text('Đặt Lịch Thành Công!', style: TextStyle(color: Colors.white, fontSize: 18)),
+            Text('�?t L?ch Th�nh C�ng!', style: TextStyle(color: Colors.white, fontSize: 18)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Mã cuộc hẹn: #${booking.id}', style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
+            Text('M� cu?c h?n: #${booking.id}', style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text('Barber: ${booking.staffName}', style: const TextStyle(color: Colors.white)),
-            Text('Ngày đặt: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}', style: const TextStyle(color: Colors.white)),
-            Text('Khung giờ: ${booking.startTime}', style: const TextStyle(color: Colors.white)),
-            Text('Tổng tiền: ${_formatPrice(booking.totalPrice)}', style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
+            Text('Ng�y d?t: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}', style: const TextStyle(color: Colors.white)),
+            Text('Khung gi?: ${booking.startTime}', style: const TextStyle(color: Colors.white)),
+            Text('T?ng ti?n: ${_formatPrice(booking.totalPrice)}', style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
           ],
         ),
         actions: [
@@ -109,7 +121,7 @@ class _BookingScreenState extends State<BookingScreen> {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Back to previous screen
             },
-            child: const Text('Hoàn Tất'),
+            child: const Text('Ho�n T?t'),
           )
         ],
       ),
@@ -128,7 +140,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Đặt Lịch Cắt Tóc'),
+        title: const Text('�?t L?ch C?t T�c'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -137,7 +149,7 @@ class _BookingScreenState extends State<BookingScreen> {
           children: [
             // Step 1: Choose Barber
             const Text(
-              '1. Chọn Barber Cắt Tóc',
+              '1. Ch?n Barber C?t T�c',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -215,7 +227,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
             // Step 2: Choose Services
             const Text(
-              '2. Chọn Dịch Vụ',
+              '2. Ch?n D?ch V?',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -248,7 +260,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   subtitle: Text(
-                    '${_formatPrice(service.price)} • ${service.durationMin} phút',
+                    '${_formatPrice(service.price)} � ${service.durationMin} ph�t',
                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                   onChanged: (bool? checked) {
@@ -267,7 +279,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
             // Step 3: Choose Date & Available Slot
             const Text(
-              '3. Chọn Ngày & Khung Giờ Còn Trống',
+              '3. Ch?n Ng�y & Khung Gi? C�n Tr?ng',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -281,7 +293,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 const Icon(Icons.calendar_today, color: Color(0xFFD4AF37), size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  'Ngày cắt: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                  'Ng�y c?t: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                   style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
@@ -300,7 +312,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       });
                     }
                   },
-                  child: const Text('Đổi Ngày'),
+                  child: const Text('�?i Ng�y'),
                 ),
               ],
             ),
@@ -317,7 +329,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
                 ),
                 child: const Text(
-                  'Barber đã kín lịch tất cả các khung giờ ngày này. Vui lòng chọn ngày hoặc Barber khác!',
+                  'Barber d� k�n l?ch t?t c? c�c khung gi? ng�y n�y. Vui l�ng ch?n ng�y ho?c Barber kh�c!',
                   style: TextStyle(color: Colors.redAccent, fontSize: 13),
                   textAlign: TextAlign.center,
                 ),
@@ -368,7 +380,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
             // Step 4: Note
             const Text(
-              'Ghi Chú Cho Barber (Tùy chọn)',
+              'Ghi Ch� Cho Barber (T�y ch?n)',
               style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
             const SizedBox(height: 8),
@@ -376,7 +388,7 @@ class _BookingScreenState extends State<BookingScreen> {
               controller: _noteController,
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
-                hintText: 'VD: Cắt gọn gàng, sấy phồng nhẹ...',
+                hintText: 'VD: C?t g?n g�ng, s?y ph?ng nh?...',
               ),
             ),
             const SizedBox(height: 100), // Bottom padding
@@ -395,7 +407,7 @@ class _BookingScreenState extends State<BookingScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Tổng thanh toán:', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                const Text('T?ng thanh to�n:', style: TextStyle(color: Colors.grey, fontSize: 12)),
                 Text(
                   _formatPrice(totalPrice),
                   style: const TextStyle(
@@ -412,7 +424,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: _confirmBooking,
-                  child: const Text('Xác Nhận Đặt Lịch'),
+                  child: const Text('X�c Nh?n �?t L?ch'),
                 ),
               ),
             )

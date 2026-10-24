@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_service.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -10,7 +10,7 @@ class TransactionHistoryScreen extends StatefulWidget {
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
-  final MockDataService _dataService = MockDataService();
+  final FirebaseService _dataService = FirebaseService();
 
   @override
   void initState() {
@@ -29,7 +29,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   String _formatPrice(double price) {
-    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ';
+    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} d';
   }
 
   String _formatDate(DateTime date) {
@@ -39,13 +39,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   String _getMethodName(String method) {
     switch (method) {
       case 'cash':
-        return 'Tiền mặt';
+        return 'Ti?n m?t';
       case 'card':
-        return 'Thẻ ngân hàng';
+        return 'Th? ng�n h�ng';
       case 'bank_transfer':
-        return 'Chuyển khoản';
+        return 'Chuy?n kho?n';
       case 'e_wallet':
-        return 'Ví điện tử';
+        return 'V� di?n t?';
       default:
         return method;
     }
@@ -60,18 +60,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       case 'paid':
         bg = Colors.green.withOpacity(0.2);
         textColor = Colors.greenAccent;
-        label = 'Đã thanh toán';
+        label = '�� thanh to�n';
         break;
       case 'refunded':
         bg = Colors.orange.withOpacity(0.2);
         textColor = Colors.orangeAccent;
-        label = 'Hoàn tiền';
+        label = 'Ho�n ti?n';
         break;
       case 'unpaid':
       default:
         bg = Colors.red.withOpacity(0.2);
         textColor = Colors.redAccent;
-        label = 'Chưa thanh toán';
+        label = 'Chua thanh to�n';
         break;
     }
 
@@ -94,7 +94,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lịch Sử Giao Dịch'),
+        title: const Text('L?ch S? Giao D?ch'),
       ),
       body: transactions.isEmpty
           ? const Center(
@@ -104,7 +104,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   Icon(Icons.receipt_long, size: 64, color: Colors.grey),
                   SizedBox(height: 16),
                   Text(
-                    'Chưa có giao dịch nào',
+                    'Chua c� giao d?ch n�o',
                     style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                 ],
@@ -130,7 +130,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Mã GD: #${item.id}',
+                            'M� GD: #${item.id}',
                             style: const TextStyle(
                               color: Color(0xFFD4AF37),
                               fontWeight: FontWeight.bold,
@@ -155,7 +155,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           const Icon(Icons.payment, size: 16, color: Colors.grey),
                           const SizedBox(width: 6),
                           Text(
-                            'Phương thức: ${_getMethodName(item.method)}',
+                            'Phuong th?c: ${_getMethodName(item.method)}',
                             style: const TextStyle(color: Colors.grey, fontSize: 13),
                           ),
                         ],
@@ -166,7 +166,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           const Icon(Icons.access_time, size: 16, color: Colors.grey),
                           const SizedBox(width: 6),
                           Text(
-                            'Thời gian: ${_formatDate(item.createdAt)}',
+                            'Th?i gian: ${_formatDate(item.createdAt)}',
                             style: const TextStyle(color: Colors.grey, fontSize: 13),
                           ),
                         ],
@@ -176,7 +176,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            'Tổng tiền:',
+                            'T?ng ti?n:',
                             style: TextStyle(color: Colors.white70, fontSize: 14),
                           ),
                           Text(

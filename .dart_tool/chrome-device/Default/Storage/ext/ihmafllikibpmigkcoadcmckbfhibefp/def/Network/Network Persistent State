@@ -1,1 +1,0 @@
-{"net":{"http_server_properties":{"broken_alternative_services":[{"anonymization":[3],"broken_count":1,"host":"dns.google","port":443,"protocol_str":"quic"}],"servers":[{"anonymization":[3],"server":"https://dns.google","supports_spdy":true}],"supports_quic":{"address":"192.168.59.104","used_quic":true},"version":5},"network_qualities":{"CAASABiAgICA+P////8B":"4G"}}}

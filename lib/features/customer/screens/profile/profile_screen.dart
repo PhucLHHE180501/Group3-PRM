@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:barber_booking_app/features/auth/screens/login_screen.dart';
-import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_service.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -12,7 +12,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final MockDataService _dataService = MockDataService();
+  final FirebaseService _dataService = FirebaseService();
 
   @override
   void initState() {
@@ -38,14 +38,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Hồ Sơ Cá Nhân')),
+        appBar: AppBar(title: const Text('H? So C� Nh�n')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.account_circle, size: 64, color: Colors.grey),
               const SizedBox(height: 16),
-              const Text('Bạn chưa đăng nhập', style: TextStyle(color: Colors.white, fontSize: 16)),
+              const Text('B?n chua dang nh?p', style: TextStyle(color: Colors.white, fontSize: 16)),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
@@ -54,7 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     MaterialPageRoute(builder: (context) => const LoginScreen()),
                   );
                 },
-                child: const Text('Đăng Nhập Ngay'),
+                child: const Text('�ang Nh?p Ngay'),
               ),
             ],
           ),
@@ -67,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hồ Sơ Cá Nhân'),
+        title: const Text('H? So C� Nh�n'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.redAccent),
@@ -124,7 +124,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 border: Border.all(color: const Color(0xFFD4AF37)),
               ),
               child: Text(
-                u.role == 'customer' ? 'Khách Hàng Thân Thiết' : 'Tài Khoản ${u.role.toUpperCase()}',
+                u.role == 'customer' ? 'Kh�ch H�ng Th�n Thi?t' : 'T�i Kho?n ${u.role.toUpperCase()}',
                 style: const TextStyle(
                   color: Color(0xFFD4AF37),
                   fontSize: 12,
@@ -137,26 +137,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Profile info cards
             _buildInfoCard(
               icon: Icons.person_outline,
-              label: 'Họ và Tên',
+              label: 'H? v� T�n',
               value: u.fullName,
             ),
             const SizedBox(height: 12),
             _buildInfoCard(
               icon: Icons.phone_android_outlined,
-              label: 'Số Điện Thoại',
+              label: 'S? �i?n Tho?i',
               value: u.phone,
             ),
             const SizedBox(height: 12),
             _buildInfoCard(
               icon: Icons.email_outlined,
               label: 'Email',
-              value: u.email ?? 'Chưa cập nhật',
+              value: u.email ?? 'Chua c?p nh?t',
             ),
             const SizedBox(height: 12),
             _buildInfoCard(
               icon: Icons.location_on_outlined,
-              label: 'Địa Chỉ',
-              value: u.address ?? 'Chưa cập nhật địa chỉ',
+              label: '�?a Ch?',
+              value: u.address ?? 'Chua c?p nh?t d?a ch?',
             ),
             const SizedBox(height: 32),
 
@@ -166,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 50,
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.edit, color: Colors.black),
-                label: const Text('Cập Nhật Hồ Sơ'),
+                label: const Text('C?p Nh?t H? So'),
                 onPressed: () {
                   Navigator.push(
                     context,

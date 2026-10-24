@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_service.dart';
 import 'barber_detail_screen.dart';
 
 class BarberListScreen extends StatefulWidget {
@@ -11,7 +11,7 @@ class BarberListScreen extends StatefulWidget {
 }
 
 class _BarberListScreenState extends State<BarberListScreen> {
-  final MockDataService _dataService = MockDataService();
+  final FirebaseService _dataService = FirebaseService();
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _BarberListScreenState extends State<BarberListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Danh SÃ¡ch Barber'),
+        title: const Text('Danh Sách Barber'),
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
@@ -113,12 +113,12 @@ class _BarberListScreenState extends State<BarberListScreen> {
                               const Icon(Icons.star, color: Color(0xFFD4AF37), size: 16),
                               const SizedBox(width: 4),
                               Text(
-                                '${barber.avgRating} (${barber.reviewCount} Ä‘Ã¡nh giÃ¡)',
+                                '${barber.avgRating} (${barber.reviewCount} dánh giá)',
                                 style: const TextStyle(color: Colors.white70, fontSize: 12),
                               ),
                               const SizedBox(width: 12),
                               Text(
-                                'â€¢ ${barber.yearsExperience} nÄƒm kinh nghiá»‡m',
+                                '• ${barber.yearsExperience} nam kinh nghi?m',
                                 style: const TextStyle(color: Colors.grey, fontSize: 12),
                               ),
                             ],

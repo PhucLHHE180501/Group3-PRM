@@ -7,9 +7,8 @@ import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/models/booking_model.dart';
 import 'package:barber_booking_app/shared/models/review_model.dart';
 import 'package:barber_booking_app/shared/models/user_model.dart';
-import 'package:barber_booking_app/shared/services/api_service.dart';
 import 'package:barber_booking_app/shared/services/auth_session.dart';
-import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_service.dart';
 
 class StaffDashboardScreen extends StatefulWidget {
   const StaffDashboardScreen({super.key});
@@ -20,9 +19,8 @@ class StaffDashboardScreen extends StatefulWidget {
 
 class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     with SingleTickerProviderStateMixin {
-  final MockDataService _dataService = MockDataService();
+  final FirebaseService _dataService = FirebaseService();
   final AuthSession _session = AuthSession();
-  final ApiService _api = ApiService();
   late TabController _tabController;
 
   // Weekly timetable: selected date (defaults to today)
@@ -45,15 +43,21 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _selectedDate = DateTime.now();
+    _dataService.addListener(_onDataChanged);
     _loadDashboard();
     _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       _loadDashboard(showLoading: false);
     });
   }
 
+  void _onDataChanged() {
+    if (mounted) _loadDashboard(showLoading: false);
+  }
+
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _dataService.removeListener(_onDataChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -76,7 +80,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     }
 
     try {
-      final data = await _api.getStaffDashboard(staffId);
+      final data = await _dataService.getStaffDashboard(staffId);
       if (!mounted) return;
       _session.setUser(data.user);
       setState(() {
@@ -94,10 +98,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
   }
 
   Future<void> _completeShift(int bookingId) async {
-    final staffId = _dashboard?.user.id;
-    if (staffId == null) return;
+    if (_dashboard == null) return;
     try {
-      await _api.completeBooking(staffId, bookingId);
+      await _dataService.updateBookingStatusById(bookingId, 'completed');
       await _loadDashboard(showLoading: false);
     } catch (e) {
       if (!mounted) return;

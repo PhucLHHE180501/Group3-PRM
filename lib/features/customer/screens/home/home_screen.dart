@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:barber_booking_app/shared/models/user_model.dart';
-import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_service.dart';
 import '../barber/barber_detail_screen.dart';
 import '../barber/barber_list_screen.dart';
 import '../booking/booking_screen.dart';
@@ -16,7 +16,7 @@ class BarberHomePage extends StatefulWidget {
 }
 
 class _BarberHomePageState extends State<BarberHomePage> {
-  final MockDataService _dataService = MockDataService();
+  final FirebaseService _dataService = FirebaseService();
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
   }
 
   String _formatPrice(double price) {
-    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ';
+    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} d';
   }
 
   @override
@@ -65,7 +65,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
               const SizedBox(height: 24),
 
               // --- Popular Services ---
-              _buildSectionTitle('Dịch Vụ Nổi Bật', onViewAll: () {
+              _buildSectionTitle('D?ch V? N?i B?t', onViewAll: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const BookingScreen()),
@@ -76,7 +76,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
               const SizedBox(height: 24),
 
               // --- Top Barbers ---
-              _buildSectionTitle('Barber Hàng Đầu', onViewAll: () {
+              _buildSectionTitle('Barber H�ng �?u', onViewAll: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const BarberListScreen()),
@@ -93,7 +93,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
 
   // Header Widget (Click user image -> open Profile)
   Widget _buildHeader(UserModel? user) {
-    final userName = user?.fullName ?? 'Khách Hàng';
+    final userName = user?.fullName ?? 'Kh�ch H�ng';
     final avatarUrl = user?.avatarUrl;
 
     return Row(
@@ -150,7 +150,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Xin chào,',
+                    'Xin ch�o,',
                     style: TextStyle(color: Colors.grey, fontSize: 13),
                   ),
                   Text(
@@ -169,7 +169,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
         IconButton(
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Không có thông báo mới.')),
+              const SnackBar(content: Text('Kh�ng c� th�ng b�o m?i.')),
             );
           },
           icon: const Icon(Icons.notifications_outlined, color: Colors.white),
@@ -211,7 +211,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Text(
-                    'GIẢM 20%',
+                    'GI?M 20%',
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
@@ -221,7 +221,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  'Đặt Lịch Cắt Tóc Hôm Nay',
+                  '�?t L?ch C?t T�c H�m Nay',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 17,
@@ -230,7 +230,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Ưu đãi đặc biệt cho lượt đặt lịch đầu tiên.',
+                  'Uu d�i d?c bi?t cho lu?t d?t l?ch d?u ti�n.',
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
                 const SizedBox(height: 14),
@@ -241,7 +241,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
                       MaterialPageRoute(builder: (context) => const BookingScreen()),
                     );
                   },
-                  child: const Text('Đặt Lịch Ngay'),
+                  child: const Text('�?t L?ch Ngay'),
                 ),
               ],
             ),
@@ -275,11 +275,11 @@ class _BarberHomePageState extends State<BarberHomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Cần Hỗ Trợ Từ Salon?',
+                  'C?n H? Tr? T? Salon?',
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 Text(
-                  'Liên hệ CSKH 24/7 để được giải đáp',
+                  'Li�n h? CSKH 24/7 d? du?c gi?i d�p',
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
@@ -295,7 +295,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             ),
-            child: const Text('Liên Hệ', style: TextStyle(fontSize: 12)),
+            child: const Text('Li�n H?', style: TextStyle(fontSize: 12)),
           ),
         ],
       ),
@@ -318,7 +318,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
         TextButton(
           onPressed: onViewAll,
           child: const Text(
-            'Xem tất cả',
+            'Xem t?t c?',
             style: TextStyle(color: Color(0xFFD4AF37)),
           ),
         ),
@@ -380,7 +380,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${service.durationMin} phút',
+                    '${service.durationMin} ph�t',
                     style: const TextStyle(color: Colors.grey, fontSize: 11),
                   ),
                 ],

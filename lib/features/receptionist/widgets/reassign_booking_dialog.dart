@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/models/booking_model.dart';
-import 'package:barber_booking_app/shared/services/mock_data_service.dart';
+import 'package:barber_booking_app/shared/services/firebase_service.dart';
 
 class ReassignBookingDialog extends StatefulWidget {
   final BookingModel booking;
@@ -16,7 +16,7 @@ class ReassignBookingDialog extends StatefulWidget {
 }
 
 class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
-  final MockDataService _dataService = MockDataService();
+  final FirebaseService _dataService = FirebaseService();
   late BarberModel _selectedBarber;
   late String _selectedSlot;
   final TextEditingController _cancelReasonController = TextEditingController();
@@ -57,7 +57,7 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
     if (hasChanged) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Đã cập nhật lịch #${widget.booking.id}: Thợ ${_selectedBarber.fullName}, Giờ $_selectedSlot'),
+          content: Text('�� c?p nh?t l?ch #${widget.booking.id}: Th? ${_selectedBarber.fullName}, Gi? $_selectedSlot'),
           backgroundColor: Colors.green,
         ),
       );
@@ -69,13 +69,13 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E1E),
-        title: const Text('Xác nhận hủy lịch hẹn?', style: TextStyle(color: Colors.white)),
+        title: const Text('X�c nh?n h?y l?ch h?n?', style: TextStyle(color: Colors.white)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Đơn của: ${widget.booking.customerName ?? "Khách #${widget.booking.customerId}"}',
+              '�on c?a: ${widget.booking.customerName ?? "Kh�ch #${widget.booking.customerId}"}',
               style: const TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 12),
@@ -83,8 +83,8 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
               controller: _cancelReasonController,
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
-                labelText: 'Lý do hủy (tùy chọn)',
-                hintText: 'Ví dụ: Khách bận đột xuất, không liên lạc được...',
+                labelText: 'L� do h?y (t�y ch?n)',
+                hintText: 'V� d?: Kh�ch b?n d?t xu?t, kh�ng li�n l?c du?c...',
                 filled: true,
                 fillColor: Color(0xFF2A2A2A),
               ),
@@ -94,7 +94,7 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Không', style: TextStyle(color: Colors.white54)),
+            child: const Text('Kh�ng', style: TextStyle(color: Colors.white54)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
@@ -107,12 +107,12 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
               );
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Đã hủy lịch #${widget.booking.id}'),
+                  content: Text('�� h?y l?ch #${widget.booking.id}'),
                   backgroundColor: Colors.redAccent,
                 ),
               );
             },
-            child: const Text('Xác Nhận Hủy', style: TextStyle(color: Colors.white)),
+            child: const Text('X�c Nh?n H?y', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -141,7 +141,7 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
                     const Icon(Icons.sync_alt, color: Color(0xFFD4AF37)),
                     const SizedBox(width: 8),
                     Text(
-                      'Điều Phối Lịch #${widget.booking.id}',
+                      '�i?u Ph?i L?ch #${widget.booking.id}',
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                   ],
@@ -156,22 +156,22 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
             const SizedBox(height: 8),
 
             Text(
-              'Khách hàng: ${widget.booking.customerName ?? "Khách #${widget.booking.customerId}"}',
+              'Kh�ch h�ng: ${widget.booking.customerName ?? "Kh�ch #${widget.booking.customerId}"}',
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             if (widget.booking.customerPhone != null)
               Text(
-                'SĐT: ${widget.booking.customerPhone}',
+                'S�T: ${widget.booking.customerPhone}',
                 style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
             Text(
-              'Dịch vụ: ${widget.booking.services.map((s) => s.name).join(", ")}',
+              'D?ch v?: ${widget.booking.services.map((s) => s.name).join(", ")}',
               style: const TextStyle(color: Colors.white54, fontSize: 12),
             ),
             const SizedBox(height: 16),
 
             // Dropdown change barber
-            const Text('Chuyển thợ cắt:', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13, fontWeight: FontWeight.bold)),
+            const Text('Chuy?n th? c?t:', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             DropdownButtonFormField<BarberModel>(
               value: _selectedBarber,
@@ -198,7 +198,7 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
                       Text(b.fullName),
                       const SizedBox(width: 8),
                       Text(
-                        isAvail ? '(Rảnh)' : '(Đang bận)',
+                        isAvail ? '(R?nh)' : '(�ang b?n)',
                         style: TextStyle(
                           color: isAvail ? Colors.greenAccent : Colors.orangeAccent,
                           fontSize: 11,
@@ -215,7 +215,7 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
             const SizedBox(height: 14),
 
             // Dropdown change slot
-            const Text('Đổi khung giờ:', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13, fontWeight: FontWeight.bold)),
+            const Text('�?i khung gi?:', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
               value: _selectedSlot,
@@ -244,7 +244,7 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
                 TextButton.icon(
                   style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
                   icon: const Icon(Icons.cancel_outlined, size: 16),
-                  label: const Text('Hủy Lịch Hẹn'),
+                  label: const Text('H?y L?ch H?n'),
                   onPressed: _handleCancelBooking,
                 ),
                 ElevatedButton(
@@ -253,7 +253,7 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
                     foregroundColor: Colors.black,
                   ),
                   onPressed: _handleSave,
-                  child: const Text('Lưu Thay Đổi', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text('Luu Thay �?i', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

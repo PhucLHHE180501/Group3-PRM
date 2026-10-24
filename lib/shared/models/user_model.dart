@@ -1,5 +1,6 @@
 class UserModel {
   final int id;
+  final String uid;
   final String role; // 'customer', 'staff', 'receptionist'
   final String fullName;
   final String phone;
@@ -12,6 +13,7 @@ class UserModel {
 
   UserModel({
     required this.id,
+    this.uid = '',
     required this.role,
     required this.fullName,
     required this.phone,
@@ -26,6 +28,7 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: (json['id'] as num).toInt(),
+      uid: json['uid'] as String? ?? '',
       role: json['role'] as String,
       fullName: json['fullName'] as String,
       phone: json['phone'] as String,
@@ -38,8 +41,40 @@ class UserModel {
     );
   }
 
+  /// Document Firestore `users/{uid}` — không có field `id` số.
+  /// Giữ id int cũ để màn mock/API chưa đổi sang String.
+  factory UserModel.fromFirestore(String uid, Map<String, dynamic> json) {
+    final role = json['role'] as String? ?? 'customer';
+    return UserModel(
+      id: (json['id'] as num?)?.toInt() ?? _legacyIdForRole(role),
+      uid: uid,
+      role: role,
+      fullName: json['fullName'] as String? ?? '',
+      phone: json['phone'] as String? ?? '',
+      email: json['email'] as String?,
+      avatarUrl: json['avatarUrl'] as String?,
+      gender: json['gender'] as String?,
+      dateOfBirth: json['dateOfBirth'] as String?,
+      address: json['address'] as String?,
+      isActive: json['isActive'] as bool? ?? true,
+    );
+  }
+
+  static int _legacyIdForRole(String role) {
+    switch (role) {
+      case 'staff':
+        return 101;
+      case 'receptionist':
+        return 201;
+      case 'customer':
+      default:
+        return 1;
+    }
+  }
+
   UserModel copyWith({
     int? id,
+    String? uid,
     String? role,
     String? fullName,
     String? phone,
@@ -52,6 +87,7 @@ class UserModel {
   }) {
     return UserModel(
       id: id ?? this.id,
+      uid: uid ?? this.uid,
       role: role ?? this.role,
       fullName: fullName ?? this.fullName,
       phone: phone ?? this.phone,
