@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/models/service_model.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
+import '../profile/edit_profile_screen.dart';
 
 class BookingScreen extends StatefulWidget {
   final BarberModel? initialBarber;
@@ -19,9 +20,10 @@ class BookingScreen extends StatefulWidget {
 class _BookingScreenState extends State<BookingScreen> {
   final FirebaseService _dataService = FirebaseService();
 
+  late DateTime _selectedDate;
+  late String _selectedTimeSlot;
   BarberModel? _selectedBarber;
-  DateTime _selectedDate = DateTime.now();
-  String? _selectedTimeSlot;
+  bool _autoAssignBarber = true; // True = Salon tự chọn thợ rảnh ngẫu nhiên
   final List<ServiceModel> _selectedServices = [];
   final TextEditingController _noteController = TextEditingController();
 
@@ -29,17 +31,66 @@ class _BookingScreenState extends State<BookingScreen> {
   void initState() {
     super.initState();
     _dataService.addListener(_onDataChanged);
-    _selectedBarber = widget.initialBarber ?? (_dataService.barbers.isNotEmpty ? _dataService.barbers.first : null);
+
+    _selectedDate = DateTime.now();
+    _selectedTimeSlot = _dataService.allTimeSlots.first; // Default '08:00' or '09:00'
+
+    // Default select first service
     if (_dataService.services.isNotEmpty) {
       _selectedServices.add(_dataService.services.first);
+    }
+
+    // Silently pre-fill form from customer's last booking
+    _loadLastCustomerPreferences();
+
+    // If customer arrived from Barber Detail screen (overrides barber)
+    if (widget.initialBarber != null) {
+      _selectedBarber = widget.initialBarber;
+      _autoAssignBarber = false;
+    }
+  }
+
+  void _loadLastCustomerPreferences() {
+    final user = _dataService.currentUser;
+    if (user == null) return;
+
+    final last = _dataService.getLastBookingForCustomer(user.id);
+    if (last == null) return;
+
+    // 1. Pre-fill time slot from last booking if valid
+    if (_dataService.allTimeSlots.contains(last.startTime)) {
+      _selectedTimeSlot = last.startTime;
+    }
+
+    // 2. Pre-fill services from last booking
+    if (last.services.isNotEmpty) {
+      _selectedServices.clear();
+      for (final s in last.services) {
+        final matchService = _dataService.services.firstWhere(
+          (item) => item.id == s.id || item.name == s.name,
+          orElse: () => s,
+        );
+        if (!_selectedServices.any((item) => item.id == matchService.id)) {
+          _selectedServices.add(matchService);
+        }
+      }
+    }
+
+    // 3. Pre-fill barber choice from last booking if customer didn't pass initialBarber
+    if (widget.initialBarber == null) {
+      try {
+        final prevBarber = _dataService.barbers.firstWhere((b) => b.userId == last.staffId);
+        _selectedBarber = prevBarber;
+        _autoAssignBarber = false;
+      } catch (_) {
+        _autoAssignBarber = true;
+      }
     }
   }
 
   void _onDataChanged() {
     if (!mounted) return;
     setState(() {
-      _selectedBarber ??=
-          _dataService.barbers.isNotEmpty ? _dataService.barbers.first : null;
       if (_selectedServices.isEmpty && _dataService.services.isNotEmpty) {
         _selectedServices.add(_dataService.services.first);
       }
@@ -54,40 +105,103 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   String _formatPrice(double price) {
-    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} d';
+    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ';
   }
 
   double get totalPrice {
     return _selectedServices.fold<double>(0, (sum, item) => sum + item.price);
   }
 
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
   void _confirmBooking() {
-    if (_selectedBarber == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui l�ng ch?n Barber c?t t�c!')),
+    // 1. Verify Customer Profile info (Must have Name & Phone)
+    final user = _dataService.currentUser;
+    if (user == null || !user.hasRequiredProfileInfo) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Color(0xFFD4AF37), size: 28),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text('Yêu Cầu Thông Tin', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Để salon tiện liên hệ xác nhận lịch hẹn, bạn vui lòng bổ sung Họ tên & Số điện thoại trong hồ sơ trước khi đặt lịch nhé!',
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Đóng', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD4AF37),
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                );
+              },
+              child: const Text('Cập Nhật Ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
       );
       return;
     }
 
     if (_selectedServices.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui l�ng ch?n �t nh?t 1 d?ch v?!')),
+        const SnackBar(content: Text('Vui lòng chọn ít nhất 1 dịch vụ!')),
       );
       return;
     }
 
-    if (_selectedTimeSlot == null) {
+    // Get list of free barbers for the chosen date & time slot
+    final availableBarbers = _dataService.getAvailableBarbers(_selectedDate, _selectedTimeSlot);
+
+    if (availableBarbers.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui l�ng ch?n khung gi? h?n c�n tr?ng!')),
+        SnackBar(
+          content: Text('Tất cả thợ đều đã kín lịch vào lúc $_selectedTimeSlot. Vui lòng chọn khung giờ khác!'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
       return;
+    }
+
+    // Determine final assigned barber
+    BarberModel finalBarber;
+    if (_autoAssignBarber || _selectedBarber == null) {
+      finalBarber = availableBarbers.first;
+    } else {
+      // Check if selected barber is still free at this slot
+      final isStillFree = availableBarbers.any((b) => b.userId == _selectedBarber!.userId);
+      if (isStillFree) {
+        finalBarber = _selectedBarber!;
+      } else {
+        finalBarber = availableBarbers.first;
+      }
     }
 
     final booking = _dataService.createBooking(
-      barber: _selectedBarber!,
+      barber: finalBarber,
       selectedServices: _selectedServices,
       date: _selectedDate,
-      timeSlot: _selectedTimeSlot!,
+      timeSlot: _selectedTimeSlot,
       note: _noteController.text.trim().isNotEmpty ? _noteController.text.trim() : null,
     );
 
@@ -100,28 +214,34 @@ class _BookingScreenState extends State<BookingScreen> {
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 28),
             SizedBox(width: 10),
-            Text('�?t L?ch Th�nh C�ng!', style: TextStyle(color: Colors.white, fontSize: 18)),
+            Text('Đặt Lịch Thành Công!', style: TextStyle(color: Colors.white, fontSize: 18)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('M� cu?c h?n: #${booking.id}', style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
+            Text('Mã cuộc hẹn: #${booking.id}', style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('Barber: ${booking.staffName}', style: const TextStyle(color: Colors.white)),
-            Text('Ng�y d?t: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}', style: const TextStyle(color: Colors.white)),
-            Text('Khung gi?: ${booking.startTime}', style: const TextStyle(color: Colors.white)),
-            Text('T?ng ti?n: ${_formatPrice(booking.totalPrice)}', style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
+            Text('Barber phục vụ: ${booking.staffName}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            Text('Ngày đặt: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}', style: const TextStyle(color: Colors.white)),
+            Text('Khung giờ: ${booking.startTime}', style: const TextStyle(color: Colors.white)),
+            Text('Dịch vụ: ${_selectedServices.map((s) => s.name).join(", ")}', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            const SizedBox(height: 8),
+            Text('Tổng tiền: ${_formatPrice(booking.totalPrice)}', style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 16)),
           ],
         ),
         actions: [
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD4AF37),
+              foregroundColor: Colors.black,
+            ),
             onPressed: () {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Back to previous screen
             },
-            child: const Text('Ho�n T?t'),
+            child: const Text('Hoàn Tất', style: TextStyle(fontWeight: FontWeight.bold)),
           )
         ],
       ),
@@ -130,111 +250,164 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final barbers = _dataService.barbers;
     final services = _dataService.services;
+    final timeSlots = _dataService.allTimeSlots;
 
-    // Get ONLY AVAILABLE time slots that are NOT booked by another customer
-    final availableTimeSlots = _selectedBarber != null
-        ? _dataService.getAvailableTimeSlots(_selectedBarber!.userId, _selectedDate)
-        : <String>[];
+    // Filter ONLY barbers who are FREE at selected date & time
+    final availableBarbers = _dataService.getAvailableBarbers(_selectedDate, _selectedTimeSlot);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('�?t L?ch C?t T�c'),
+        title: const Text('Đặt Lịch Cắt Tóc'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Step 1: Choose Barber
-            const Text(
-              '1. Ch?n Barber C?t T�c',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFD4AF37),
-              ),
+            // STEP 1: SELECT DATE & TIME SLOT FIRST
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '1. Chọn Ngày & Khung Giờ',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFD4AF37),
+                  ),
+                ),
+                Text(
+                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 110,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: barbers.length,
-                itemBuilder: (context, index) {
-                  final barber = barbers[index];
-                  final isSelected = _selectedBarber?.userId == barber.userId;
+            const SizedBox(height: 10),
 
-                  return GestureDetector(
-                    onTap: () {
+            // Quick Date Buttons Row
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: _isSameDay(_selectedDate, DateTime.now())
+                            ? const Color(0xFFD4AF37)
+                            : Colors.white24,
+                      ),
+                      foregroundColor: _isSameDay(_selectedDate, DateTime.now())
+                          ? const Color(0xFFD4AF37)
+                          : Colors.white70,
+                    ),
+                    icon: const Icon(Icons.today, size: 16),
+                    label: const Text('Hôm nay', style: TextStyle(fontSize: 12)),
+                    onPressed: () {
                       setState(() {
-                        _selectedBarber = barber;
-                        _selectedTimeSlot = null; // reset slot when barber changes
+                        _selectedDate = DateTime.now();
                       });
                     },
-                    child: Container(
-                      width: 120,
-                      margin: const EdgeInsets.only(right: 12),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E1E1E),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected ? const Color(0xFFD4AF37) : Colors.white10,
-                          width: isSelected ? 2 : 1,
-                        ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: _isSameDay(_selectedDate, DateTime.now().add(const Duration(days: 1)))
+                            ? const Color(0xFFD4AF37)
+                            : Colors.white24,
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircleAvatar(
-                            radius: 22,
-                            backgroundImage: barber.avatarUrl != null
-                                ? NetworkImage(barber.avatarUrl!)
-                                : null,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            barber.fullName,
-                            style: TextStyle(
-                              color: isSelected ? const Color(0xFFD4AF37) : Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.star, color: Color(0xFFD4AF37), size: 12),
-                              const SizedBox(width: 2),
-                              Text(
-                                '${barber.avgRating}',
-                                style: const TextStyle(color: Colors.grey, fontSize: 11),
-                              ),
-                            ],
-                          )
-                        ],
+                      foregroundColor: _isSameDay(_selectedDate, DateTime.now().add(const Duration(days: 1)))
+                          ? const Color(0xFFD4AF37)
+                          : Colors.white70,
+                    ),
+                    icon: const Icon(Icons.event, size: 16),
+                    label: const Text('Ngày mai', style: TextStyle(fontSize: 12)),
+                    onPressed: () {
+                      setState(() {
+                        _selectedDate = DateTime.now().add(const Duration(days: 1));
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.edit_calendar, color: Color(0xFFD4AF37)),
+                  tooltip: 'Chọn ngày khác',
+                  onPressed: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 30)),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        _selectedDate = picked;
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Time Slots Grid
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 2.2,
+              ),
+              itemCount: timeSlots.length,
+              itemBuilder: (context, index) {
+                final slot = timeSlots[index];
+                final isSelected = _selectedTimeSlot == slot;
+
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedTimeSlot = slot;
+                    });
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFFD4AF37) : const Color(0xFF1E1E1E),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFFD4AF37) : Colors.white12,
+                        width: isSelected ? 2 : 1,
                       ),
                     ),
-                  );
-                },
-              ),
+                    child: Text(
+                      slot,
+                      style: TextStyle(
+                        color: isSelected ? Colors.black : Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 24),
 
-            // Step 2: Choose Services
+            // STEP 2: SELECT SERVICES
             const Text(
-              '2. Ch?n D?ch V?',
+              '2. Chọn Dịch Vụ',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFFD4AF37),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -260,7 +433,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   subtitle: Text(
-                    '${_formatPrice(service.price)} � ${service.durationMin} ph�t',
+                    '${_formatPrice(service.price)} • ${service.durationMin} phút',
                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                   onChanged: (bool? checked) {
@@ -277,110 +450,215 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Step 3: Choose Date & Available Slot
-            const Text(
-              '3. Ch?n Ng�y & Khung Gi? C�n Tr?ng',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFD4AF37),
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Date Picker Row
+            // STEP 3: SELECT BARBER AVAILABLE AT SELECTED DATE & TIME
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.calendar_today, color: Color(0xFFD4AF37), size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Ng�y c?t: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                const Text(
+                  '3. Chọn Thợ Barber Phục Vụ',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFD4AF37),
+                  ),
                 ),
-                const Spacer(),
-                OutlinedButton(
-                  onPressed: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: _selectedDate,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 30)),
-                    );
-                    if (picked != null) {
-                      setState(() {
-                        _selectedDate = picked;
-                        _selectedTimeSlot = null; // reset slot
-                      });
-                    }
-                  },
-                  child: const Text('�?i Ng�y'),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.greenAccent),
+                  ),
+                  child: Text(
+                    '${availableBarbers.length} thợ rảnh',
+                    style: const TextStyle(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
+            const SizedBox(height: 6),
+            Text(
+              'Danh sách thợ RẢNH lúc $_selectedTimeSlot ngày ${_selectedDate.day}/${_selectedDate.month}:',
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
             const SizedBox(height: 12),
 
-            // Available Time Slots Grid
-            if (availableTimeSlots.isEmpty)
+            if (availableBarbers.isEmpty)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+                  border: Border.all(color: Colors.redAccent.withOpacity(0.4)),
                 ),
-                child: const Text(
-                  'Barber d� k�n l?ch t?t c? c�c khung gi? ng�y n�y. Vui l�ng ch?n ng�y ho?c Barber kh�c!',
-                  style: TextStyle(color: Colors.redAccent, fontSize: 13),
-                  textAlign: TextAlign.center,
+                child: Column(
+                  children: [
+                    const Icon(Icons.event_busy, color: Colors.redAccent, size: 36),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Rất tiếc! Tất cả thợ đều đã có khách vào lúc $_selectedTimeSlot.',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Vui lòng chọn khung giờ khác ở Bước 1 để tiếp tục!',
+                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               )
-            else
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  childAspectRatio: 2.2,
-                ),
-                itemCount: availableTimeSlots.length,
-                itemBuilder: (context, index) {
-                  final slot = availableTimeSlots[index];
-                  final isSelected = _selectedTimeSlot == slot;
-
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedTimeSlot = slot;
-                      });
-                    },
-                    child: Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFFD4AF37) : const Color(0xFF1E1E1E),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isSelected ? const Color(0xFFD4AF37) : Colors.white12,
-                        ),
-                      ),
-                      child: Text(
-                        slot,
-                        style: TextStyle(
-                          color: isSelected ? Colors.black : Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  );
+            else ...[
+              // Option 1: Auto Assign Barber
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    _autoAssignBarber = true;
+                    _selectedBarber = null;
+                  });
                 },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _autoAssignBarber ? const Color(0xFFD4AF37).withOpacity(0.15) : const Color(0xFF1E1E1E),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _autoAssignBarber ? const Color(0xFFD4AF37) : Colors.white10,
+                      width: _autoAssignBarber ? 2 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: _autoAssignBarber ? const Color(0xFFD4AF37) : const Color(0xFF2A2A2A),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.shuffle,
+                          color: _autoAssignBarber ? Colors.black : Colors.white70,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Salon tự xếp thợ (Rảnh ngẫu nhiên)',
+                              style: TextStyle(
+                                color: _autoAssignBarber ? const Color(0xFFD4AF37) : Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const Text(
+                              'Hệ thống tự động phân công thợ rảnh phục vụ bạn nhanh nhất',
+                              style: TextStyle(color: Colors.grey, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (_autoAssignBarber)
+                        const Icon(Icons.check_circle, color: Color(0xFFD4AF37), size: 20),
+                    ],
+                  ),
+                ),
               ),
+
+              const SizedBox(height: 10),
+
+              // Option 2: Choose Specific Free Barber
+              SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: availableBarbers.length,
+                  itemBuilder: (context, index) {
+                    final barber = availableBarbers[index];
+                    final isSelected = !_autoAssignBarber && _selectedBarber?.userId == barber.userId;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _autoAssignBarber = false;
+                          _selectedBarber = barber;
+                        });
+                      },
+                      child: Container(
+                        width: 130,
+                        margin: const EdgeInsets.only(right: 10),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E1E1E),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected ? const Color(0xFFD4AF37) : Colors.white10,
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 22,
+                              backgroundImage: barber.avatarUrl != null
+                                  ? NetworkImage(barber.avatarUrl!)
+                                  : null,
+                              child: barber.avatarUrl == null ? const Icon(Icons.person, size: 20) : null,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              barber.fullName.split('(').first.trim(),
+                              style: TextStyle(
+                                color: isSelected ? const Color(0xFFD4AF37) : Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.star, color: Color(0xFFD4AF37), size: 12),
+                                const SizedBox(width: 2),
+                                Text(
+                                  '${barber.avgRating}',
+                                  style: const TextStyle(color: Colors.grey, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'Rảnh lúc $_selectedTimeSlot',
+                                style: const TextStyle(color: Colors.greenAccent, fontSize: 9, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+
             const SizedBox(height: 24),
 
-            // Step 4: Note
+            // STEP 4: NOTE
             const Text(
-              'Ghi Ch� Cho Barber (T�y ch?n)',
+              'Ghi Chú Cho Barber (Tùy chọn)',
               style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
             const SizedBox(height: 8),
@@ -388,7 +666,7 @@ class _BookingScreenState extends State<BookingScreen> {
               controller: _noteController,
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
-                hintText: 'VD: C?t g?n g�ng, s?y ph?ng nh?...',
+                hintText: 'VD: Cắt gọn gàng, sấy phồng nhẹ...',
               ),
             ),
             const SizedBox(height: 100), // Bottom padding
@@ -407,7 +685,7 @@ class _BookingScreenState extends State<BookingScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('T?ng thanh to�n:', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                const Text('Tổng thanh toán:', style: TextStyle(color: Colors.grey, fontSize: 12)),
                 Text(
                   _formatPrice(totalPrice),
                   style: const TextStyle(
@@ -423,8 +701,12 @@ class _BookingScreenState extends State<BookingScreen> {
               child: SizedBox(
                 height: 48,
                 child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD4AF37),
+                    foregroundColor: Colors.black,
+                  ),
                   onPressed: _confirmBooking,
-                  child: const Text('X�c Nh?n �?t L?ch'),
+                  child: const Text('XÁC NHẬN ĐẶT LỊCH', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             )

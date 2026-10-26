@@ -42,24 +42,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home, color: Color(0xFFD4AF37)),
-            label: 'Trang Chủ',
+            icon: Icon(Icons.home),
+            label: 'Trang chủ',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.content_cut_outlined),
-            activeIcon: Icon(Icons.content_cut, color: Color(0xFFD4AF37)),
-            label: 'Barber',
+            icon: Icon(Icons.content_cut),
+            label: 'Thợ cắt',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long_outlined),
-            activeIcon: Icon(Icons.receipt_long, color: Color(0xFFD4AF37)),
-            label: 'Giao Dịch',
+            icon: Icon(Icons.history),
+            label: 'Lịch sử',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person, color: Color(0xFFD4AF37)),
-            label: 'Hồ Sơ',
+            icon: Icon(Icons.person),
+            label: 'Tài khoản',
           ),
         ],
       ),

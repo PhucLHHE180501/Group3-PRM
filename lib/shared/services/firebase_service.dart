@@ -489,10 +489,16 @@ class FirebaseService extends ChangeNotifier {
       'customerId': booking.customerId,
       'amount': totalPrice,
       'discount': 0,
+      'tipAmount': 0,
       'method': 'cash',
       'status': 'unpaid',
       'createdAt': FieldValue.serverTimestamp(),
       'serviceSummary': selectedServices.map((s) => s.name).join(', '),
+      'staffName': barber.fullName,
+      'staffAvatar': barber.avatarUrl,
+      'bookingDate': Timestamp.fromDate(date),
+      'timeSlot': timeSlot,
+      'services': selectedServices.map((s) => s.toJson()).toList(),
     });
 
     if (immediateStart) {
@@ -594,6 +600,34 @@ class FirebaseService extends ChangeNotifier {
     return allTimeSlots.where((slot) => !bookedSlots.contains(slot)).toList();
   }
 
+  /// Lấy danh sách thợ còn RẢNH vào ngày & khung giờ cụ thể
+  List<BarberModel> getAvailableBarbers(DateTime date, String timeSlot) {
+    if (timeSlot.trim().isEmpty) return barbers;
+    final busyStaffIds = bookings
+        .where(
+          (b) =>
+              b.status != 'cancelled' &&
+              b.bookingDate.year == date.year &&
+              b.bookingDate.month == date.month &&
+              b.bookingDate.day == date.day &&
+              b.startTime == timeSlot,
+        )
+        .map((b) => b.staffId)
+        .toSet();
+
+    return barbers.where((b) => !busyStaffIds.contains(b.userId)).toList();
+  }
+
+  /// Lấy đơn đặt lịch gần nhất của Khách hàng để tự động tái sử dụng các lựa chọn lần trước
+  BookingModel? getLastBookingForCustomer(int customerId) {
+    final list = bookings
+        .where((b) => b.customerId == customerId && b.status != 'cancelled')
+        .toList();
+    if (list.isEmpty) return null;
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list.first;
+  }
+
   List<BookingModel> getBarberBookings(int staffId) =>
       bookings.where((b) => b.staffId == staffId).toList();
 
@@ -628,6 +662,14 @@ class FirebaseService extends ChangeNotifier {
     final id = currentUser?.id;
     if (id == null) return [];
     return transactions.where((t) => t.customerId == id).toList();
+  }
+
+  BookingModel? getBookingById(int bookingId) {
+    try {
+      return bookings.firstWhere((b) => b.id == bookingId);
+    } catch (_) {
+      return null;
+    }
   }
 
   BookingModel _bookingFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
@@ -696,6 +738,24 @@ class FirebaseService extends ChangeNotifier {
     await updateBookingStatusById(bookingId, 'completed');
   }
 
+  Future<void> addTipToTransaction(int txId, double tipAmount) async {
+    final txSnap = await _transactions
+        .where('id', isEqualTo: txId)
+        .limit(1)
+        .get();
+    if (txSnap.docs.isNotEmpty) {
+      await txSnap.docs.first.reference.update({
+        'tipAmount': tipAmount,
+      });
+    } else {
+      final idx = transactions.indexWhere((t) => t.id == txId);
+      if (idx != -1) {
+        transactions[idx] = transactions[idx].copyWith(tipAmount: tipAmount);
+        notifyListeners();
+      }
+    }
+  }
+
   TransactionModel _txFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
     final j = d.data()!;
     DateTime? parseOptDate(dynamic v) {
@@ -711,17 +771,27 @@ class FirebaseService extends ChangeNotifier {
       return DateTime.now();
     }
 
+    final parsedServices = (j['services'] as List<dynamic>?)
+        ?.map((s) => ServiceModel.fromJson(s as Map<String, dynamic>))
+        .toList();
+
     return TransactionModel(
       id: (j['id'] as num?)?.toInt() ?? d.id.hashCode.abs(),
       bookingId: (j['bookingId'] as num).toInt(),
       customerId: (j['customerId'] as num?)?.toInt() ?? 0,
       amount: (j['amount'] as num?)?.toDouble() ?? 0,
       discount: (j['discount'] as num?)?.toDouble() ?? 0,
+      tipAmount: (j['tipAmount'] as num?)?.toDouble() ?? 0,
       method: j['method'] as String? ?? 'cash',
       status: j['status'] as String? ?? 'unpaid',
       paidAt: parseOptDate(j['paidAt']),
       createdAt: parseDate(j['createdAt']),
       serviceSummary: j['serviceSummary'] as String? ?? '',
+      staffName: j['staffName'] as String?,
+      staffAvatar: j['staffAvatar'] as String?,
+      bookingDate: parseOptDate(j['bookingDate']),
+      timeSlot: j['timeSlot'] as String?,
+      services: parsedServices,
     );
   }
 

@@ -232,7 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
               _buildRoleTile(
                 icon: Icons.content_cut,
                 title: 'Thợ Cắt Tóc (Barber Staff)',
-                    subtitle: 'SĐT: 0900000002 • Pass: 123456 (Firebase)',
+                subtitle: 'SĐT: 0900000002 • Pass: 123456 (Firebase)',
                 color: const Color(0xFFD4AF37),
                 onTap: () => _handleQuickRoleLogin('staff'),
               ),

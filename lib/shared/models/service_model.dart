@@ -28,4 +28,16 @@ class ServiceModel {
       isActive: json['isActive'] as bool? ?? true,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'price': price,
+      'durationMin': durationMin,
+      'imageUrl': imageUrl,
+      'isActive': isActive,
+    };
+  }
 }

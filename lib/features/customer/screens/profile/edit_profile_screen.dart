@@ -23,7 +23,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.initState();
     final user = _dataService.currentUser;
     if (user != null) {
-      final u = user!;
+      final u = user;
       _nameController = TextEditingController(text: u.fullName);
       _phoneController = TextEditingController(text: u.phone);
       _emailController = TextEditingController(text: u.email ?? '');
@@ -60,7 +60,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('C?p nh?t h? so th�nh c�ng!'),
+          content: Text('Cập nhật hồ sơ thành công! Bạn có thể tiếp tục đặt lịch.'),
           backgroundColor: Colors.green,
         ),
       );
@@ -73,7 +73,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ch?nh S?a H? So'),
+        title: const Text('Chỉnh Sửa Hồ Sơ'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -82,23 +82,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'H�nh ?nh �?i Di?n (URL)',
-                style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _avatarUrlController,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: 'https://...',
-                  prefixIcon: Icon(Icons.image_outlined, color: Colors.grey),
+              Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD4AF37).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.4)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Color(0xFFD4AF37), size: 20),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Lưu ý: Bạn cần có ít nhất Họ & tên và Số điện thoại để salon liên hệ xác nhận cuộc hẹn.',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
 
               const Text(
-                'H? v� T�n (*)',
+                'Họ và Tên (*)',
                 style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -106,11 +113,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 controller: _nameController,
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
+                  hintText: 'Nhập họ và tên đầy đủ',
                   prefixIcon: Icon(Icons.person_outline, color: Colors.grey),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Vui l�ng nh?p h? v� t�n';
+                    return 'Vui lòng nhập Họ và tên!';
                   }
                   return null;
                 },
@@ -118,7 +126,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 20),
 
               const Text(
-                'S? �i?n Tho?i (*)',
+                'Số Điện Thoại (*)',
                 style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -127,11 +135,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 keyboardType: TextInputType.phone,
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
+                  hintText: 'Nhập số điện thoại liên hệ',
                   prefixIcon: Icon(Icons.phone_android_outlined, color: Colors.grey),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Vui l�ng nh?p s? di?n tho?i';
+                    return 'Vui lòng nhập Số điện thoại!';
+                  }
+                  if (value.trim().length < 9) {
+                    return 'Số điện thoại không hợp lệ (ít nhất 9 chữ số)!';
                   }
                   return null;
                 },
@@ -148,13 +160,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
+                  hintText: 'VD: email@example.com',
                   prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
                 ),
               ),
               const SizedBox(height: 20),
 
               const Text(
-                '�?a Ch?',
+                'Địa Chỉ',
                 style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -163,7 +176,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 maxLines: 2,
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
+                  hintText: 'Nhập địa chỉ nhà...',
                   prefixIcon: Icon(Icons.location_on_outlined, color: Colors.grey),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              const Text(
+                'Hình Ảnh Đại Diện (URL)',
+                style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _avatarUrlController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: 'https://...',
+                  prefixIcon: Icon(Icons.image_outlined, color: Colors.grey),
                 ),
               ),
               const SizedBox(height: 32),
@@ -173,7 +202,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: _saveProfile,
-                  child: const Text('Luu Thay �?i'),
+                  child: const Text('LƯU THAY ĐỔI HỒ SƠ'),
                 ),
               ),
             ],

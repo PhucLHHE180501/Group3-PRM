@@ -5,6 +5,7 @@ import 'package:barber_booking_app/shared/services/firebase_service.dart';
 import '../barber/barber_detail_screen.dart';
 import '../barber/barber_list_screen.dart';
 import '../booking/booking_screen.dart';
+import '../profile/edit_profile_screen.dart';
 import '../profile/profile_screen.dart';
 import '../support/cskh_screen.dart';
 
@@ -35,7 +36,61 @@ class _BarberHomePageState extends State<BarberHomePage> {
   }
 
   String _formatPrice(double price) {
-    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} d';
+    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} đ';
+  }
+
+  void _navigateToBooking(BuildContext context) {
+    final user = _dataService.currentUser;
+    final hasInfo = user != null && user.hasRequiredProfileInfo;
+
+    if (!hasInfo) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Color(0xFFD4AF37), size: 28),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text('Yêu Cầu Thông Tin', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Để salon tiện liên hệ xác nhận lịch hẹn, bạn vui lòng bổ sung Họ tên & Số điện thoại trong hồ sơ trước khi đặt lịch nhé!',
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Để sau', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD4AF37),
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                );
+              },
+              child: const Text('Cập Nhật Ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const BookingScreen()),
+    );
   }
 
   @override
@@ -65,18 +120,15 @@ class _BarberHomePageState extends State<BarberHomePage> {
               const SizedBox(height: 24),
 
               // --- Popular Services ---
-              _buildSectionTitle('D?ch V? N?i B?t', onViewAll: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const BookingScreen()),
-                );
+              _buildSectionTitle('Dịch Vụ Nổi Bật', onViewAll: () {
+                _navigateToBooking(context);
               }),
               const SizedBox(height: 12),
               _buildServicesGrid(services),
               const SizedBox(height: 24),
 
               // --- Top Barbers ---
-              _buildSectionTitle('Barber H�ng �?u', onViewAll: () {
+              _buildSectionTitle('Barber Hàng Đầu', onViewAll: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const BarberListScreen()),
@@ -93,7 +145,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
 
   // Header Widget (Click user image -> open Profile)
   Widget _buildHeader(UserModel? user) {
-    final userName = user?.fullName ?? 'Kh�ch H�ng';
+    final userName = (user?.fullName.isNotEmpty == true) ? user!.fullName : 'Khách Hàng';
     final avatarUrl = user?.avatarUrl;
 
     return Row(
@@ -150,7 +202,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Xin ch�o,',
+                    'Xin chào,',
                     style: TextStyle(color: Colors.grey, fontSize: 13),
                   ),
                   Text(
@@ -169,7 +221,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
         IconButton(
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Kh�ng c� th�ng b�o m?i.')),
+              const SnackBar(content: Text('Không có thông báo mới.')),
             );
           },
           icon: const Icon(Icons.notifications_outlined, color: Colors.white),
@@ -211,7 +263,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Text(
-                    'GI?M 20%',
+                    'GIẢM 20%',
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
@@ -221,7 +273,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  '�?t L?ch C?t T�c H�m Nay',
+                  'Đặt Lịch Cắt Tóc Hôm Nay',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 17,
@@ -230,18 +282,15 @@ class _BarberHomePageState extends State<BarberHomePage> {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Uu d�i d?c bi?t cho lu?t d?t l?ch d?u ti�n.',
+                  'Ưu đãi đặc biệt cho lượt đặt lịch đầu tiên.',
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
                 const SizedBox(height: 14),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const BookingScreen()),
-                    );
+                    _navigateToBooking(context);
                   },
-                  child: const Text('�?t L?ch Ngay'),
+                  child: const Text('Đặt Lịch Ngay'),
                 ),
               ],
             ),
@@ -275,11 +324,11 @@ class _BarberHomePageState extends State<BarberHomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'C?n H? Tr? T? Salon?',
+                  'Cần Hỗ Trợ Từ Salon?',
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 Text(
-                  'Li�n h? CSKH 24/7 d? du?c gi?i d�p',
+                  'Liên hệ CSKH 24/7 để được giải đáp',
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
@@ -295,7 +344,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             ),
-            child: const Text('Li�n H?', style: TextStyle(fontSize: 12)),
+            child: const Text('Liên Hệ', style: TextStyle(fontSize: 12)),
           ),
         ],
       ),
@@ -318,7 +367,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
         TextButton(
           onPressed: onViewAll,
           child: const Text(
-            'Xem t?t c?',
+            'Xem tất cả',
             style: TextStyle(color: Color(0xFFD4AF37)),
           ),
         ),
@@ -380,7 +429,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${service.durationMin} ph�t',
+                    '${service.durationMin} phút',
                     style: const TextStyle(color: Colors.grey, fontSize: 11),
                   ),
                 ],

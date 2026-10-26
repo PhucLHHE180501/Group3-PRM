@@ -25,13 +25,18 @@ class UserModel {
     this.isActive = true,
   });
 
+  /// Kiểm tra tài khoản đã đầy đủ Họ tên & Số điện thoại hay chưa
+  bool get hasRequiredProfileInfo {
+    return fullName.trim().isNotEmpty && phone.trim().isNotEmpty;
+  }
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: (json['id'] as num).toInt(),
       uid: json['uid'] as String? ?? '',
       role: json['role'] as String,
-      fullName: json['fullName'] as String,
-      phone: json['phone'] as String,
+      fullName: json['fullName'] as String? ?? '',
+      phone: json['phone'] as String? ?? '',
       email: json['email'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
       gender: json['gender'] as String?,

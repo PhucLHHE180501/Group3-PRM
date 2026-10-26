@@ -35,7 +35,7 @@ class _BarberListScreenState extends State<BarberListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Danh Sách Barber'),
+        title: const Text('Danh SÃ¡ch Barber'),
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
@@ -113,12 +113,12 @@ class _BarberListScreenState extends State<BarberListScreen> {
                               const Icon(Icons.star, color: Color(0xFFD4AF37), size: 16),
                               const SizedBox(width: 4),
                               Text(
-                                '${barber.avgRating} (${barber.reviewCount} dánh giá)',
+                                '${barber.avgRating} (${barber.reviewCount} Ä‘Ã¡nh giÃ¡)',
                                 style: const TextStyle(color: Colors.white70, fontSize: 12),
                               ),
                               const SizedBox(width: 12),
                               Text(
-                                '• ${barber.yearsExperience} nam kinh nghi?m',
+                                'â€¢ ${barber.yearsExperience} nÄƒm kinh nghiá»‡m',
                                 style: const TextStyle(color: Colors.grey, fontSize: 12),
                               ),
                             ],

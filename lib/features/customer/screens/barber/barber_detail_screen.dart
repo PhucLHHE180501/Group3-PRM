@@ -4,6 +4,7 @@ import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
 import 'package:barber_booking_app/shared/widgets/add_review_dialog.dart';
 import '../booking/booking_screen.dart';
+import '../profile/edit_profile_screen.dart';
 
 class BarberDetailScreen extends StatefulWidget {
   final BarberModel barber;
@@ -47,6 +48,62 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
     );
   }
 
+  void _navigateToBooking(BuildContext context, BarberModel barber) {
+    final user = _dataService.currentUser;
+    final hasInfo = user != null && user.hasRequiredProfileInfo;
+
+    if (!hasInfo) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Color(0xFFD4AF37), size: 28),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text('Yêu Cầu Thông Tin', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Để salon tiện liên hệ xác nhận lịch hẹn, bạn vui lòng bổ sung Họ tên & Số điện thoại trong hồ sơ trước khi đặt lịch nhé!',
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Để sau', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD4AF37),
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                );
+              },
+              child: const Text('Cập Nhật Ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookingScreen(initialBarber: barber),
+      ),
+    );
+  }
+
   void _openAddReviewDialog() {
     final barber = currentBarber;
     final canReview = _dataService.canUserReviewBarber(barber.userId);
@@ -54,7 +111,7 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
     if (!canReview) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('B?n d� g?i d�nh gi� cho Barber n�y r?i! (M?i ngu?i d�ng ch? du?c d�nh gi� 1 l?n)'),
+          content: Text('Bạn đã gửi đánh giá cho Barber này rồi! (Mỗi người dùng chỉ được đánh giá 1 lần)'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -75,7 +132,7 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
           if (success) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('C?m on b?n d� g?i d�nh gi�!'),
+                content: Text('Cảm ơn bạn đã gửi đánh giá!'),
                 backgroundColor: Colors.green,
               ),
             );
@@ -156,7 +213,7 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                             const Icon(Icons.star, color: Color(0xFFD4AF37), size: 16),
                             const SizedBox(width: 4),
                             Text(
-                              '${barber.avgRating} (${barber.reviewCount} d�nh gi�)',
+                              '${barber.avgRating} (${barber.reviewCount} đánh giá)',
                               style: const TextStyle(
                                 color: Color(0xFFD4AF37),
                                 fontWeight: FontWeight.bold,
@@ -175,7 +232,7 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                           border: Border.all(color: Colors.blueAccent),
                         ),
                         child: Text(
-                          '${barber.yearsExperience} nam kinh nghi?m',
+                          '${barber.yearsExperience} năm kinh nghiệm',
                           style: const TextStyle(
                             color: Colors.lightBlueAccent,
                             fontWeight: FontWeight.bold,
@@ -194,7 +251,7 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'S? tru?ng: ${barber.specialty}',
+                          'Sở trường: ${barber.specialty}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 15,
@@ -220,8 +277,8 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                     labelColor: const Color(0xFFD4AF37),
                     unselectedLabelColor: Colors.grey,
                     tabs: [
-                      Tab(text: 'Ki?u T�c �� L�m (${barber.portfolioImages.length})'),
-                      Tab(text: '��nh Gi� (${reviews.length})'),
+                      Tab(text: 'Kiểu Tóc Đã Làm (${barber.portfolioImages.length})'),
+                      Tab(text: 'Đánh Giá (${reviews.length})'),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -236,7 +293,7 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                         barber.portfolioImages.isEmpty
                             ? const Center(
                                 child: Text(
-                                  'Chua c� h�nh ?nh s?n ph?m',
+                                  'Chưa có hình ảnh sản phẩm',
                                   style: TextStyle(color: Colors.grey),
                                 ),
                               )
@@ -269,7 +326,7 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text(
-                                    'Nh?n x�t t? kh�ch h�ng',
+                                    'Nhận xét từ khách hàng',
                                     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                   ),
                                   OutlinedButton.icon(
@@ -279,7 +336,7 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                                       color: hasReviewed ? Colors.grey : const Color(0xFFD4AF37),
                                     ),
                                     label: Text(
-                                      hasReviewed ? '�� d�nh gi�' : 'Vi?t d�nh gi�',
+                                      hasReviewed ? 'Đã đánh giá' : 'Viết đánh giá',
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: hasReviewed ? Colors.grey : const Color(0xFFD4AF37),
@@ -294,7 +351,7 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                               child: reviews.isEmpty
                                   ? const Center(
                                       child: Text(
-                                        'Chua c� nh?n x�t n�o cho Barber n�y.',
+                                        'Chưa có nhận xét nào cho Barber này.',
                                         style: TextStyle(color: Colors.grey),
                                       ),
                                     )
@@ -386,14 +443,9 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
           height: 50,
           child: ElevatedButton.icon(
             icon: const Icon(Icons.calendar_month, color: Colors.black),
-            label: Text('�?t L?ch V?i ${barber.fullName}'),
+            label: Text('Đặt Lịch Với ${barber.fullName}'),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BookingScreen(initialBarber: barber),
-                ),
-              );
+              _navigateToBooking(context, barber);
             },
           ),
         ),

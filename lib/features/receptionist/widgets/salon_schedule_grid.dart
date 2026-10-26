@@ -33,8 +33,8 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
 
   String _formatDateHeader(DateTime date) {
     final now = DateTime.now();
-    if (_isSameDay(date, now)) return 'H�m nay (${date.day}/${date.month})';
-    if (_isSameDay(date, now.add(const Duration(days: 1)))) return 'Ng�y mai (${date.day}/${date.month})';
+    if (_isSameDay(date, now)) return 'Hôm nay (${date.day}/${date.month})';
+    if (_isSameDay(date, now.add(const Duration(days: 1)))) return 'Ngày mai (${date.day}/${date.month})';
     return '${date.day}/${date.month}/${date.year}';
   }
 
@@ -103,7 +103,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                     _selectedDate = DateTime.now();
                   });
                 },
-                child: const Text('H�m nay', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13)),
+                child: const Text('Hôm nay', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13)),
               ),
               IconButton(
                 icon: const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
@@ -153,11 +153,11 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'L?ch d� x?p: $occupiedSlots / $totalPossibleSlots slot ($occupancyPercent%)',
+                'Lịch đã xếp: $occupiedSlots / $totalPossibleSlots slot ($occupancyPercent%)',
                 style: const TextStyle(color: Colors.white70, fontSize: 12),
               ),
               const Text(
-                'Ch?m � d? x?p kh�ch ho?c xem chi ti?t',
+                'Chạm ô để xếp khách hoặc xem chi tiết',
                 style: TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontStyle: FontStyle.italic),
               ),
             ],
@@ -171,10 +171,10 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
             spacing: 12,
             runSpacing: 6,
             children: [
-              _buildLegendItem('Tr?ng (B?m d? x?p)', Colors.white24),
-              _buildLegendItem('�� h?n', const Color(0xFFD4AF37)),
-              _buildLegendItem('�� check-in', Colors.purpleAccent),
-              _buildLegendItem('�ang c?t', Colors.blueAccent),
+              _buildLegendItem('Trống (Bấm để xếp)', Colors.white24),
+              _buildLegendItem('Đã hẹn', const Color(0xFFD4AF37)),
+              _buildLegendItem('Đã check-in', Colors.purpleAccent),
+              _buildLegendItem('Đang cắt', Colors.blueAccent),
               _buildLegendItem('Xong', Colors.green),
             ],
           ),
@@ -209,7 +209,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                             child: Text(
-                              'Gi?',
+                              'Giờ',
                               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                               textAlign: TextAlign.center,
                             ),
@@ -249,8 +249,8 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                     // Table Body: Time Slots x Barbers
                     for (final slot in timeSlots)
                       TableRow(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF191919),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF191919),
                         ),
                         children: [
                           // Time Cell
@@ -340,7 +340,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                 children: [
                   Icon(Icons.add, color: Colors.greenAccent, size: 14),
                   SizedBox(width: 2),
-                  Text('Tr?ng', style: TextStyle(color: Colors.greenAccent, fontSize: 11)),
+                  Text('Trống', style: TextStyle(color: Colors.greenAccent, fontSize: 11)),
                 ],
               ),
             ),
@@ -373,7 +373,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                 children: [
                   Expanded(
                     child: Text(
-                      match.customerName ?? 'Kh�ch #${match.customerId}',
+                      match.customerName ?? 'Khách #${match.customerId}',
                       style: TextStyle(
                         color: statusColor,
                         fontWeight: FontWeight.bold,
@@ -390,13 +390,13 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                         color: Colors.orange.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(3),
                       ),
-                      child: const Text('T?i qu?y', style: TextStyle(color: Colors.orangeAccent, fontSize: 8)),
+                      child: const Text('Tại quầy', style: TextStyle(color: Colors.orangeAccent, fontSize: 8)),
                     ),
                 ],
               ),
               const SizedBox(height: 2),
               Text(
-                match.services.isNotEmpty ? match.services.first.name : 'D?ch v?',
+                match.services.isNotEmpty ? match.services.first.name : 'Dịch vụ',
                 style: const TextStyle(color: Colors.white70, fontSize: 10),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
