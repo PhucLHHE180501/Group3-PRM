@@ -316,7 +316,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
   }) {
     // Find matching booking for this barber and time slot
     final match = bookings.cast<BookingModel?>().firstWhere(
-      (b) => b != null && b.staffId == barber.userId && b.startTime == slot,
+      (b) => b != null && b.staffId == barber.userId && _dataService.getOccupiedSlotsForBooking(b).contains(slot),
       orElse: () => null,
     );
 

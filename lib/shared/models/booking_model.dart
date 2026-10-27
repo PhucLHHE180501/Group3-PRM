@@ -3,6 +3,7 @@ import 'service_model.dart';
 class BookingModel {
   final int id;
   final int customerId;
+  final String customerUid;
   final String? customerName;
   final String? customerPhone;
   final bool isWalkIn;
@@ -21,6 +22,7 @@ class BookingModel {
   BookingModel({
     required this.id,
     required this.customerId,
+    this.customerUid = '',
     this.customerName,
     this.customerPhone,
     this.isWalkIn = false,
@@ -40,7 +42,8 @@ class BookingModel {
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     return BookingModel(
       id: (json['id'] as num).toInt(),
-      customerId: (json['customerId'] as num).toInt(),
+      customerId: (json['customerId'] as num?)?.toInt() ?? 0,
+      customerUid: json['customerUid'] as String? ?? '',
       customerName: json['customerName'] as String?,
       customerPhone: json['customerPhone'] as String?,
       isWalkIn: (json['isWalkIn'] as bool?) ?? false,
@@ -62,6 +65,7 @@ class BookingModel {
 
   BookingModel copyWith({
     int? customerId,
+    String? customerUid,
     String? customerName,
     String? customerPhone,
     bool? isWalkIn,
@@ -80,6 +84,7 @@ class BookingModel {
     return BookingModel(
       id: id,
       customerId: customerId ?? this.customerId,
+      customerUid: customerUid ?? this.customerUid,
       customerName: customerName ?? this.customerName,
       customerPhone: customerPhone ?? this.customerPhone,
       isWalkIn: isWalkIn ?? this.isWalkIn,

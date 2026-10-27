@@ -112,8 +112,37 @@ class _BookingScreenState extends State<BookingScreen> {
     return _selectedServices.fold<double>(0, (sum, item) => sum + item.price);
   }
 
+  int get totalDurationMin {
+    return _selectedServices.fold<int>(0, (sum, item) => sum + item.durationMin);
+  }
+
+  int get requiredSlotsCount {
+    final count = (totalDurationMin / 60.0).ceil();
+    return count < 1 ? 1 : count;
+  }
+
   bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  void _checkAndAdjustTimeSlot() {
+    final currentReq = _dataService.getRequiredSlots(_selectedTimeSlot, requiredSlotsCount);
+    final currentAvail = currentReq != null
+        ? _dataService.getAvailableBarbers(_selectedDate, _selectedTimeSlot, requiredSlotsCount: requiredSlotsCount)
+        : <BarberModel>[];
+
+    if (currentAvail.isEmpty) {
+      for (final slot in _dataService.allTimeSlots) {
+        final req = _dataService.getRequiredSlots(slot, requiredSlotsCount);
+        if (req != null) {
+          final avail = _dataService.getAvailableBarbers(_selectedDate, slot, requiredSlotsCount: requiredSlotsCount);
+          if (avail.isNotEmpty) {
+            _selectedTimeSlot = slot;
+            break;
+          }
+        }
+      }
+    }
   }
 
   void _confirmBooking() {
@@ -170,13 +199,34 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
-    // Get list of free barbers for the chosen date & time slot
-    final availableBarbers = _dataService.getAvailableBarbers(_selectedDate, _selectedTimeSlot);
+    final reqSlots = _dataService.getRequiredSlots(_selectedTimeSlot, requiredSlotsCount);
+    if (reqSlots == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Khung giờ $_selectedTimeSlot không đủ $requiredSlotsCount khung giờ liên tiếp ($totalDurationMin phút) trong ngày!',
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    // Get list of free barbers for the chosen date, time slot & required consecutive slots
+    final availableBarbers = _dataService.getAvailableBarbers(
+      _selectedDate,
+      _selectedTimeSlot,
+      requiredSlotsCount: requiredSlotsCount,
+    );
 
     if (availableBarbers.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Tất cả thợ đều đã kín lịch vào lúc $_selectedTimeSlot. Vui lòng chọn khung giờ khác!'),
+          content: Text(
+            requiredSlotsCount > 1
+                ? 'Không có thợ nào rảnh đủ $requiredSlotsCount khung giờ liên tiếp vào lúc $_selectedTimeSlot. Vui lòng chọn khung giờ khác!'
+                : 'Tất cả thợ đều đã kín lịch vào lúc $_selectedTimeSlot. Vui lòng chọn khung giờ khác!',
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -225,7 +275,12 @@ class _BookingScreenState extends State<BookingScreen> {
             const SizedBox(height: 8),
             Text('Barber phục vụ: ${booking.staffName}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             Text('Ngày đặt: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}', style: const TextStyle(color: Colors.white)),
-            Text('Khung giờ: ${booking.startTime}', style: const TextStyle(color: Colors.white)),
+            Text(
+              requiredSlotsCount > 1
+                  ? 'Khung giờ: ${booking.startTime} - ${booking.endTime} ($requiredSlotsCount slot liên tiếp)'
+                  : 'Khung giờ: ${booking.startTime} - ${booking.endTime}',
+              style: const TextStyle(color: Colors.white),
+            ),
             Text('Dịch vụ: ${_selectedServices.map((s) => s.name).join(", ")}', style: const TextStyle(color: Colors.white70, fontSize: 13)),
             const SizedBox(height: 8),
             Text('Tổng tiền: ${_formatPrice(booking.totalPrice)}', style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 16)),
@@ -254,7 +309,11 @@ class _BookingScreenState extends State<BookingScreen> {
     final timeSlots = _dataService.allTimeSlots;
 
     // Filter ONLY barbers who are FREE at selected date & time
-    final availableBarbers = _dataService.getAvailableBarbers(_selectedDate, _selectedTimeSlot);
+    final availableBarbers = _dataService.getAvailableBarbers(
+      _selectedDate,
+      _selectedTimeSlot,
+      requiredSlotsCount: requiredSlotsCount,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -265,148 +324,40 @@ class _BookingScreenState extends State<BookingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // STEP 1: SELECT DATE & TIME SLOT FIRST
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '1. Chọn Ngày & Khung Giờ',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFD4AF37),
-                  ),
-                ),
-                Text(
-                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // Quick Date Buttons Row
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: _isSameDay(_selectedDate, DateTime.now())
-                            ? const Color(0xFFD4AF37)
-                            : Colors.white24,
-                      ),
-                      foregroundColor: _isSameDay(_selectedDate, DateTime.now())
-                          ? const Color(0xFFD4AF37)
-                          : Colors.white70,
-                    ),
-                    icon: const Icon(Icons.today, size: 16),
-                    label: const Text('Hôm nay', style: TextStyle(fontSize: 12)),
-                    onPressed: () {
-                      setState(() {
-                        _selectedDate = DateTime.now();
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: _isSameDay(_selectedDate, DateTime.now().add(const Duration(days: 1)))
-                            ? const Color(0xFFD4AF37)
-                            : Colors.white24,
-                      ),
-                      foregroundColor: _isSameDay(_selectedDate, DateTime.now().add(const Duration(days: 1)))
-                          ? const Color(0xFFD4AF37)
-                          : Colors.white70,
-                    ),
-                    icon: const Icon(Icons.event, size: 16),
-                    label: const Text('Ngày mai', style: TextStyle(fontSize: 12)),
-                    onPressed: () {
-                      setState(() {
-                        _selectedDate = DateTime.now().add(const Duration(days: 1));
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.edit_calendar, color: Color(0xFFD4AF37)),
-                  tooltip: 'Chọn ngày khác',
-                  onPressed: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: _selectedDate,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 30)),
-                    );
-                    if (picked != null) {
-                      setState(() {
-                        _selectedDate = picked;
-                      });
-                    }
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Time Slots Grid
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 2.2,
-              ),
-              itemCount: timeSlots.length,
-              itemBuilder: (context, index) {
-                final slot = timeSlots[index];
-                final isSelected = _selectedTimeSlot == slot;
-
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedTimeSlot = slot;
-                    });
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFFD4AF37) : const Color(0xFF1E1E1E),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isSelected ? const Color(0xFFD4AF37) : Colors.white12,
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: Text(
-                      slot,
-                      style: TextStyle(
-                        color: isSelected ? Colors.black : Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 24),
-
-            // STEP 2: SELECT SERVICES
+            // STEP 1: SELECT SERVICES
             const Text(
-              '2. Chọn Dịch Vụ',
+              '1. Chọn Dịch Vụ',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFFD4AF37),
               ),
             ),
+            if (_selectedServices.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD4AF37).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.access_time_filled, color: Color(0xFFD4AF37), size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        requiredSlotsCount > 1
+                            ? 'Tổng thời gian: $totalDurationMin phút ➔ Cần $requiredSlotsCount khung giờ liên tiếp'
+                            : 'Tổng thời gian: $totalDurationMin phút (1 khung giờ)',
+                        style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 10),
             ListView.separated(
               shrinkWrap: true,
@@ -443,8 +394,189 @@ class _BookingScreenState extends State<BookingScreen> {
                       } else {
                         _selectedServices.removeWhere((s) => s.id == service.id);
                       }
+                      _checkAndAdjustTimeSlot();
                     });
                   },
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // STEP 2: SELECT DATE & TIME SLOT
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '2. Chọn Ngày & Khung Giờ',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFD4AF37),
+                  ),
+                ),
+                Text(
+                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // Quick Date Buttons Row
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: _isSameDay(_selectedDate, DateTime.now())
+                            ? const Color(0xFFD4AF37)
+                            : Colors.white24,
+                      ),
+                      foregroundColor: _isSameDay(_selectedDate, DateTime.now())
+                          ? const Color(0xFFD4AF37)
+                          : Colors.white70,
+                    ),
+                    icon: const Icon(Icons.today, size: 16),
+                    label: const Text('Hôm nay', style: TextStyle(fontSize: 12)),
+                    onPressed: () {
+                      setState(() {
+                        _selectedDate = DateTime.now();
+                        _checkAndAdjustTimeSlot();
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: _isSameDay(_selectedDate, DateTime.now().add(const Duration(days: 1)))
+                            ? const Color(0xFFD4AF37)
+                            : Colors.white24,
+                      ),
+                      foregroundColor: _isSameDay(_selectedDate, DateTime.now().add(const Duration(days: 1)))
+                          ? const Color(0xFFD4AF37)
+                          : Colors.white70,
+                    ),
+                    icon: const Icon(Icons.event, size: 16),
+                    label: const Text('Ngày mai', style: TextStyle(fontSize: 12)),
+                    onPressed: () {
+                      setState(() {
+                        _selectedDate = DateTime.now().add(const Duration(days: 1));
+                        _checkAndAdjustTimeSlot();
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.edit_calendar, color: Color(0xFFD4AF37)),
+                  tooltip: 'Chọn ngày khác',
+                  onPressed: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 30)),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        _selectedDate = picked;
+                        _checkAndAdjustTimeSlot();
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Time Slots Grid
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 2.2,
+              ),
+              itemCount: timeSlots.length,
+              itemBuilder: (context, index) {
+                final slot = timeSlots[index];
+                final isSelected = _selectedTimeSlot == slot;
+
+                final reqSlots = _dataService.getRequiredSlots(slot, requiredSlotsCount);
+                final isEnoughSlotsLeft = reqSlots != null;
+                final availableBarbersForSlot = isEnoughSlotsLeft
+                    ? _dataService.getAvailableBarbers(_selectedDate, slot, requiredSlotsCount: requiredSlotsCount)
+                    : <BarberModel>[];
+                final isSlotAvailable = availableBarbersForSlot.isNotEmpty;
+
+                return GestureDetector(
+                  onTap: () {
+                    if (!isEnoughSlotsLeft) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Khung giờ $slot không đủ $requiredSlotsCount khung giờ liên tiếp ($totalDurationMin phút) trong ngày!',
+                          ),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                      return;
+                    }
+                    if (!isSlotAvailable) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            requiredSlotsCount > 1
+                                ? 'Tất cả thợ đều bận trong $requiredSlotsCount khung giờ liên tiếp từ $slot!'
+                                : 'Tất cả thợ đều đã có khách vào lúc $slot!',
+                          ),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                      return;
+                    }
+                    setState(() {
+                      _selectedTimeSlot = slot;
+                    });
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? const Color(0xFFD4AF37)
+                          : isSlotAvailable
+                              ? const Color(0xFF1E1E1E)
+                              : const Color(0xFF141414),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected
+                            ? const Color(0xFFD4AF37)
+                            : isSlotAvailable
+                                ? Colors.white12
+                                : Colors.red.withOpacity(0.3),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Text(
+                      slot,
+                      style: TextStyle(
+                        color: isSelected
+                            ? Colors.black
+                            : isSlotAvailable
+                                ? Colors.white
+                                : Colors.white30,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        decoration: !isSlotAvailable ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                  ),
                 );
               },
             ),
@@ -478,7 +610,9 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Danh sách thợ RẢNH lúc $_selectedTimeSlot ngày ${_selectedDate.day}/${_selectedDate.month}:',
+              requiredSlotsCount > 1
+                  ? 'Danh sách thợ RẢNH $requiredSlotsCount slot liên tiếp từ $_selectedTimeSlot ngày ${_selectedDate.day}/${_selectedDate.month}:'
+                  : 'Danh sách thợ RẢNH lúc $_selectedTimeSlot ngày ${_selectedDate.day}/${_selectedDate.month}:',
               style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
             const SizedBox(height: 12),
@@ -497,13 +631,15 @@ class _BookingScreenState extends State<BookingScreen> {
                     const Icon(Icons.event_busy, color: Colors.redAccent, size: 36),
                     const SizedBox(height: 8),
                     Text(
-                      'Rất tiếc! Tất cả thợ đều đã có khách vào lúc $_selectedTimeSlot.',
+                      requiredSlotsCount > 1
+                          ? 'Rất tiếc! Không có thợ nào rảnh đủ $requiredSlotsCount khung giờ liên tiếp từ $_selectedTimeSlot.'
+                          : 'Rất tiếc! Tất cả thợ đều đã có khách vào lúc $_selectedTimeSlot.',
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      'Vui lòng chọn khung giờ khác ở Bước 1 để tiếp tục!',
+                      'Vui lòng chọn khung giờ khác ở Bước 2 để tiếp tục!',
                       style: TextStyle(color: Colors.white70, fontSize: 12),
                       textAlign: TextAlign.center,
                     ),
@@ -641,7 +777,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                'Rảnh lúc $_selectedTimeSlot',
+                                requiredSlotsCount > 1
+                                    ? 'Rảnh $requiredSlotsCount slot từ $_selectedTimeSlot'
+                                    : 'Rảnh lúc $_selectedTimeSlot',
                                 style: const TextStyle(color: Colors.greenAccent, fontSize: 9, fontWeight: FontWeight.bold),
                               ),
                             ),

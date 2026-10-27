@@ -4,6 +4,9 @@ class TransactionModel {
   final int id;
   final int bookingId;
   final int customerId;
+  final String customerUid;
+  final String? customerName;
+  final String? customerPhone;
   final double amount;
   final double discount;
   final double tipAmount;
@@ -24,6 +27,9 @@ class TransactionModel {
     required this.id,
     required this.bookingId,
     required this.customerId,
+    this.customerUid = '',
+    this.customerName,
+    this.customerPhone,
     required this.amount,
     this.discount = 0,
     this.tipAmount = 0,
@@ -45,6 +51,9 @@ class TransactionModel {
     int? id,
     int? bookingId,
     int? customerId,
+    String? customerUid,
+    String? customerName,
+    String? customerPhone,
     double? amount,
     double? discount,
     double? tipAmount,
@@ -63,6 +72,9 @@ class TransactionModel {
       id: id ?? this.id,
       bookingId: bookingId ?? this.bookingId,
       customerId: customerId ?? this.customerId,
+      customerUid: customerUid ?? this.customerUid,
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
       amount: amount ?? this.amount,
       discount: discount ?? this.discount,
       tipAmount: tipAmount ?? this.tipAmount,

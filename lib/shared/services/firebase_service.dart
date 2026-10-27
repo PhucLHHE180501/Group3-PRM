@@ -49,13 +49,13 @@ class FirebaseService extends ChangeNotifier {
     '10:00',
     '11:00',
     '13:00',
+    '12:00',
     '14:00',
     '15:00',
     '16:00',
     '17:00',
     '18:00',
-    '19:00',
-    '20:00',
+
   ];
 
   bool _started = false;
@@ -427,6 +427,13 @@ class FirebaseService extends ChangeNotifier {
       0,
       (sum, s) => sum + s.price,
     );
+    final totalMin = selectedServices.fold<int>(
+      0,
+      (sum, s) => sum + s.durationMin,
+    );
+    final slotsCount = (totalMin / 60.0).ceil() < 1 ? 1 : (totalMin / 60.0).ceil();
+    final endTimeSlot = calculateEndTime(timeSlot, slotsCount);
+
     final status = immediateStart ? 'in_progress' : 'confirmed';
     final autoId = DateTime.now().millisecondsSinceEpoch;
     final now = DateTime.now();
@@ -434,6 +441,7 @@ class FirebaseService extends ChangeNotifier {
     final booking = BookingModel(
       id: autoId,
       customerId: isWalkIn ? 0 : (user?.id ?? 0),
+      customerUid: isWalkIn ? '' : (user?.uid ?? ''),
       customerName: isWalkIn
           ? (customerName ?? 'Khách Vãng Lai')
           : (user?.fullName ?? ''),
@@ -444,7 +452,7 @@ class FirebaseService extends ChangeNotifier {
       staffAvatar: barber.avatarUrl,
       bookingDate: date,
       startTime: timeSlot,
-      endTime: timeSlot,
+      endTime: endTimeSlot,
       status: status,
       totalPrice: totalPrice,
       services: selectedServices,
@@ -455,6 +463,7 @@ class FirebaseService extends ChangeNotifier {
     _bookings.add({
       'id': autoId,
       'customerId': booking.customerId,
+      'customerUid': booking.customerUid,
       'customerName': booking.customerName,
       'customerPhone': booking.customerPhone,
       'isWalkIn': isWalkIn,
@@ -463,7 +472,7 @@ class FirebaseService extends ChangeNotifier {
       'staffAvatar': barber.avatarUrl,
       'bookingDate': Timestamp.fromDate(date),
       'startTime': timeSlot,
-      'endTime': timeSlot,
+      'endTime': endTimeSlot,
       'status': status,
       'totalPrice': totalPrice,
       'services': selectedServices
@@ -487,6 +496,9 @@ class FirebaseService extends ChangeNotifier {
       'id': autoId + 1,
       'bookingId': autoId,
       'customerId': booking.customerId,
+      'customerUid': booking.customerUid,
+      'customerName': booking.customerName,
+      'customerPhone': booking.customerPhone,
       'amount': totalPrice,
       'discount': 0,
       'tipAmount': 0,
@@ -585,44 +597,108 @@ class FirebaseService extends ChangeNotifier {
     }
   }
 
-  List<String> getAvailableTimeSlots(int staffId, DateTime date) {
-    final bookedSlots = bookings
-        .where(
-          (b) =>
-              b.staffId == staffId &&
-              b.status != 'cancelled' &&
-              b.bookingDate.year == date.year &&
-              b.bookingDate.month == date.month &&
-              b.bookingDate.day == date.day,
-        )
-        .map((b) => b.startTime)
-        .toSet();
-    return allTimeSlots.where((slot) => !bookedSlots.contains(slot)).toList();
+  /// Lấy danh sách khung giờ mà 1 đơn đặt lịch b chiếm dụng
+  List<String> getOccupiedSlotsForBooking(BookingModel b) {
+    final totalMin = b.services.fold<int>(0, (sum, s) => sum + s.durationMin);
+    var slotsCount = (totalMin / 60.0).ceil();
+    if (slotsCount < 1) slotsCount = 1;
+
+    final startIndex = allTimeSlots.indexOf(b.startTime);
+    if (startIndex == -1) return [b.startTime];
+
+    final result = <String>[];
+    for (var i = 0; i < slotsCount && (startIndex + i) < allTimeSlots.length; i++) {
+      result.add(allTimeSlots[startIndex + i]);
+    }
+    return result;
   }
 
-  /// Lấy danh sách thợ còn RẢNH vào ngày & khung giờ cụ thể
-  List<BarberModel> getAvailableBarbers(DateTime date, String timeSlot) {
+  /// Lấy danh sách N khung giờ liên tiếp bắt đầu từ startSlot
+  List<String>? getRequiredSlots(String startSlot, int requiredSlotsCount) {
+    if (requiredSlotsCount <= 1) return [startSlot];
+    final startIndex = allTimeSlots.indexOf(startSlot);
+    if (startIndex == -1) return null;
+    if (startIndex + requiredSlotsCount > allTimeSlots.length) {
+      return null; // Không đủ khung giờ còn lại trong ngày
+    }
+    return allTimeSlots.sublist(startIndex, startIndex + requiredSlotsCount);
+  }
+
+  /// Tính giờ kết thúc (endTime) ví dụ '09:00' với 2 slot -> '11:00'
+  String calculateEndTime(String startSlot, int requiredSlotsCount) {
+    final req = getRequiredSlots(startSlot, requiredSlotsCount);
+    final lastSlot = (req != null && req.isNotEmpty) ? req.last : startSlot;
+
+    final parts = lastSlot.split(':');
+    if (parts.length == 2) {
+      final hour = int.tryParse(parts[0]);
+      final minute = parts[1];
+      if (hour != null) {
+        final endHour = (hour + 1).toString().padLeft(2, '0');
+        return '$endHour:$minute';
+      }
+    }
+    return lastSlot;
+  }
+
+  /// Kiểm tra 1 barber có rảnh toàn bộ requiredSlots vào ngày date không
+  bool isBarberAvailable(int staffId, DateTime date, List<String> requiredSlots) {
+    final activeBookings = bookings.where(
+      (b) =>
+          b.staffId == staffId &&
+          b.status != 'cancelled' &&
+          b.bookingDate.year == date.year &&
+          b.bookingDate.month == date.month &&
+          b.bookingDate.day == date.day,
+    );
+
+    final busySlots = <String>{};
+    for (final b in activeBookings) {
+      busySlots.addAll(getOccupiedSlotsForBooking(b));
+    }
+
+    return requiredSlots.every((slot) => !busySlots.contains(slot));
+  }
+
+  /// Lấy các khung giờ còn rảnh của 1 staff
+  List<String> getAvailableTimeSlots(
+    int staffId,
+    DateTime date, {
+    int requiredSlotsCount = 1,
+  }) {
+    return allTimeSlots.where((startSlot) {
+      final requiredSlots = getRequiredSlots(startSlot, requiredSlotsCount);
+      if (requiredSlots == null) return false;
+      return isBarberAvailable(staffId, date, requiredSlots);
+    }).toList();
+  }
+
+  /// Lấy danh sách thợ còn RẢNH vào ngày & khung giờ cụ thể (hỗ trợ N slots liên tiếp)
+  List<BarberModel> getAvailableBarbers(
+    DateTime date,
+    String timeSlot, {
+    int requiredSlotsCount = 1,
+  }) {
     if (timeSlot.trim().isEmpty) return barbers;
-    final busyStaffIds = bookings
-        .where(
-          (b) =>
-              b.status != 'cancelled' &&
-              b.bookingDate.year == date.year &&
-              b.bookingDate.month == date.month &&
-              b.bookingDate.day == date.day &&
-              b.startTime == timeSlot,
-        )
-        .map((b) => b.staffId)
-        .toSet();
+    final requiredSlots = getRequiredSlots(timeSlot, requiredSlotsCount);
+    if (requiredSlots == null) return [];
 
-    return barbers.where((b) => !busyStaffIds.contains(b.userId)).toList();
+    return barbers.where((b) => isBarberAvailable(b.userId, date, requiredSlots)).toList();
   }
 
-  /// Lấy đơn đặt lịch gần nhất của Khách hàng để tự động tái sử dụng các lựa chọn lần trước
-  BookingModel? getLastBookingForCustomer(int customerId) {
-    final list = bookings
-        .where((b) => b.customerId == customerId && b.status != 'cancelled')
-        .toList();
+  /// Lấy đơn đặt lịch gần nhất của Khách hàng theo User UID
+  BookingModel? getLastBookingForCustomer([int? customerId]) {
+    final user = currentUser;
+    final uid = user?.uid ?? '';
+
+    final list = bookings.where((b) {
+      if (b.status == 'cancelled') return false;
+      if (uid.isNotEmpty && b.customerUid.isNotEmpty) {
+        return b.customerUid == uid;
+      }
+      return false;
+    }).toList();
+
     if (list.isEmpty) return null;
     list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return list.first;
@@ -658,10 +734,17 @@ class FirebaseService extends ChangeNotifier {
     updateBookingStatusById(bookingId, newStatus);
   }
 
+  /// Lấy danh sách giao dịch của Khách hàng hiện tại dựa theo User UID
   List<TransactionModel> getCurrentUserTransactions() {
-    final id = currentUser?.id;
-    if (id == null) return [];
-    return transactions.where((t) => t.customerId == id).toList();
+    final user = currentUser;
+    if (user == null || user.uid.isEmpty) return [];
+
+    final list = transactions
+        .where((t) => t.customerUid == user.uid)
+        .toList();
+
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
   }
 
   BookingModel? getBookingById(int bookingId) {
@@ -683,6 +766,7 @@ class FirebaseService extends ChangeNotifier {
     return BookingModel(
       id: (j['id'] as num?)?.toInt() ?? d.id.hashCode.abs(),
       customerId: (j['customerId'] as num?)?.toInt() ?? 0,
+      customerUid: j['customerUid'] as String? ?? '',
       customerName: j['customerName'] as String?,
       customerPhone: j['customerPhone'] as String?,
       isWalkIn: j['isWalkIn'] as bool? ?? false,
@@ -706,9 +790,9 @@ class FirebaseService extends ChangeNotifier {
   // TRANSACTIONS
   // =========================================================================
 
-  Stream<List<TransactionModel>> customerTransactionsStream(int customerId) {
+  Stream<List<TransactionModel>> customerTransactionsStream(String customerUid) {
     return _transactions
-        .where('customerId', isEqualTo: customerId)
+        .where('customerUid', isEqualTo: customerUid)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => _txFromDoc(d)).toList());
@@ -777,8 +861,11 @@ class FirebaseService extends ChangeNotifier {
 
     return TransactionModel(
       id: (j['id'] as num?)?.toInt() ?? d.id.hashCode.abs(),
-      bookingId: (j['bookingId'] as num).toInt(),
+      bookingId: (j['bookingId'] as num?)?.toInt() ?? 0,
       customerId: (j['customerId'] as num?)?.toInt() ?? 0,
+      customerUid: j['customerUid'] as String? ?? '',
+      customerName: j['customerName'] as String?,
+      customerPhone: j['customerPhone'] as String?,
       amount: (j['amount'] as num?)?.toDouble() ?? 0,
       discount: (j['discount'] as num?)?.toDouble() ?? 0,
       tipAmount: (j['tipAmount'] as num?)?.toDouble() ?? 0,
