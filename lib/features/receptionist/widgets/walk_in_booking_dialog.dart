@@ -41,7 +41,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
     _selectedDate = widget.initialDate ?? DateTime.now();
     _selectedSlot = widget.initialSlot ?? _dataService.allTimeSlots.first;
 
-    // Default select first service (e.g. C?t tÛc combo 7 bu?c)
+    // Default select first service (e.g. C?t t√≥c combo 7 bu?c)
     if (_dataService.services.isNotEmpty) {
       _selectedServices.add(_dataService.services.first);
     }
@@ -72,7 +72,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
     if (_selectedServices.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Vui lÚng ch?n Ìt nh?t 1 d?ch v?!'),
+          content: Text('Vui l√≤ng ch?n √≠t nh?t 1 d?ch v?!'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -81,7 +81,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
     if (_selectedBarber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Vui lÚng ch?n th? c?t tÛc!'),
+          content: Text('Vui l√≤ng ch?n th? c?t t√≥c!'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -105,8 +105,8 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
       SnackBar(
         content: Text(
           _immediateStart
-              ? '–„ t?o l?ch v‡ x?p kh·ch ${_nameController.text.trim()} v‡o gh? c?t ngay!'
-              : '–„ t?o l?ch h?n th‡nh cÙng cho ${_nameController.text.trim()}!',
+              ? '√ê√£ t?o l?ch v√† x?p kh√°ch ${_nameController.text.trim()} v√†o gh? c?t ngay!'
+              : '√ê√£ t?o l?ch h?n th√†nh c√¥ng cho ${_nameController.text.trim()}!',
         ),
         backgroundColor: Colors.green,
       ),
@@ -136,15 +136,21 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.person_add_alt_1, color: Color(0xFFD4AF37), size: 24),
-                        SizedBox(width: 10),
-                        Text(
-                          'Ti?p Nh?n Kh·ch V„ng Lai',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-                        ),
-                      ],
+                    const Expanded(
+                      child: Row(
+                        children: [
+                          Icon(Icons.person_add_alt_1, color: Color(0xFFD4AF37), size: 24),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Ti·∫øp Nh·∫≠n Kh√°ch V√£ng Lai',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.white54),
@@ -160,7 +166,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                     children: [
                       // Section 1: Customer Information
                       const Text(
-                        '1. ThÙng tin kh·ch d?n ti?m',
+                        '1. Th√¥ng tin kh√°ch ƒë·∫øn ti·ªám',
                         style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       const SizedBox(height: 8),
@@ -168,15 +174,15 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                         controller: _nameController,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          labelText: 'H? tÍn kh·ch *',
-                          hintText: 'VÌ d?: Anh Ho‡ng, Anh Tu?n...',
+                          labelText: 'H·ªç t√™n kh√°ch *',
+                          hintText: 'V√≠ d·ª•: Anh Ho√†ng, Anh Tu·∫•n...',
                           prefixIcon: const Icon(Icons.badge, color: Colors.white70, size: 20),
                           filled: true,
                           fillColor: const Color(0xFF2A2A2A),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         validator: (value) =>
-                            (value == null || value.trim().isEmpty) ? 'Vui lÚng nh?p tÍn kh·ch' : null,
+                            (value == null || value.trim().isEmpty) ? 'Vui l√≤ng nh·∫≠p t√™n kh√°ch' : null,
                       ),
                       const SizedBox(height: 10),
                       TextFormField(
@@ -184,8 +190,8 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                         style: const TextStyle(color: Colors.white),
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
-                          labelText: 'S? di?n tho?i (t˘y ch?n)',
-                          hintText: 'VÌ d?: 0912345678',
+                          labelText: 'S·ªë ƒëi·ªán tho·∫°i (t√πy ch·ªçn)',
+                          hintText: 'V√≠ d?: 0912345678',
                           prefixIcon: const Icon(Icons.phone, color: Colors.white70, size: 20),
                           filled: true,
                           fillColor: const Color(0xFF2A2A2A),
@@ -199,7 +205,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            '2. D?ch v? l?a ch?n',
+                            '2. D·ªãch v·ª• l·ª±a ch·ªçn',
                             style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 14),
                           ),
                           Text(
@@ -241,7 +247,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
 
                       // Section 3: Select Barber
                       const Text(
-                        '3. G·n th? c?t tÛc',
+                        '3. G√°n th? c?t t√≥c',
                         style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       const SizedBox(height: 8),
@@ -277,7 +283,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    isAvail ? 'R?nh' : '–ang b?n',
+                                    isAvail ? 'R?nh' : '√êang b?n',
                                     style: TextStyle(
                                       color: isAvail ? Colors.greenAccent : Colors.orangeAccent,
                                       fontSize: 10,
@@ -299,18 +305,18 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
 
                       // Section 4: Time of Service
                       const Text(
-                        '4. Th?i gian c?t tÛc',
+                        '4. Th?i gian c?t t√≥c',
                         style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       const SizedBox(height: 6),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
                         title: const Text(
-                          'C?t ngay b‚y gi? (Kh·ch d„ cÛ m?t)',
+                          'C?t ngay b√¢y gi? (Kh√°ch d√£ c√≥ m?t)',
                           style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                         subtitle: const Text(
-                          'H? th?ng s? chuy?n tr?ng th·i th? sang –ang ph?c v?',
+                          'H? th?ng s? chuy?n tr?ng th√°i th? sang √êang ph?c v?',
                           style: TextStyle(color: Colors.white54, fontSize: 12),
                         ),
                         value: _immediateStart,
@@ -360,8 +366,8 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                         controller: _noteController,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          labelText: 'Ghi ch˙ ki?u tÛc ho?c yÍu c?u riÍng',
-                          hintText: 'VÌ d?: C?o s·t vi?n, khÙng d˘ng tÙng do c?o tr?ng...',
+                          labelText: 'Ghi ch√∫ ki?u t√≥c ho?c y√™u c?u ri√™ng',
+                          hintText: 'V√≠ d?: C?o s√°t vi?n, kh√¥ng d√πng t√¥ng do c?o tr?ng...',
                           prefixIcon: const Icon(Icons.note_alt, color: Colors.white70, size: 20),
                           filled: true,
                           fillColor: const Color(0xFF2A2A2A),
@@ -383,7 +389,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('T?ng thanh to·n:', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        const Text('T?ng thanh to√°n:', style: TextStyle(color: Colors.white70, fontSize: 12)),
                         Text(
                           _formatPrice(_totalPrice),
                           style: const TextStyle(
@@ -398,7 +404,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('H?y b?', style: TextStyle(color: Colors.white54)),
+                          child: const Text('H·ªßy b·ªè', style: TextStyle(color: Colors.white54)),
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton.icon(
@@ -410,7 +416,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                           ),
                           icon: const Icon(Icons.check, size: 18),
                           label: Text(
-                            _immediateStart ? 'X·c Nh?n & V‡o C?t' : 'Luu L?ch H?n',
+                            _immediateStart ? 'X√°c Nh?n & V√†o C?t' : 'Luu L?ch H?n',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           onPressed: _handleSubmit,

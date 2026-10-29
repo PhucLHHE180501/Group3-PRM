@@ -31,14 +31,14 @@ class BarberStatusCard extends StatelessWidget {
   String _getStatusText(String status) {
     switch (status) {
       case 'available':
-        return 'S?n s�ng d�n kh�ch';
+        return 'Sẵn sàng đón khách';
       case 'busy':
-        return '�ang ph?c v?';
+        return 'Đang phục vụ';
       case 'break':
-        return 'Ngh? gi?a ca';
+        return 'Nghỉ giữa ca';
       case 'off':
       default:
-        return 'Ngh? l�m';
+        return 'Nghỉ làm';
     }
   }
 
@@ -126,17 +126,24 @@ class BarberStatusCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
+                      runSpacing: 2,
                       children: [
-                        const Icon(Icons.star, color: Color(0xFFD4AF37), size: 14),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${barber.avgRating} (${barber.reviewCount} d�nh gi�)',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star, color: Color(0xFFD4AF37), size: 14),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${barber.avgRating} (${barber.reviewCount})',
+                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
                         Text(
-                          '� ${barber.yearsExperience} nam KN',
+                          '• ${barber.yearsExperience} năm KN',
                           style: const TextStyle(color: Colors.white38, fontSize: 12),
                         ),
                       ],
@@ -197,7 +204,7 @@ class BarberStatusCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '�ang ph?c v?: ${currentJob.customerName ?? "Kh�ch #${currentJob.id}"}',
+                          'Đang phục vụ: ${currentJob.customerName ?? "Khách #${currentJob.id}"}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -205,13 +212,13 @@ class BarberStatusCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'D?ch v?: ${currentJob.services.map((s) => s.name).join(", ")}',
+                          'Dịch vụ: ${currentJob.services.map((s) => s.name).join(", ")}',
                           style: const TextStyle(color: Colors.white70, fontSize: 12),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          'Khung gi?: ${currentJob.startTime} - ${currentJob.endTime}',
+                          'Khung giờ: ${currentJob.startTime} - ${currentJob.endTime}',
                           style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 11),
                         ),
                       ],
@@ -224,14 +231,19 @@ class BarberStatusCard extends StatelessWidget {
 
           const SizedBox(height: 12),
           // Sub info: Schedule summary for today
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               Text(
-                'L?ch h�m nay: ${todayBookings.length} kh�ch',
+                'Lịch hôm nay: ${todayBookings.length} khách',
                 style: const TextStyle(color: Colors.white54, fontSize: 12),
               ),
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
                 children: [
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
@@ -241,10 +253,9 @@ class BarberStatusCard extends StatelessWidget {
                       minimumSize: const Size(0, 32),
                     ),
                     icon: const Icon(Icons.calendar_month, size: 14),
-                    label: const Text('Xem l?ch', style: TextStyle(fontSize: 12)),
+                    label: const Text('Xem lịch', style: TextStyle(fontSize: 12)),
                     onPressed: onViewSchedule,
                   ),
-                  const SizedBox(width: 8),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: dynamicStatus == 'available'
@@ -255,7 +266,7 @@ class BarberStatusCard extends StatelessWidget {
                       minimumSize: const Size(0, 32),
                     ),
                     icon: const Icon(Icons.add, size: 14),
-                    label: const Text('X?p kh�ch ngay', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    label: const Text('Xếp khách ngay', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                     onPressed: onQuickAssign,
                   ),
                 ],

@@ -33,8 +33,8 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
 
   String _formatDateHeader(DateTime date) {
     final now = DateTime.now();
-    if (_isSameDay(date, now)) return 'H�m nay (${date.day}/${date.month})';
-    if (_isSameDay(date, now.add(const Duration(days: 1)))) return 'Ng�y mai (${date.day}/${date.month})';
+    if (_isSameDay(date, now)) return 'Hôm nay (${date.day}/${date.month})';
+    if (_isSameDay(date, now.add(const Duration(days: 1)))) return 'Ngày mai (${date.day}/${date.month})';
     return '${date.day}/${date.month}/${date.year}';
   }
 
@@ -78,16 +78,19 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
           child: Row(
             children: [
               const Icon(Icons.calendar_today, color: Color(0xFFD4AF37), size: 20),
-              const SizedBox(width: 10),
-              Text(
-                _formatDateHeader(_selectedDate),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _formatDateHeader(_selectedDate),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Spacer(),
               // Quick date chips
               IconButton(
                 icon: const Icon(Icons.arrow_back_ios, color: Colors.white70, size: 16),
@@ -103,7 +106,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                     _selectedDate = DateTime.now();
                   });
                 },
-                child: const Text('H�m nay', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13)),
+                child: const Text('Hôm nay', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13)),
               ),
               IconButton(
                 icon: const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
@@ -149,21 +152,23 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           color: const Color(0xFF141414),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 4,
             children: [
               Text(
-                'L?ch d� x?p: $occupiedSlots / $totalPossibleSlots slot ($occupancyPercent%)',
+                'Lịch đã xếp: $occupiedSlots / $totalPossibleSlots slot ($occupancyPercent%)',
                 style: const TextStyle(color: Colors.white70, fontSize: 12),
               ),
               const Text(
-                'Ch?m � d? x?p kh�ch ho?c xem chi ti?t',
+                'Chạm ô để xếp khách hoặc xem chi tiết',
                 style: TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontStyle: FontStyle.italic),
               ),
             ],
           ),
         ),
-
         // Legend
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -171,10 +176,10 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
             spacing: 12,
             runSpacing: 6,
             children: [
-              _buildLegendItem('Tr?ng (B?m d? x?p)', Colors.white24),
-              _buildLegendItem('�� h?n', const Color(0xFFD4AF37)),
-              _buildLegendItem('�� check-in', Colors.purpleAccent),
-              _buildLegendItem('�ang c?t', Colors.blueAccent),
+              _buildLegendItem('Trống (Bấm để xếp)', Colors.white24),
+              _buildLegendItem('Đã hẹn', const Color(0xFFD4AF37)),
+              _buildLegendItem('Đã check-in', Colors.purpleAccent),
+              _buildLegendItem('Đang cắt', Colors.blueAccent),
               _buildLegendItem('Xong', Colors.green),
             ],
           ),
@@ -373,7 +378,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                 children: [
                   Expanded(
                     child: Text(
-                      match.customerName ?? 'Kh�ch #${match.customerId}',
+                      match.customerName ?? 'Khách #${match.customerId}',
                       style: TextStyle(
                         color: statusColor,
                         fontWeight: FontWeight.bold,

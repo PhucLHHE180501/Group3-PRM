@@ -65,17 +65,17 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
   String _getStatusText(String status) {
     switch (status) {
       case 'pending':
-        return 'Ch? x·c nh?n';
+        return 'Ch·ªù x√°c nh·∫≠n';
       case 'confirmed':
-        return '–„ x·c nh?n';
+        return 'ƒê√£ x√°c nh·∫≠n';
       case 'checked_in':
-        return '–„ Check-in';
+        return '√ê√£ Check-in';
       case 'in_progress':
-        return '–ang c?t';
+        return 'ƒêang c·∫Øt';
       case 'completed':
-        return 'Ho‡n th‡nh';
+        return 'Ho√†n th√†nh';
       case 'cancelled':
-        return '–„ h?y';
+        return 'ƒê√£ h·ªßy';
       default:
         return status;
     }
@@ -150,7 +150,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
-                          'L?ch l‡m vi?c hÙm nay (${now.day}/${now.month})',
+                          'L?ch l√†m vi?c h√¥m nay (${now.day}/${now.month})',
                           style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
                         ),
                       ],
@@ -168,7 +168,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                   padding: EdgeInsets.symmetric(vertical: 24),
                   child: Center(
                     child: Text(
-                      'Th? chua cÛ ca h?n n‡o hÙm nay.',
+                      'Th? chua c√≥ ca h?n n√†o h√¥m nay.',
                       style: TextStyle(color: Colors.white54),
                     ),
                   ),
@@ -196,7 +196,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '${b.startTime} - ${b.customerName ?? "Kh·ch #${b.customerId}"}',
+                                  '${b.startTime} - ${b.customerName ?? "Kh√°ch #${b.customerId}"}',
                                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
                                 Text(
@@ -288,7 +288,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                   ),
           ),
           title: Text(
-            user?.fullName ?? 'LÍ Th? Mai (L? T‚n)',
+            user?.fullName ?? 'L√™ Th? Mai (L? T√¢n)',
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -298,7 +298,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: const Text(
-            'L? T‚n –i?u Ph?i Salon',
+            'L? T√¢n √êi?u Ph?i Salon',
             style: TextStyle(
               color: Color(0xFFD4AF37),
               fontSize: 11,
@@ -308,12 +308,12 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white70),
-            tooltip: 'L‡m m?i d? li?u',
+            tooltip: 'L√†m m?i d? li?u',
             onPressed: () => setState(() {}),
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.redAccent),
-            tooltip: '–ang xu?t',
+            tooltip: '√êang xu?t',
             onPressed: () {
               _dataService.logout();
               Navigator.pushReplacement(
@@ -330,7 +330,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         elevation: 6,
         icon: const Icon(Icons.person_add_alt_1, size: 20),
         label: const Text(
-          'Ti?p Kh·ch V„ng Lai',
+          'Ti?p Kh√°ch V√£ng Lai',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
         ),
         onPressed: () => _openWalkInDialog(),
@@ -376,17 +376,17 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             BottomNavigationBarItem(
               icon: Icon(Icons.grid_on),
               activeIcon: Icon(Icons.grid_on, color: Color(0xFFD4AF37)),
-              label: 'Lu?i L?ch Qu·n',
+              label: 'Lu?i L?ch Qu√°n',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.group),
               activeIcon: Icon(Icons.group, color: Color(0xFFD4AF37)),
-              label: 'Tr?ng Th·i Th?',
+              label: 'Tr?ng Th√°i Th?',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.list_alt),
               activeIcon: Icon(Icons.list_alt, color: Color(0xFFD4AF37)),
-              label: '–on Ti?p –Ûn',
+              label: '√êon Ti?p √ê√≥n',
             ),
           ],
         ),
@@ -408,7 +408,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           children: [
             Expanded(
               child: _buildMetricCard(
-                title: 'T?ng S? Th?',
+                title: 'T·ªïng S·ªë Th·ª£',
                 value: '${barbers.length}',
                 color: Colors.white,
                 icon: Icons.people,
@@ -417,7 +417,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             const SizedBox(width: 10),
             Expanded(
               child: _buildMetricCard(
-                title: '–ang R?nh',
+                title: 'ƒêang R·∫£nh',
                 value: '$availableCount',
                 color: Colors.greenAccent,
                 icon: Icons.check_circle,
@@ -426,7 +426,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             const SizedBox(width: 10),
             Expanded(
               child: _buildMetricCard(
-                title: '–ang C?t',
+                title: '√êang C?t',
                 value: '$busyCount',
                 color: Colors.orangeAccent,
                 icon: Icons.content_cut,
@@ -437,7 +437,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         const SizedBox(height: 16),
 
         const Text(
-          'Gi·m s·t th? c?t tÛc th?i gian th?c:',
+          'Gi√°m s√°t th? c?t t√≥c th?i gian th?c:',
           style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 15),
         ),
         const SizedBox(height: 10),
@@ -474,7 +474,15 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
               Icon(icon, color: color, size: 16),
             ],
           ),
@@ -499,7 +507,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             controller: _searchController,
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              hintText: 'TÏm theo S–T, TÍn kh·ch ho?c M„ booking...',
+              hintText: 'T√¨m theo S√êT, T√™n kh√°ch ho?c M√£ booking...',
               hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
               prefixIcon: const Icon(Icons.search, color: Color(0xFFD4AF37), size: 20),
               suffixIcon: _searchQuery.isNotEmpty
@@ -533,15 +541,15 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             children: [
               _buildFilterChip('T?t c?', 'all'),
               const SizedBox(width: 8),
-              _buildFilterChip('–„ x·c nh?n', 'confirmed'),
+              _buildFilterChip('ƒê√£ x√°c nh·∫≠n', 'confirmed'),
               const SizedBox(width: 8),
-              _buildFilterChip('–„ Check-in', 'checked_in'),
+              _buildFilterChip('√ê√£ Check-in', 'checked_in'),
               const SizedBox(width: 8),
-              _buildFilterChip('–ang c?t', 'in_progress'),
+              _buildFilterChip('ƒêang c·∫Øt', 'in_progress'),
               const SizedBox(width: 8),
-              _buildFilterChip('Ho‡n th‡nh', 'completed'),
+              _buildFilterChip('Ho√†n th√†nh', 'completed'),
               const SizedBox(width: 8),
-              _buildFilterChip('–„ h?y', 'cancelled'),
+              _buildFilterChip('ƒê√£ h·ªßy', 'cancelled'),
             ],
           ),
         ),
@@ -555,7 +563,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                     children: [
                       Icon(Icons.event_busy, color: Colors.white24, size: 48),
                       SizedBox(height: 10),
-                      Text('KhÙng tÏm th?y l?ch h?n ph˘ h?p.', style: TextStyle(color: Colors.grey)),
+                      Text('Kh√¥ng t√¨m th?y l?ch h?n ph√π h?p.', style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                 )
@@ -599,29 +607,33 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(
-                    '#${booking.id} ï ${booking.startTime}',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                  if (booking.isWalkIn) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.orangeAccent),
-                      ),
-                      child: const Text(
-                        'Walk-in T?i Qu?y',
-                        style: TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
+              Expanded(
+                child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    Text(
+                      '#${booking.id} ‚Ä¢ ${booking.startTime}',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
                     ),
+                    if (booking.isWalkIn)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.orangeAccent),
+                        ),
+                        child: const Text(
+                          'Walk-in T·∫°i Qu·∫ßy',
+                          style: TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                   ],
-                ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -643,12 +655,15 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             children: [
               const Icon(Icons.person, color: Colors.white70, size: 16),
               const SizedBox(width: 6),
-              Text(
-                booking.customerName ?? 'Kh·ch #${booking.customerId}',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+              Flexible(
+                child: Text(
+                  booking.customerName ?? 'Kh√°ch #${booking.customerId}',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               if (booking.customerPhone != null) ...[
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Text(
                   '(${booking.customerPhone})',
                   style: const TextStyle(color: Colors.white54, fontSize: 13),
@@ -664,7 +679,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               const Icon(Icons.content_cut, color: Color(0xFFD4AF37), size: 15),
               const SizedBox(width: 6),
               Text(
-                'Th?: ${booking.staffName}',
+                'Th·ª£: ${booking.staffName}',
                 style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ],
@@ -673,13 +688,13 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
 
           // Services
           Text(
-            'D?ch v?: ${booking.services.map((s) => s.name).join(', ')}',
+            'D·ªãch v·ª•: ${booking.services.map((s) => s.name).join(', ')}',
             style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
           if (booking.note != null && booking.note!.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
-              'Ghi ch˙: ${booking.note}',
+              'Ghi ch√∫: ${booking.note}',
               style: const TextStyle(color: Colors.white38, fontSize: 12, fontStyle: FontStyle.italic),
             ),
           ],
@@ -690,7 +705,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'T?ng ti?n: ${_formatPrice(booking.totalPrice)}',
+                'T·ªïng ti·ªÅn: ${_formatPrice(booking.totalPrice)}',
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
               ),
               Container(
@@ -700,7 +715,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  isPaid ? '–√ THU TI?N' : 'CHUA THU TI?N',
+                  isPaid ? 'ƒê√É THU TI·ªÄN' : 'CH∆ØA THU TI·ªÄN',
                   style: TextStyle(
                     color: isPaid ? Colors.greenAccent : Colors.redAccent,
                     fontSize: 11,
@@ -727,7 +742,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   ),
                   icon: const Icon(Icons.sync_alt, size: 15),
-                  label: const Text('–?i th?/gi?', style: TextStyle(fontSize: 12)),
+                  label: const Text('ƒê·ªïi th·ª£/gi·ªù', style: TextStyle(fontSize: 12)),
                   onPressed: () => _openReassignDialog(booking),
                 ),
 
@@ -735,7 +750,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               if (booking.status == 'confirmed')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.qr_code_scanner, size: 16, color: Colors.black),
-                  label: const Text('Check-in Kh·ch'),
+                  label: const Text('Check-in Kh√°ch'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purpleAccent,
                     foregroundColor: Colors.black,
@@ -749,7 +764,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               if (booking.status == 'checked_in')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.play_arrow, size: 16, color: Colors.black),
-                  label: const Text('V‡o Gh? C?t'),
+                  label: const Text('V√†o Gh? C?t'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     foregroundColor: Colors.black,
@@ -763,7 +778,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               if (!isPaid && booking.status != 'cancelled')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.attach_money, size: 16, color: Colors.black),
-                  label: const Text('Thu Ti?n & –Ûng –on'),
+                  label: const Text('Thu Ti·ªÅn & √ê√≥ng √êon'),
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37)),
                   onPressed: () => _openCheckoutDialog(booking),
                 ),
@@ -793,7 +808,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Chi Ti?t –on #${booking.id}',
+                    'Chi Ti?t √êon #${booking.id}',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   IconButton(
@@ -804,29 +819,29 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               ),
               const Divider(color: Colors.white12),
               const SizedBox(height: 8),
-              _buildDetailRow('Kh·ch h‡ng:', booking.customerName ?? 'Kh·ch #${booking.customerId}'),
+              _buildDetailRow('Kh√°ch h√†ng:', booking.customerName ?? 'Kh√°ch #${booking.customerId}'),
               if (booking.customerPhone != null)
-                _buildDetailRow('S? di?n tho?i:', booking.customerPhone!),
-              _buildDetailRow('Th? ph?c v?:', booking.staffName),
-              _buildDetailRow('Khung gi?:', '${booking.startTime} - ${booking.endTime}'),
-              _buildDetailRow('Tr?ng th·i:', _getStatusText(booking.status)),
-              _buildDetailRow('D?ch v?:', booking.services.map((s) => s.name).join(', ')),
-              _buildDetailRow('T?ng ti?n:', _formatPrice(booking.totalPrice)),
+                _buildDetailRow('S·ªë ƒëi·ªán tho·∫°i:', booking.customerPhone!),
+              _buildDetailRow('Th·ª£ ph·ª•c v·ª•:', booking.staffName),
+              _buildDetailRow('Khung gi·ªù:', '${booking.startTime} - ${booking.endTime}'),
+              _buildDetailRow('Tr·∫°ng th√°i:', _getStatusText(booking.status)),
+              _buildDetailRow('D·ªãch v·ª•:', booking.services.map((s) => s.name).join(', ')),
+              _buildDetailRow('T·ªïng ti·ªÅn:', _formatPrice(booking.totalPrice)),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  if (booking.status != 'cancelled' && booking.status != 'completed') ...[
+                  if (booking.status != 'cancelled' && booking.status != 'completed')
                     OutlinedButton(
                       onPressed: () {
                         Navigator.pop(context);
                         _openReassignDialog(booking);
                       },
-                      child: const Text('–?i th?/gi?', style: TextStyle(color: Colors.white70)),
+                      child: const Text('ƒê·ªïi th·ª£/gi·ªù', style: TextStyle(color: Colors.white70)),
                     ),
-                    const SizedBox(width: 8),
-                  ],
-                  if (booking.status == 'confirmed') ...[
+                  if (booking.status == 'confirmed')
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.purpleAccent),
                       onPressed: () {
@@ -835,15 +850,13 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                       },
                       child: const Text('Check-in Ngay', style: TextStyle(color: Colors.black)),
                     ),
-                    const SizedBox(width: 8),
-                  ],
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37)),
                     onPressed: () {
                       Navigator.pop(context);
                       _openCheckoutDialog(booking);
                     },
-                    child: const Text('Thu Ti?n', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                    child: const Text('Thu Ti·ªÅn', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
