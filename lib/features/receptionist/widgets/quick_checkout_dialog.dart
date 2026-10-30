@@ -28,7 +28,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Đã thu ${_formatPrice(widget.booking.totalPrice)} (${_paymentMethod == "cash" ? "Tiền mặt" : "Chuyển khoản QR"}) thành công!',
+          'Ðã thu ${_formatPrice(widget.booking.totalPrice)} (${_paymentMethod == "cash" ? "Tiền mặt" : "Chuyển khoản QR"}) thành công!',
         ),
         backgroundColor: Colors.green,
       ),
@@ -49,15 +49,21 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
-                  children: [
-                    Icon(Icons.point_of_sale, color: Color(0xFFD4AF37)),
-                    SizedBox(width: 8),
-                    Text(
-                      'Thanh Toán & Hóa Đơn',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  ],
+                const Expanded(
+                  child: Row(
+                    children: [
+                      Icon(Icons.point_of_sale, color: Color(0xFFD4AF37)),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Thanh Toán & Hóa Đơn',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, color: Colors.white54),
@@ -72,10 +78,15 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Khách: ${widget.booking.customerName ?? "Khách #${widget.booking.customerId}"}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                Expanded(
+                  child: Text(
+                    'Khách: ${widget.booking.customerName ?? "Khách #${widget.booking.customerId}"}',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   'Mã: #${widget.booking.id}',
                   style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
@@ -228,7 +239,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                     foregroundColor: Colors.black,
                   ),
                   icon: const Icon(Icons.check_circle, size: 18),
-                  label: const Text('Xác Nhận Đã Thu Tiền', style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: const Text('Xác Nhận Ðã Thu Tiền', style: TextStyle(fontWeight: FontWeight.bold)),
                   onPressed: _handleConfirmPayment,
                 ),
               ],

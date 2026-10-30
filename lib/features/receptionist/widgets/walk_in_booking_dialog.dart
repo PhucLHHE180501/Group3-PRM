@@ -105,8 +105,8 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
       SnackBar(
         content: Text(
           _immediateStart
-              ? 'Đã tạo lịch và xếp khách ${_nameController.text.trim()} vào ghế cắt ngay!'
-              : 'Đã tạo lịch hẹn thành công cho ${_nameController.text.trim()}!',
+              ? 'Ðã tạo lịch và xếp khách ${_nameController.text.trim()} vào ghế cắt ngay!'
+              : 'Ðã tạo lịch hẹn thành công cho ${_nameController.text.trim()}!',
         ),
         backgroundColor: Colors.green,
       ),
@@ -136,15 +136,21 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.person_add_alt_1, color: Color(0xFFD4AF37), size: 24),
-                        SizedBox(width: 10),
-                        Text(
-                          'Tiếp Nhận Khách Vãng Lai',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-                        ),
-                      ],
+                    const Expanded(
+                      child: Row(
+                        children: [
+                          Icon(Icons.person_add_alt_1, color: Color(0xFFD4AF37), size: 24),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Tiếp Nhận Khách',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.white54),
@@ -277,7 +283,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    isAvail ? 'Rảnh' : 'Đang bận',
+                                    isAvail ? 'Rảnh' : 'Ðang bận',
                                     style: TextStyle(
                                       color: isAvail ? Colors.greenAccent : Colors.orangeAccent,
                                       fontSize: 10,
@@ -310,7 +316,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                           style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                         subtitle: const Text(
-                          'Hệ thống sẽ chuyển trạng thái thợ sang Đang phục vụ',
+                          'H? th?ng s? chuy?n tr?ng th�i th? sang �ang ph?c v?',
                           style: TextStyle(color: Colors.white54, fontSize: 12),
                         ),
                         value: _immediateStart,
@@ -360,8 +366,8 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                         controller: _noteController,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          labelText: 'Ghi chú kiểu tóc hoặc yêu cầu riêng',
-                          hintText: 'Ví dụ: Cạo sát viền, không dùng tông đơ cạo trọc...',
+                          labelText: 'Ghi ch� ki?u t�c ho?c y�u c?u ri�ng',
+                          hintText: 'V� d?: C?o s�t vi?n, kh�ng d�ng t�ng do c?o tr?ng...',
                           prefixIcon: const Icon(Icons.note_alt, color: Colors.white70, size: 20),
                           filled: true,
                           fillColor: const Color(0xFF2A2A2A),
@@ -383,7 +389,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Tổng thanh toán:', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        const Text('T?ng thanh to�n:', style: TextStyle(color: Colors.white70, fontSize: 12)),
                         Text(
                           _formatPrice(_totalPrice),
                           style: const TextStyle(

@@ -78,16 +78,19 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
           child: Row(
             children: [
               const Icon(Icons.calendar_today, color: Color(0xFFD4AF37), size: 20),
-              const SizedBox(width: 10),
-              Text(
-                _formatDateHeader(_selectedDate),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _formatDateHeader(_selectedDate),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Spacer(),
               // Quick date chips
               IconButton(
                 icon: const Icon(Icons.arrow_back_ios, color: Colors.white70, size: 16),
@@ -149,8 +152,11 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           color: const Color(0xFF141414),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 4,
             children: [
               Text(
                 'Lịch đã xếp: $occupiedSlots / $totalPossibleSlots slot ($occupancyPercent%)',
@@ -163,7 +169,6 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
             ],
           ),
         ),
-
         // Legend
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

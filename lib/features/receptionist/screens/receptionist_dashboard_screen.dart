@@ -331,7 +331,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         elevation: 6,
         icon: const Icon(Icons.person_add_alt_1, size: 20),
         label: const Text(
-          'Tiếp Khách Vãng Lai',
+          'Tiếp Khách',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
         ),
         onPressed: () => _openWalkInDialog(),
@@ -378,6 +378,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               icon: Icon(Icons.grid_on),
               activeIcon: Icon(Icons.grid_on, color: Color(0xFFD4AF37)),
               label: 'Lưới Lịch Quán',
+              label: 'Lưới Lịch Quán',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.group),
@@ -387,7 +388,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             BottomNavigationBarItem(
               icon: Icon(Icons.list_alt),
               activeIcon: Icon(Icons.list_alt, color: Color(0xFFD4AF37)),
-              label: 'Đón Tiếp Đơn',
+              label: 'Ðơn Tiếp Ðón',
             ),
           ],
         ),
@@ -475,7 +476,15 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
               Icon(icon, color: color, size: 16),
             ],
           ),
@@ -600,29 +609,33 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(
-                    '#${booking.id} • ${booking.startTime}',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                  if (booking.isWalkIn) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.orangeAccent),
-                      ),
-                      child: const Text(
-                        'Walk-in Tại Quầy',
-                        style: TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
+              Expanded(
+                child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    Text(
+                      '#${booking.id} • ${booking.startTime}',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
                     ),
+                    if (booking.isWalkIn)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.orangeAccent),
+                        ),
+                        child: const Text(
+                          'Walk-in Tại Quầy',
+                          style: TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                   ],
-                ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -644,12 +657,15 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             children: [
               const Icon(Icons.person, color: Colors.white70, size: 16),
               const SizedBox(width: 6),
-              Text(
-                booking.customerName ?? 'Khách #${booking.customerId}',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+              Flexible(
+                child: Text(
+                  booking.customerName ?? 'Khách #${booking.customerId}',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               if (booking.customerPhone != null) ...[
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Text(
                   '(${booking.customerPhone})',
                   style: const TextStyle(color: Colors.white54, fontSize: 13),
@@ -794,7 +810,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Chi Tiết Đơn #${booking.id}',
+                    'Chi Ti?t �on #${booking.id}',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   IconButton(
@@ -814,10 +830,12 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               _buildDetailRow('Dịch vụ:', booking.services.map((s) => s.name).join(', ')),
               _buildDetailRow('Tổng tiền:', _formatPrice(booking.totalPrice)),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  if (booking.status != 'cancelled' && booking.status != 'completed') ...[
+                  if (booking.status != 'cancelled' && booking.status != 'completed')
                     OutlinedButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -825,9 +843,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                       },
                       child: const Text('Đổi thợ/giờ', style: TextStyle(color: Colors.white70)),
                     ),
-                    const SizedBox(width: 8),
-                  ],
-                  if (booking.status == 'confirmed') ...[
+                  if (booking.status == 'confirmed')
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.purpleAccent),
                       onPressed: () {
@@ -836,8 +852,6 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                       },
                       child: const Text('Check-in Ngay', style: TextStyle(color: Colors.black)),
                     ),
-                    const SizedBox(width: 8),
-                  ],
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37)),
                     onPressed: () {

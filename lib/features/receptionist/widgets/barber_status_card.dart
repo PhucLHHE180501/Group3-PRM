@@ -126,15 +126,22 @@ class BarberStatusCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
+                      runSpacing: 2,
                       children: [
-                        const Icon(Icons.star, color: Color(0xFFD4AF37), size: 14),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${barber.avgRating} (${barber.reviewCount} đánh giá)',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star, color: Color(0xFFD4AF37), size: 14),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${barber.avgRating} (${barber.reviewCount})',
+                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
                         Text(
                           '• ${barber.yearsExperience} năm KN',
                           style: const TextStyle(color: Colors.white38, fontSize: 12),
@@ -224,14 +231,19 @@ class BarberStatusCard extends StatelessWidget {
 
           const SizedBox(height: 12),
           // Sub info: Schedule summary for today
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               Text(
                 'Lịch hôm nay: ${todayBookings.length} khách',
                 style: const TextStyle(color: Colors.white54, fontSize: 12),
               ),
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
                 children: [
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
@@ -244,7 +256,6 @@ class BarberStatusCard extends StatelessWidget {
                     label: const Text('Xem lịch', style: TextStyle(fontSize: 12)),
                     onPressed: onViewSchedule,
                   ),
-                  const SizedBox(width: 8),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: dynamicStatus == 'available'
