@@ -378,7 +378,6 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               icon: Icon(Icons.grid_on),
               activeIcon: Icon(Icons.grid_on, color: Color(0xFFD4AF37)),
               label: 'Lưới Lịch Quán',
-              label: 'Lưới Lịch Quán',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.group),
