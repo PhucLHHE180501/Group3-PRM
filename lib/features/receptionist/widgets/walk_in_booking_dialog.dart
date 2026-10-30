@@ -72,7 +72,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
     if (_selectedServices.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Vui lòng ch?n ít nh?t 1 d?ch v?!'),
+          content: Text('Vui lòng chọn ít nhất 1 dịch vụ!'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -81,7 +81,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
     if (_selectedBarber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Vui lòng ch?n th? c?t tóc!'),
+          content: Text('Vui lòng chọn thợ cắt tóc!'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -105,8 +105,8 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
       SnackBar(
         content: Text(
           _immediateStart
-              ? 'Ðã t?o l?ch và x?p khách ${_nameController.text.trim()} vào gh? c?t ngay!'
-              : 'Ðã t?o l?ch h?n thành công cho ${_nameController.text.trim()}!',
+              ? 'Ðã tạo lịch và xếp khách ${_nameController.text.trim()} vào ghế cắt ngay!'
+              : 'Ðã tạo lịch hẹn thành công cho ${_nameController.text.trim()}!',
         ),
         backgroundColor: Colors.green,
       ),
@@ -143,7 +143,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Tiếp Nhận Khách Vãng Lai',
+                              'Tiếp Nhận Khách',
                               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -191,7 +191,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
                           labelText: 'Số điện thoại (tùy chọn)',
-                          hintText: 'Ví d?: 0912345678',
+                          hintText: 'Ví dụ: 0912345678',
                           prefixIcon: const Icon(Icons.phone, color: Colors.white70, size: 20),
                           filled: true,
                           fillColor: const Color(0xFF2A2A2A),
@@ -247,7 +247,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
 
                       // Section 3: Select Barber
                       const Text(
-                        '3. Gán th? c?t tóc',
+                        '3. Gán thợ cắt tóc',
                         style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       const SizedBox(height: 8),
@@ -283,7 +283,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    isAvail ? 'R?nh' : 'Ðang b?n',
+                                    isAvail ? 'Rảnh' : 'Ðang bận',
                                     style: TextStyle(
                                       color: isAvail ? Colors.greenAccent : Colors.orangeAccent,
                                       fontSize: 10,
@@ -305,18 +305,18 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
 
                       // Section 4: Time of Service
                       const Text(
-                        '4. Th?i gian c?t tóc',
+                        '4. Thời gian cắt tóc',
                         style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       const SizedBox(height: 6),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
                         title: const Text(
-                          'C?t ngay bây gi? (Khách dã có m?t)',
+                          'Cắt ngay bây giờ (Khách đã có mặt)',
                           style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                         subtitle: const Text(
-                          'H? th?ng s? chuy?n tr?ng thái th? sang Ðang ph?c v?',
+                          'Hệ thống sẽ chuyển trạng thái thợ sang Ðang phục vụ',
                           style: TextStyle(color: Colors.white54, fontSize: 12),
                         ),
                         value: _immediateStart,
@@ -338,7 +338,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                                 dropdownColor: const Color(0xFF2A2A2A),
                                 style: const TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
-                                  labelText: 'Khung gi? h?n',
+                                  labelText: 'Khung giờ hẹn',
                                   filled: true,
                                   fillColor: const Color(0xFF2A2A2A),
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -366,8 +366,8 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                         controller: _noteController,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          labelText: 'Ghi chú ki?u tóc ho?c yêu c?u riêng',
-                          hintText: 'Ví d?: C?o sát vi?n, không dùng tông do c?o tr?ng...',
+                          labelText: 'Ghi chú kiểu tóc hoặc yêu cầu riêng',
+                          hintText: 'Ví dụ: C?o sát vi?n, không dùng tông do c?o tr?ng...',
                           prefixIcon: const Icon(Icons.note_alt, color: Colors.white70, size: 20),
                           filled: true,
                           fillColor: const Color(0xFF2A2A2A),
@@ -416,7 +416,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                           ),
                           icon: const Icon(Icons.check, size: 18),
                           label: Text(
-                            _immediateStart ? 'Xác Nh?n & Vào C?t' : 'Luu L?ch H?n',
+                            _immediateStart ? 'Xác Nhận & Vào Cắt' : 'Lưu Lịch Hẹn',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           onPressed: _handleSubmit,

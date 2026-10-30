@@ -214,7 +214,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                             child: Text(
-                              'Gi?',
+                              'Giờ',
                               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                               textAlign: TextAlign.center,
                             ),
@@ -345,7 +345,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                 children: [
                   Icon(Icons.add, color: Colors.greenAccent, size: 14),
                   SizedBox(width: 2),
-                  Text('Tr?ng', style: TextStyle(color: Colors.greenAccent, fontSize: 11)),
+                  Text('Trống', style: TextStyle(color: Colors.greenAccent, fontSize: 11)),
                 ],
               ),
             ),
@@ -395,13 +395,13 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                         color: Colors.orange.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(3),
                       ),
-                      child: const Text('T?i qu?y', style: TextStyle(color: Colors.orangeAccent, fontSize: 8)),
+                      child: const Text('Tại quầy', style: TextStyle(color: Colors.orangeAccent, fontSize: 8)),
                     ),
                 ],
               ),
               const SizedBox(height: 2),
               Text(
-                match.services.isNotEmpty ? match.services.first.name : 'D?ch v?',
+                match.services.isNotEmpty ? match.services.first.name : 'Dịch vụ',
                 style: const TextStyle(color: Colors.white70, fontSize: 10),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

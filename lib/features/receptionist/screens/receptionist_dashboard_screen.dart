@@ -298,7 +298,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: const Text(
-            'L? Tân Ði?u Ph?i Salon',
+            'Lễ Tân Ðiều Phối Salon',
             style: TextStyle(
               color: Color(0xFFD4AF37),
               fontSize: 11,
@@ -308,12 +308,12 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white70),
-            tooltip: 'Làm m?i d? li?u',
+            tooltip: 'Làm mới dữ liệu',
             onPressed: () => setState(() {}),
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.redAccent),
-            tooltip: 'Ðang xu?t',
+            tooltip: 'Ðang xuất',
             onPressed: () {
               _dataService.logout();
               Navigator.pushReplacement(
@@ -330,7 +330,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         elevation: 6,
         icon: const Icon(Icons.person_add_alt_1, size: 20),
         label: const Text(
-          'Ti?p Khách Vãng Lai',
+          'Tiếp Khách',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
         ),
         onPressed: () => _openWalkInDialog(),
@@ -376,17 +376,17 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             BottomNavigationBarItem(
               icon: Icon(Icons.grid_on),
               activeIcon: Icon(Icons.grid_on, color: Color(0xFFD4AF37)),
-              label: 'Lu?i L?ch Quán',
+              label: 'Lưới Lịch Quán',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.group),
               activeIcon: Icon(Icons.group, color: Color(0xFFD4AF37)),
-              label: 'Tr?ng Thái Th?',
+              label: 'Trạng Thái Thợ',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.list_alt),
               activeIcon: Icon(Icons.list_alt, color: Color(0xFFD4AF37)),
-              label: 'Ðon Ti?p Ðón',
+              label: 'Ðơn Tiếp Ðón',
             ),
           ],
         ),
@@ -426,7 +426,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             const SizedBox(width: 10),
             Expanded(
               child: _buildMetricCard(
-                title: 'Ðang C?t',
+                title: 'Ðang Cắt',
                 value: '$busyCount',
                 color: Colors.orangeAccent,
                 icon: Icons.content_cut,
@@ -437,7 +437,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         const SizedBox(height: 16),
 
         const Text(
-          'Giám sát th? c?t tóc th?i gian th?c:',
+          'Giám sát thợ cắt tóc thời gian thực:',
           style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 15),
         ),
         const SizedBox(height: 10),
@@ -507,7 +507,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             controller: _searchController,
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              hintText: 'Tìm theo SÐT, Tên khách ho?c Mã booking...',
+              hintText: 'Tìm theo SÐT, Tên khách hoặc Mã booking...',
               hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
               prefixIcon: const Icon(Icons.search, color: Color(0xFFD4AF37), size: 20),
               suffixIcon: _searchQuery.isNotEmpty
@@ -539,7 +539,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              _buildFilterChip('T?t c?', 'all'),
+              _buildFilterChip('Tất cả', 'all'),
               const SizedBox(width: 8),
               _buildFilterChip('Đã xác nhận', 'confirmed'),
               const SizedBox(width: 8),
@@ -563,7 +563,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                     children: [
                       Icon(Icons.event_busy, color: Colors.white24, size: 48),
                       SizedBox(height: 10),
-                      Text('Không tìm th?y l?ch h?n phù h?p.', style: TextStyle(color: Colors.grey)),
+                      Text('Không tìm thấy lịch h?n phù hợp.', style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                 )
@@ -764,7 +764,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               if (booking.status == 'checked_in')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.play_arrow, size: 16, color: Colors.black),
-                  label: const Text('Vào Gh? C?t'),
+                  label: const Text('Vào Ghế Cắt'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     foregroundColor: Colors.black,
@@ -778,7 +778,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               if (!isPaid && booking.status != 'cancelled')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.attach_money, size: 16, color: Colors.black),
-                  label: const Text('Thu Tiền & Ðóng Ðon'),
+                  label: const Text('Thu Tiền & Ðóng Ðơn'),
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37)),
                   onPressed: () => _openCheckoutDialog(booking),
                 ),
@@ -808,7 +808,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Chi Ti?t Ðon #${booking.id}',
+                    'Chi Tiết Ðơn #${booking.id}',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   IconButton(

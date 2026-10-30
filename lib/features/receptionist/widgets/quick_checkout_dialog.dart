@@ -239,7 +239,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                     foregroundColor: Colors.black,
                   ),
                   icon: const Icon(Icons.check_circle, size: 18),
-                  label: const Text('Xác Nh?n Ðã Thu Ti?n', style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: const Text('Xác Nhận Ðã Thu Tiền', style: TextStyle(fontWeight: FontWeight.bold)),
                   onPressed: _handleConfirmPayment,
                 ),
               ],
