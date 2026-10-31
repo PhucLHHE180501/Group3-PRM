@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/barber_model.dart';
 import '../models/booking_model.dart';
@@ -1100,6 +1102,34 @@ class FirebaseService extends ChangeNotifier {
       );
     }
     notifyListeners();
+  }
+
+  // =========================================================================
+  // PORTFOLIO
+  // =========================================================================
+
+  Future<String> uploadPortfolioImage(int userId, XFile imageFile) async {
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('portfolio')
+        .child('$userId')
+        .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+    final bytes = await imageFile.readAsBytes();
+    await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
+    return await ref.getDownloadURL();
+  }
+
+  Future<void> addPortfolioImage(int userId, String imageUrl) async {
+    final snap = await _barbers
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
+    if (snap.docs.isNotEmpty) {
+      await snap.docs.first.reference.update({
+        'portfolioImages': FieldValue.arrayUnion([imageUrl]),
+      });
+      notifyListeners();
+    }
   }
 
   // =========================================================================

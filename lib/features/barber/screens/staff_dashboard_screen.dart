@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:barber_booking_app/shared/models/schedule_model.dart';
 import 'package:barber_booking_app/features/auth/screens/login_screen.dart';
 import 'package:barber_booking_app/shared/models/barber_model.dart';
@@ -42,6 +44,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
     _selectedDate = DateTime.now();
     _dataService.addListener(_onDataChanged);
     _loadDashboard();
@@ -303,6 +308,20 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
 
     return Scaffold(
       backgroundColor: _bgDark,
+      floatingActionButton: _tabController.index == 1
+          ? FloatingActionButton.extended(
+              backgroundColor: _gold,
+              onPressed: () => _showImageSourceDialog(staffId),
+              icon: const Icon(Icons.add_a_photo_rounded, color: Colors.black),
+              label: const Text(
+                'Thêm Ảnh Portfolio',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : null,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           _buildSliverAppBar(context, user, barberObj),
@@ -1782,5 +1801,193 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     if (diff.inDays == 1) return 'Hôm qua';
     if (diff.inDays < 7) return '${diff.inDays} ngày trước';
     return '${date.day}/${date.month}/${date.year}';
+  }
+
+  void _showImageSourceDialog(int staffId) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _cardDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Thêm ảnh portfolio',
+                style: TextStyle(
+                  color: _white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: _cardDark2,
+                  child: Icon(Icons.camera_alt_rounded, color: _gold),
+                ),
+                title: const Text('Chụp ảnh trực tiếp', style: TextStyle(color: _white)),
+                subtitle: const Text('Sử dụng camera của thiết bị', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndUploadImage(staffId, ImageSource.camera);
+                },
+              ),
+              const Divider(color: Colors.white12),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: _cardDark2,
+                  child: Icon(Icons.photo_library_rounded, color: _gold),
+                ),
+                title: const Text('Tải ảnh lên từ máy', style: TextStyle(color: _white)),
+                subtitle: const Text('Chọn ảnh có sẵn trong thư viện', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndUploadImage(staffId, ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<bool> _requestPermission(ImageSource source) async {
+    if (source == ImageSource.camera) {
+      final status = await Permission.camera.request();
+      if (status.isGranted) {
+        return true;
+      } else if (status.isPermanentlyDenied) {
+        _showOpenSettingsDialog('Máy ảnh (Camera)');
+        return false;
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cần cấp quyền truy cập Máy ảnh để chụp trực tiếp.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return false;
+      }
+    } else {
+      var status = await Permission.photos.request();
+      if (!status.isGranted) {
+        status = await Permission.storage.request();
+      }
+      if (status.isGranted || status.isLimited) {
+        return true;
+      } else if (status.isPermanentlyDenied) {
+        _showOpenSettingsDialog('Thư viện ảnh');
+        return false;
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cần cấp quyền truy cập Thư viện ảnh để chọn ảnh.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return false;
+      }
+    }
+  }
+
+  void _showOpenSettingsDialog(String featureName) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _cardDark,
+        title: Text('Cần cấp quyền $featureName', style: const TextStyle(color: _gold)),
+        content: Text(
+          'Quyền $featureName đã bị từ chối. Vui lòng mở cài đặt ứng dụng để cấp quyền.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              openAppSettings();
+            },
+            child: const Text('Mở Cài Đặt'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickAndUploadImage(int staffId, ImageSource source) async {
+    final hasPermission = await _requestPermission(source);
+    if (!hasPermission) return;
+
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1200,
+        maxHeight: 1200,
+      );
+
+      if (pickedFile == null || !mounted) return;
+
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(
+          child: CircularProgressIndicator(color: _gold),
+        ),
+      );
+
+      final downloadUrl = await _dataService.uploadPortfolioImage(staffId, pickedFile);
+      await _dataService.addPortfolioImage(staffId, downloadUrl);
+
+      if (!mounted) return;
+      Navigator.pop(context); // Pop loading dialog
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã thêm ảnh portfolio thành công!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      _loadDashboard(showLoading: false);
+    } catch (e) {
+      if (!mounted) return;
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi tải ảnh lên: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 }
