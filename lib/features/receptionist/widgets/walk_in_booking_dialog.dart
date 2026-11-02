@@ -253,6 +253,9 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                       const SizedBox(height: 8),
                       DropdownButtonFormField<BarberModel>(
                         value: _selectedBarber,
+                        isExpanded: true,
+                        isDense: false,   // 1. Tắt dense để không bị ép chiều cao 24px
+                        itemHeight: null,  // 2. Cho phép chiều cao item tự scale theo 2 dòng text
                         dropdownColor: const Color(0xFF2A2A2A),
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
@@ -274,7 +277,8 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                                   child: b.avatarUrl == null ? const Icon(Icons.person, size: 14) : null,
                                 ),
                                 const SizedBox(width: 8),
-                                Text(b.fullName),
+                                Expanded(child: Text(b.fullName)),
+                                // Text(b.fullName),
                                 const SizedBox(width: 6),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -283,7 +287,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    isAvail ? 'Rảnh' : 'Ðang bận',
+                                    isAvail ? 'Rảnh' : 'Bận',
                                     style: TextStyle(
                                       color: isAvail ? Colors.greenAccent : Colors.orangeAccent,
                                       fontSize: 10,
@@ -316,7 +320,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                           style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                         subtitle: const Text(
-                          'H? th?ng s? chuy?n tr?ng th�i th? sang �ang ph?c v?',
+                          'Hệ thống sẽ chuyển trạng thái thợ sang đang phục vụ',
                           style: TextStyle(color: Colors.white54, fontSize: 12),
                         ),
                         value: _immediateStart,
@@ -366,8 +370,8 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                         controller: _noteController,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          labelText: 'Ghi ch� ki?u t�c ho?c y�u c?u ri�ng',
-                          hintText: 'V� d?: C?o s�t vi?n, kh�ng d�ng t�ng do c?o tr?ng...',
+                          labelText: 'Ghi chú kiểu tóc hoặc yêu cầu riêng',
+                          hintText: 'Ví dụ: C?o s�t vi?n, kh�ng d�ng t�ng do c?o tr?ng...',
                           prefixIcon: const Icon(Icons.note_alt, color: Colors.white70, size: 20),
                           filled: true,
                           fillColor: const Color(0xFF2A2A2A),
@@ -389,7 +393,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('T?ng thanh to�n:', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        const Text('Tổng thanh toán:', style: TextStyle(color: Colors.white70, fontSize: 12)),
                         Text(
                           _formatPrice(_totalPrice),
                           style: const TextStyle(
@@ -416,7 +420,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                           ),
                           icon: const Icon(Icons.check, size: 18),
                           label: Text(
-                            _immediateStart ? 'Xác Nhận & Vào Cắt' : 'Lưu Lịch Hẹn',
+                            _immediateStart ? 'Xác Nhận' : 'Lưu Lịch Hẹn',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           onPressed: _handleSubmit,

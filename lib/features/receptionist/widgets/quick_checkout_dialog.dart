@@ -209,7 +209,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Chuyển khoản QR',
+                            'QR',
                             style: TextStyle(
                               color: _paymentMethod == 'bank_transfer' ? Colors.white : Colors.white70,
                               fontWeight: _paymentMethod == 'bank_transfer' ? FontWeight.bold : FontWeight.normal,
@@ -228,19 +228,23 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Đóng', style: TextStyle(color: Colors.white54)),
+                Expanded(
+                  child:TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Đóng', style: TextStyle(color: Colors.white54)),
+                  ),
                 ),
                 const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD4AF37),
-                    foregroundColor: Colors.black,
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4AF37),
+                      foregroundColor: Colors.black,
+                    ),
+                    icon: const Icon(Icons.check_circle, size: 18),
+                    label: const Text('Xác Nhận', style: TextStyle(fontWeight: FontWeight.bold)),
+                    onPressed: _handleConfirmPayment,
                   ),
-                  icon: const Icon(Icons.check_circle, size: 18),
-                  label: const Text('Xác Nhận Ðã Thu Tiền', style: TextStyle(fontWeight: FontWeight.bold)),
-                  onPressed: _handleConfirmPayment,
                 ),
               ],
             ),
