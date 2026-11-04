@@ -614,7 +614,9 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
   Widget _buildBookingCard(BookingModel booking) {
     final statusColor = _getStatusColor(booking.status);
     final txIdx = _dataService.transactions.indexWhere((t) => t.bookingId == booking.id);
-    final isPaid = txIdx != -1 && _dataService.transactions[txIdx].status == 'paid';
+    final tx = txIdx != -1 ? _dataService.transactions[txIdx] : null;
+    final isPaid = tx != null && tx.status == 'paid';
+    final hasTip = isPaid && tx.tipAmount > 0;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -734,9 +736,19 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Tổng tiền: ${_formatPrice(booking.totalPrice)}',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Tổng tiền: ${_formatPrice(hasTip ? tx.finalAmount : booking.totalPrice)}',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  if (hasTip)
+                    Text(
+                      '(Dịch vụ: ${_formatPrice(booking.totalPrice)} + Tip: ${_formatPrice(tx.tipAmount)})',
+                      style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontWeight: FontWeight.w500),
+                    ),
+                ],
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -764,7 +776,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             alignment: WrapAlignment.end,
             children: [
               // Reassign button (always available except cancelled/completed)
-              if (booking.status != 'cancelled' && booking.status != 'completed')
+              if (booking.status != 'cancelled' && booking.status != 'completed' && booking.status != 'in_progress')
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white70,
@@ -805,7 +817,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                 ),
 
               // Quick Checkout / Payment button
-              if (!isPaid && booking.status != 'cancelled')
+              if (!isPaid && booking.status == 'in_progress')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.attach_money, size: 16, color: Colors.black),
                   label: const Text('Thu Tiền'),
@@ -856,7 +868,17 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               _buildDetailRow('Khung giờ:', '${booking.startTime} - ${booking.endTime}'),
               _buildDetailRow('Trạng thái:', _getStatusText(booking.status)),
               _buildDetailRow('Dịch vụ:', booking.services.map((s) => s.name).join(', ')),
-              _buildDetailRow('Tổng tiền:', _formatPrice(booking.totalPrice)),
+              _buildDetailRow('Tiền dịch vụ:', _formatPrice(booking.totalPrice)),
+              if (_dataService.transactions.any((t) => t.bookingId == booking.id && t.status == 'paid' && t.tipAmount > 0)) ...[
+                _buildDetailRow(
+                  'Tiền Tip thợ:',
+                  '+ ${_formatPrice(_dataService.transactions.firstWhere((t) => t.bookingId == booking.id).tipAmount)}',
+                ),
+                _buildDetailRow(
+                  'Tổng đã thu:',
+                  _formatPrice(_dataService.transactions.firstWhere((t) => t.bookingId == booking.id).finalAmount),
+                ),
+              ],
               const SizedBox(height: 16),
               Wrap(
                 alignment: WrapAlignment.end,

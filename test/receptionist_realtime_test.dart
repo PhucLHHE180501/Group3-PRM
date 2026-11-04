@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/models/booking_model.dart';
 import 'package:barber_booking_app/shared/models/service_model.dart';
+import 'package:barber_booking_app/shared/models/transaction_model.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
 
 void main() {
@@ -10,6 +11,24 @@ void main() {
 
     setUp(() {
       service = FirebaseService();
+    });
+
+    test('TransactionModel calculates finalAmount correctly with tip', () {
+      final tx = TransactionModel(
+        id: 1,
+        bookingId: 100,
+        customerId: 2,
+        amount: 150000,
+        tipAmount: 25000,
+        method: 'cash',
+        status: 'paid',
+        createdAt: DateTime.now(),
+        serviceSummary: 'Cắt tóc',
+      );
+
+      expect(tx.amount, equals(150000));
+      expect(tx.tipAmount, equals(25000));
+      expect(tx.finalAmount, equals(175000));
     });
 
     test('allTimeSlots is properly ordered with 12:00 before 13:00', () {

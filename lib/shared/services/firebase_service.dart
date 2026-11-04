@@ -931,8 +931,12 @@ class FirebaseService extends ChangeNotifier {
         .map((snap) => snap.docs.map((d) => _txFromDoc(d)).toList());
   }
 
-  Future<void> markPaymentPaid(int bookingId, String method) async {
-    // Update transaction
+  Future<void> markPaymentPaid(
+    int bookingId,
+    String method, {
+    double tipAmount = 0.0,
+  }) async {
+    // Update transaction on Firestore
     final txSnap = await _transactions
         .where('bookingId', isEqualTo: bookingId)
         .limit(1)
@@ -941,9 +945,23 @@ class FirebaseService extends ChangeNotifier {
       await txSnap.docs.first.reference.update({
         'status': 'paid',
         'method': method,
+        'tipAmount': tipAmount,
         'paidAt': FieldValue.serverTimestamp(),
       });
     }
+
+    // Optimistic local update
+    final idx = transactions.indexWhere((t) => t.bookingId == bookingId);
+    if (idx != -1) {
+      transactions[idx] = transactions[idx].copyWith(
+        status: 'paid',
+        method: method,
+        tipAmount: tipAmount,
+        paidAt: DateTime.now(),
+      );
+      notifyListeners();
+    }
+
     // Auto-complete booking
     await updateBookingStatusById(bookingId, 'completed');
   }
