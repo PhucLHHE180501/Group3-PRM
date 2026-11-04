@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:barber_booking_app/features/auth/screens/login_screen.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
@@ -14,6 +16,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseService _dataService = FirebaseService();
+  bool _isUploadingAvatar = false;
 
   @override
   void initState() {
@@ -30,6 +33,211 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _onDataChanged() {
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  Future<bool> _requestPermission(ImageSource source) async {
+    if (source == ImageSource.camera) {
+      final status = await Permission.camera.request();
+      if (status.isGranted) {
+        return true;
+      } else if (status.isPermanentlyDenied) {
+        _showOpenSettingsDialog('Máy ảnh (Camera)');
+        return false;
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cần cấp quyền truy cập Máy ảnh để chụp trực tiếp.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return false;
+      }
+    } else {
+      var status = await Permission.photos.request();
+      if (!status.isGranted) {
+        status = await Permission.storage.request();
+      }
+      if (status.isGranted || status.isLimited) {
+        return true;
+      } else if (status.isPermanentlyDenied) {
+        _showOpenSettingsDialog('Thư viện ảnh');
+        return false;
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cần cấp quyền truy cập Thư viện ảnh để chọn ảnh.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return false;
+      }
+    }
+  }
+
+  void _showOpenSettingsDialog(String featureName) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        title: Text(
+          'Cần cấp quyền $featureName',
+          style: const TextStyle(color: Color(0xFFD4AF37)),
+        ),
+        content: Text(
+          'Quyền $featureName đã bị từ chối. Vui lòng mở cài đặt ứng dụng để cấp quyền.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              openAppSettings();
+            },
+            child: const Text('Mở Cài Đặt'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangeAvatarDialog(int userId, String uid) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E1E1E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Thay Đổi Ảnh Đại Diện',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Ảnh sẽ được tải lên và lưu trữ qua Cloudinary',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD4AF37).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.camera_alt_rounded, color: Color(0xFFD4AF37)),
+                ),
+                title: const Text('Chụp ảnh mới', style: TextStyle(color: Colors.white)),
+                subtitle: const Text('Sử dụng máy ảnh', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndUploadAvatar(userId, uid, ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD4AF37).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.photo_library_rounded, color: Color(0xFFD4AF37)),
+                ),
+                title: const Text('Chọn từ thư viện', style: TextStyle(color: Colors.white)),
+                subtitle: const Text('Tải ảnh từ bộ sưu tập', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndUploadAvatar(userId, uid, ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickAndUploadAvatar(int userId, String uid, ImageSource source) async {
+    final hasPermission = await _requestPermission(source);
+    if (!hasPermission) return;
+
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        imageQuality: 90,
+        maxWidth: 1000,
+        maxHeight: 1000,
+      );
+
+      if (pickedFile == null || !mounted) return;
+
+      setState(() {
+        _isUploadingAvatar = true;
+      });
+
+      final downloadUrl = await _dataService.uploadAvatar(userId, pickedFile);
+      final currentUser = _dataService.currentUser;
+      if (currentUser != null) {
+        await _dataService.updateUserProfile(
+          fullName: currentUser.fullName,
+          phone: currentUser.phone,
+          email: currentUser.email,
+          address: currentUser.address,
+          avatarUrl: downloadUrl,
+        );
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _isUploadingAvatar = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã cập nhật ảnh đại diện từ Cloudinary thành công!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isUploadingAvatar = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi tải ảnh đại diện: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     }
   }
 
@@ -94,26 +302,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 10),
             // Avatar
             Center(
-              child: Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 55,
-                    backgroundColor: const Color(0xFFD4AF37),
-                    child: CircleAvatar(
-                      radius: 52,
-                      backgroundImage: avatar.isNotEmpty
-                          ? NetworkImage(avatar)
-                          : null,
-                      child: avatar.isEmpty
-                          ? const Icon(
-                              Icons.person,
-                              size: 50,
-                              color: Colors.white,
-                            )
-                          : null,
+              child: GestureDetector(
+                onTap: _isUploadingAvatar ? null : () => _showChangeAvatarDialog(u.id, u.uid),
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 55,
+                      backgroundColor: const Color(0xFFD4AF37),
+                      child: CircleAvatar(
+                        radius: 52,
+                        backgroundColor: const Color(0xFF222222),
+                        backgroundImage: avatar.isNotEmpty
+                            ? NetworkImage(avatar)
+                            : null,
+                        child: avatar.isEmpty
+                            ? const Icon(
+                                Icons.person,
+                                size: 50,
+                                color: Colors.white,
+                              )
+                            : null,
+                      ),
                     ),
-                  ),
-                ],
+                    if (_isUploadingAvatar)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFFD4AF37),
+                            ),
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFD4AF37),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          size: 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),
