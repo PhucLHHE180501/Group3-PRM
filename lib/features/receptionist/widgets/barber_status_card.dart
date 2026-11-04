@@ -62,7 +62,9 @@ class BarberStatusCard extends StatelessWidget {
     final dynamicStatus = dataService.getBarberDynamicStatus(barber.userId);
     final currentJob = dataService.getBarberCurrentJob(barber.userId);
     final statusColor = _getStatusColor(dynamicStatus);
-    final todayBookings = dataService.getBarberBookings(barber.userId).where((b) {
+    final todayBookings = dataService.getBarberBookings(barber.userId).where((
+      b,
+    ) {
       final now = DateTime.now();
       return b.bookingDate.year == now.year &&
           b.bookingDate.month == now.month &&
@@ -75,10 +77,13 @@ class BarberStatusCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: statusColor.withOpacity(0.3), width: 1.5),
+        border: Border.all(
+          color: statusColor.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -94,8 +99,12 @@ class BarberStatusCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundImage: barber.avatarUrl != null ? NetworkImage(barber.avatarUrl!) : null,
-                    child: barber.avatarUrl == null ? const Icon(Icons.person, color: Colors.white70) : null,
+                    backgroundImage: barber.avatarUrl != null
+                        ? NetworkImage(barber.avatarUrl!)
+                        : null,
+                    child: barber.avatarUrl == null
+                        ? const Icon(Icons.person, color: Colors.white70)
+                        : null,
                   ),
                   Positioned(
                     right: 0,
@@ -106,7 +115,10 @@ class BarberStatusCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: statusColor,
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF1E1E1E), width: 2),
+                        border: Border.all(
+                          color: const Color(0xFF1E1E1E),
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
@@ -134,24 +146,37 @@ class BarberStatusCard extends StatelessWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star, color: Color(0xFFD4AF37), size: 14),
+                            const Icon(
+                              Icons.star,
+                              color: Color(0xFFD4AF37),
+                              size: 14,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${barber.avgRating} (${barber.reviewCount})',
-                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
                         Text(
                           '• ${barber.yearsExperience} năm KN',
-                          style: const TextStyle(color: Colors.white38, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.white38,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 2),
                     Text(
                       barber.specialty,
-                      style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 11),
+                      style: const TextStyle(
+                        color: Color(0xFFD4AF37),
+                        fontSize: 11,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -160,16 +185,23 @@ class BarberStatusCard extends StatelessWidget {
               ),
               // Status Badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.15),
+                  color: statusColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: statusColor, width: 1),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(_getStatusIcon(dynamicStatus), color: statusColor, size: 14),
+                    Icon(
+                      _getStatusIcon(dynamicStatus),
+                      color: statusColor,
+                      size: 14,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       _getStatusText(dynamicStatus),
@@ -193,11 +225,17 @@ class BarberStatusCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFF2A2A2A),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.orangeAccent.withOpacity(0.4)),
+                border: Border.all(
+                  color: Colors.orangeAccent.withValues(alpha: 0.4),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.person, color: Colors.orangeAccent, size: 24),
+                  const Icon(
+                    Icons.person,
+                    color: Colors.orangeAccent,
+                    size: 24,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -213,13 +251,19 @@ class BarberStatusCard extends StatelessWidget {
                         ),
                         Text(
                           'Dịch vụ: ${currentJob.services.map((s) => s.name).join(", ")}',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           'Khung giờ: ${currentJob.startTime} - ${currentJob.endTime}',
-                          style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 11),
+                          style: const TextStyle(
+                            color: Color(0xFFD4AF37),
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ),
@@ -249,11 +293,17 @@ class BarberStatusCard extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white70,
                       side: const BorderSide(color: Colors.white24),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       minimumSize: const Size(0, 32),
                     ),
                     icon: const Icon(Icons.calendar_month, size: 14),
-                    label: const Text('Xem lịch', style: TextStyle(fontSize: 12)),
+                    label: const Text(
+                      'Xem lịch',
+                      style: TextStyle(fontSize: 12),
+                    ),
                     onPressed: onViewSchedule,
                   ),
                   ElevatedButton.icon(
@@ -261,12 +311,23 @@ class BarberStatusCard extends StatelessWidget {
                       backgroundColor: dynamicStatus == 'available'
                           ? const Color(0xFFD4AF37)
                           : const Color(0xFF333333),
-                      foregroundColor: dynamicStatus == 'available' ? Colors.black : Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      foregroundColor: dynamicStatus == 'available'
+                          ? Colors.black
+                          : Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       minimumSize: const Size(0, 32),
                     ),
                     icon: const Icon(Icons.add, size: 14),
-                    label: const Text('Xếp khách ngay', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      'Xếp khách ngay',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     onPressed: onQuickAssign,
                   ),
                 ],

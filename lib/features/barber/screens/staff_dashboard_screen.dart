@@ -11,6 +11,7 @@ import 'package:barber_booking_app/shared/models/review_model.dart';
 import 'package:barber_booking_app/shared/models/user_model.dart';
 import 'package:barber_booking_app/shared/services/auth_session.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
+import 'package:barber_booking_app/shared/widgets/app_network_image.dart';
 
 class StaffDashboardScreen extends StatefulWidget {
   const StaffDashboardScreen({super.key});
@@ -27,6 +28,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
 
   // Weekly timetable: selected date (defaults to today)
   late DateTime _selectedDate;
+  bool _hidePastSlots = true;
   Timer? _refreshTimer;
   bool _loading = true;
   String? _error;
@@ -110,7 +112,10 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent),
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.redAccent,
+        ),
       );
     }
   }
@@ -260,7 +265,11 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.cloud_off_rounded, color: Colors.grey, size: 48),
+                const Icon(
+                  Icons.cloud_off_rounded,
+                  color: Colors.grey,
+                  size: 48,
+                ),
                 const SizedBox(height: 12),
                 Text(
                   _error ?? 'Không có dữ liệu',
@@ -352,7 +361,11 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildTimetableTab(selectedDayBookings, barberBookings, staffId),
+                  _buildTimetableTab(
+                    selectedDayBookings,
+                    barberBookings,
+                    staffId,
+                  ),
                   _buildPortfolioTab(barberObj.portfolioImages),
                   _buildReviewsTab(myReviews, barberObj),
                 ],
@@ -393,25 +406,58 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                   const SizedBox(height: 48),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            colors: [_gold, _goldLight, _gold],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 38,
-                          backgroundColor: _cardDark2,
-                          backgroundImage: user.avatarUrl != null
-                              ? NetworkImage(user.avatarUrl!)
-                              : null,
-                          child: user.avatarUrl == null
-                              ? const Icon(Icons.person, color: _gold, size: 36)
-                              : null,
+                      GestureDetector(
+                        onTap: () => _showChangeAvatarDialog(user.id, user.uid),
+                        child: Stack(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: [_gold, _goldLight, _gold],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                              ),
+                              child: ClipOval(
+                                child: user.avatarUrl != null && user.avatarUrl!.isNotEmpty
+                                    ? AppNetworkImage(
+                                        imageUrl: user.avatarUrl,
+                                        width: 76,
+                                        height: 76,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Container(
+                                        width: 76,
+                                        height: 76,
+                                        color: _cardDark2,
+                                        child: const Icon(
+                                          Icons.person,
+                                          color: _gold,
+                                          size: 36,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: _gold,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: _cardDark, width: 2),
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt_rounded,
+                                  color: Colors.black,
+                                  size: 13,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -476,14 +522,33 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                               ],
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              barberObj.specialty,
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
+                            InkWell(
+                              onTap: () => _showEditProfileDialog(user, barberObj),
+                              borderRadius: BorderRadius.circular(6),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      barberObj.specialty.isNotEmpty
+                                          ? barberObj.specialty
+                                          : 'Thêm chuyên môn cắt tóc...',
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 12,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(
+                                    Icons.edit_outlined,
+                                    color: _gold,
+                                    size: 13,
+                                  ),
+                                ],
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
@@ -508,10 +573,27 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
       ),
       actions: [
         IconButton(
+          tooltip: 'Chỉnh sửa hồ sơ',
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.15),
+              color: _gold.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.edit_note_rounded,
+              color: _gold,
+              size: 20,
+            ),
+          ),
+          onPressed: () => _showEditProfileDialog(user, barberObj),
+        ),
+        IconButton(
+          tooltip: 'Đăng xuất',
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -568,7 +650,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
               decoration: BoxDecoration(
                 color: _cardDark2,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: statusDotColor.withOpacity(0.5)),
+                border: Border.all(
+                  color: statusDotColor.withValues(alpha: 0.5),
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -658,9 +742,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.25)),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Column(
           children: [
@@ -705,10 +789,12 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
         itemCount: 7,
         itemBuilder: (context, i) {
           final day = monday.add(Duration(days: i));
-          final isToday = day.year == now.year &&
+          final isToday =
+              day.year == now.year &&
               day.month == now.month &&
               day.day == now.day;
-          final isSelected = day.year == _selectedDate.year &&
+          final isSelected =
+              day.year == _selectedDate.year &&
               day.month == _selectedDate.month &&
               day.day == _selectedDate.day;
 
@@ -734,21 +820,25 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                         end: Alignment.bottomRight,
                       )
                     : null,
-                color: isSelected ? null : (isToday ? _gold.withOpacity(0.12) : _cardDark2),
+                color: isSelected
+                    ? null
+                    : (isToday ? _gold.withValues(alpha: 0.12) : _cardDark2),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: isSelected
                       ? _gold
-                      : (isToday ? _gold.withOpacity(0.5) : Colors.white10),
+                      : (isToday
+                            ? _gold.withValues(alpha: 0.5)
+                            : Colors.white10),
                   width: isSelected ? 2 : 1,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: _gold.withOpacity(0.35),
+                          color: _gold.withValues(alpha: 0.35),
                           blurRadius: 10,
                           spreadRadius: 1,
-                        )
+                        ),
                       ]
                     : null,
               ),
@@ -758,7 +848,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                   Text(
                     dayLabels[i],
                     style: TextStyle(
-                      color: isSelected ? Colors.black : (isToday ? _gold : Colors.grey),
+                      color: isSelected
+                          ? Colors.black
+                          : (isToday ? _gold : Colors.grey),
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -767,7 +859,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                   Text(
                     '${day.day}',
                     style: TextStyle(
-                      color: isSelected ? Colors.black : (isToday ? _gold : _white),
+                      color: isSelected
+                          ? Colors.black
+                          : (isToday ? _gold : _white),
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       height: 1,
@@ -782,15 +876,6 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                       decoration: BoxDecoration(
                         color: isSelected ? Colors.black45 : _gold,
                         borderRadius: BorderRadius.circular(3),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '$dayBookingCount',
-                        style: TextStyle(
-                          color: isSelected ? Colors.black87 : Colors.black,
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                        ),
                       ),
                     )
                   else
@@ -809,13 +894,25 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     List<dynamic> allBarberBookings,
     int staffId,
   ) {
-    final allSlots = _dashboard?.timeSlots ?? const [
-      '08:00', '09:00', '10:00', '11:00',
-      '13:00', '14:00', '15:00', '16:00',
-      '17:00', '18:00', '19:00', '20:00',
-    ];
+    final allSlots =
+        _dashboard?.timeSlots ??
+        const [
+          '08:00',
+          '09:00',
+          '10:00',
+          '11:00',
+          '13:00',
+          '14:00',
+          '15:00',
+          '16:00',
+          '17:00',
+          '18:00',
+          '19:00',
+          '20:00',
+        ];
     final now = DateTime.now();
-    final isSelectedToday = _selectedDate.year == now.year &&
+    final isSelectedToday =
+        _selectedDate.year == now.year &&
         _selectedDate.month == now.month &&
         _selectedDate.day == now.day;
 
@@ -857,10 +954,13 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [_gold.withOpacity(0.15), _gold.withOpacity(0.05)],
+                colors: [
+                  _gold.withValues(alpha: 0.15),
+                  _gold.withValues(alpha: 0.05),
+                ],
               ),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _gold.withOpacity(0.3)),
+              border: Border.all(color: _gold.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -886,7 +986,10 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                         if (isSelectedToday) ...[
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: _gold,
                               borderRadius: BorderRadius.circular(10),
@@ -917,22 +1020,198 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
             ),
           ),
         ),
-        const SizedBox(height: 12),
-        // ── Time slots list
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            children: allSlots.map((slot) {
-              BookingModel? booking;
+        // ── Filter and Slot Counter Row
+        Builder(
+          builder: (context) {
+            final bookedSlots = <MapEntry<String, BookingModel>>[];
+            for (final slot in allSlots) {
+              BookingModel? b;
               for (final item in selectedDayBookings) {
                 if (item is BookingModel && item.startTime == slot) {
-                  booking = item;
+                  b = item;
                   break;
                 }
               }
-              return _buildTimeSlotRow(slot, booking);
-            }).toList(),
-          ),
+              if (b != null) {
+                bookedSlots.add(MapEntry(slot, b));
+              }
+            }
+
+            final pastCount = bookedSlots
+                .where((entry) => _isSlotPast(entry.key, entry.value))
+                .length;
+
+            final visibleSlots = bookedSlots.where((entry) {
+              if (_hidePastSlots && _isSlotPast(entry.key, entry.value)) {
+                return false;
+              }
+              return true;
+            }).toList();
+
+            return Expanded(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Lịch cắt (${visibleSlots.length})',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () => setState(() => _hidePastSlots = !_hidePastSlots),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _hidePastSlots
+                                  ? _gold.withValues(alpha: 0.15)
+                                  : _cardDark2,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: _hidePastSlots ? _gold : Colors.white24,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _hidePastSlots
+                                      ? Icons.visibility_off_rounded
+                                      : Icons.visibility_rounded,
+                                  size: 14,
+                                  color: _hidePastSlots ? _gold : Colors.white70,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  _hidePastSlots
+                                      ? 'Ẩn slot đã qua'
+                                      : 'Hiện tất cả',
+                                  style: TextStyle(
+                                    color: _hidePastSlots ? _gold : Colors.white70,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (pastCount > 0 && _hidePastSlots) ...[
+                                  const SizedBox(width: 5),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: _gold,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      '$pastCount',
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: visibleSlots.isEmpty
+                        ? LayoutBuilder(
+                            builder: (context, constraints) {
+                              return SingleChildScrollView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight,
+                                  ),
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 16,
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            pastCount > 0
+                                                ? Icons.history_toggle_off_rounded
+                                                : Icons.event_busy_rounded,
+                                            color: pastCount > 0
+                                                ? _gold
+                                                : Colors.grey,
+                                            size: 40,
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Text(
+                                            pastCount > 0
+                                                ? 'Đã qua tất cả $pastCount slot lịch hẹn'
+                                                : 'Không có lịch hẹn nào',
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                          if (pastCount > 0 && _hidePastSlots) ...[
+                                            const SizedBox(height: 10),
+                                            TextButton.icon(
+                                              onPressed: () => setState(
+                                                  () => _hidePastSlots = false),
+                                              icon: const Icon(
+                                                Icons.visibility_rounded,
+                                                size: 16,
+                                                color: _gold,
+                                              ),
+                                              label: Text(
+                                                'Xem lại $pastCount slot đã qua',
+                                                style: const TextStyle(
+                                                  color: _gold,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            itemCount: visibleSlots.length,
+                            itemBuilder: (context, index) {
+                              final entry = visibleSlots[index];
+                              return _buildTimeSlotRow(entry.key, entry.value);
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ],
     );
@@ -1010,7 +1289,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                     boxShadow: isCurrentHour
                         ? [
                             BoxShadow(
-                              color: _gold.withOpacity(0.5),
+                              color: _gold.withValues(alpha: 0.5),
                               blurRadius: 6,
                               spreadRadius: 2,
                             ),
@@ -1038,9 +1317,11 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF4CAF50).withOpacity(0.06),
+        color: const Color(0xFF4CAF50).withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFF4CAF50).withOpacity(0.15)),
+        border: Border.all(
+          color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
+        ),
       ),
       child: const Text(
         'Trống – Có thể nhận lịch',
@@ -1054,9 +1335,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.08),
+        color: statusColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: statusColor.withOpacity(0.4)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1081,7 +1362,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.2),
+                  color: statusColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -1283,15 +1564,12 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     bool hasMore,
   ) {
     if (displayImages.length == 1) {
-      return ClipRRect(
+      return AppNetworkImage(
+        imageUrl: displayImages[0],
+        height: 280,
+        width: double.infinity,
+        fit: BoxFit.cover,
         borderRadius: BorderRadius.circular(14),
-        child: Image.network(
-          displayImages[0],
-          height: 280,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildImageError(280),
-        ),
       );
     }
 
@@ -1351,15 +1629,12 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
   }
 
   Widget _buildPortfolioImageTile(String url, {double height = 160}) {
-    return ClipRRect(
+    return AppNetworkImage(
+      imageUrl: url,
+      height: height,
+      width: double.infinity,
+      fit: BoxFit.cover,
       borderRadius: BorderRadius.circular(12),
-      child: Image.network(
-        url,
-        height: height,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _buildImageError(height),
-      ),
     );
   }
 
@@ -1430,13 +1705,10 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                   childAspectRatio: 0.85,
                 ),
                 itemCount: images.length,
-                itemBuilder: (_, i) => ClipRRect(
+                itemBuilder: (_, i) => AppNetworkImage(
+                  imageUrl: images[i],
+                  fit: BoxFit.cover,
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    images[i],
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildImageError(160),
-                  ),
                 ),
               ),
             ),
@@ -1518,12 +1790,15 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_gold.withOpacity(0.12), _gold.withOpacity(0.04)],
+          colors: [
+            _gold.withValues(alpha: 0.12),
+            _gold.withValues(alpha: 0.04),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: _gold.withOpacity(0.3)),
+        border: Border.all(color: _gold.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -1622,19 +1897,24 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: _cardDark2,
-                backgroundImage: review.customerAvatar != null
-                    ? NetworkImage(review.customerAvatar!)
-                    : null,
-                child: review.customerAvatar == null
-                    ? const Icon(
-                        Icons.person_rounded,
-                        color: Colors.grey,
-                        size: 20,
+              ClipOval(
+                child: review.customerAvatar != null && review.customerAvatar!.isNotEmpty
+                    ? AppNetworkImage(
+                        imageUrl: review.customerAvatar,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
                       )
-                    : null,
+                    : Container(
+                        width: 40,
+                        height: 40,
+                        color: _cardDark2,
+                        child: const Icon(
+                          Icons.person_rounded,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                      ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1674,7 +1954,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.04),
+              color: Colors.white.withValues(alpha: 0.04),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
@@ -1764,7 +2044,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
       alignment: Alignment.center,
       child: Column(
         children: [
-          Icon(icon, color: Colors.grey.withOpacity(0.4), size: 52),
+          Icon(icon, color: Colors.grey.withValues(alpha: 0.4), size: 52),
           const SizedBox(height: 12),
           Text(
             message,
@@ -1773,6 +2053,30 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
         ],
       ),
     );
+  }
+
+  bool _isSlotPast(String slot, BookingModel? booking) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final selectedDay =
+        DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+
+    if (selectedDay.isBefore(today)) return true;
+    if (selectedDay.isAfter(today)) return false;
+
+    // Hôm nay: nếu đang cắt (in_progress) thì không ẩn
+    if (booking?.status == 'in_progress') return false;
+
+    // Nếu đã hoàn thành thì coi là đã qua
+    if (booking?.status == 'completed') return true;
+
+    // So sánh theo giờ kết thúc (endTime) của lịch cắt
+    final timeStr = (booking != null && booking.endTime.isNotEmpty)
+        ? booking.endTime
+        : slot;
+    final t = _parseTime(timeStr);
+    final slotTime = DateTime(now.year, now.month, now.day, t.hour, t.minute);
+    return now.isAfter(slotTime);
   }
 
   bool _isCurrentHourSlot(String slot) {
@@ -1839,8 +2143,14 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                   backgroundColor: _cardDark2,
                   child: Icon(Icons.camera_alt_rounded, color: _gold),
                 ),
-                title: const Text('Chụp ảnh trực tiếp', style: TextStyle(color: _white)),
-                subtitle: const Text('Sử dụng camera của thiết bị', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                title: const Text(
+                  'Chụp ảnh trực tiếp',
+                  style: TextStyle(color: _white),
+                ),
+                subtitle: const Text(
+                  'Sử dụng camera của thiết bị',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _pickAndUploadImage(staffId, ImageSource.camera);
@@ -1852,8 +2162,14 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                   backgroundColor: _cardDark2,
                   child: Icon(Icons.photo_library_rounded, color: _gold),
                 ),
-                title: const Text('Tải ảnh lên từ máy', style: TextStyle(color: _white)),
-                subtitle: const Text('Chọn ảnh có sẵn trong thư viện', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                title: const Text(
+                  'Tải ảnh lên từ máy',
+                  style: TextStyle(color: _white),
+                ),
+                subtitle: const Text(
+                  'Chọn ảnh có sẵn trong thư viện',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _pickAndUploadImage(staffId, ImageSource.gallery);
@@ -1878,7 +2194,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Cần cấp quyền truy cập Máy ảnh để chụp trực tiếp.'),
+              content: Text(
+                'Cần cấp quyền truy cập Máy ảnh để chụp trực tiếp.',
+              ),
               backgroundColor: Colors.orange,
             ),
           );
@@ -1915,7 +2233,10 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: _cardDark,
-        title: Text('Cần cấp quyền $featureName', style: const TextStyle(color: _gold)),
+        title: Text(
+          'Cần cấp quyền $featureName',
+          style: const TextStyle(color: _gold),
+        ),
         content: Text(
           'Quyền $featureName đã bị từ chối. Vui lòng mở cài đặt ứng dụng để cấp quyền.',
           style: const TextStyle(color: Colors.white70),
@@ -1956,12 +2277,14 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const Center(
-          child: CircularProgressIndicator(color: _gold),
-        ),
+        builder: (_) =>
+            const Center(child: CircularProgressIndicator(color: _gold)),
       );
 
-      final downloadUrl = await _dataService.uploadPortfolioImage(staffId, pickedFile);
+      final downloadUrl = await _dataService.uploadPortfolioImage(
+        staffId,
+        pickedFile,
+      );
       await _dataService.addPortfolioImage(staffId, downloadUrl);
 
       if (!mounted) return;
@@ -1989,5 +2312,479 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
         ),
       );
     }
+  }
+
+  // ─── THAY ĐỔI AVATAR QUA CLOUDINARY ──────────────────────────────────
+  void _showChangeAvatarDialog(int staffId, String uid) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _cardDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Thay Đổi Ảnh Đại Diện',
+                style: TextStyle(
+                  color: _white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Ảnh sẽ được tải lên và lưu trữ qua Cloudinary',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: _gold.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.camera_alt_rounded, color: _gold),
+                ),
+                title: const Text('Chụp ảnh mới', style: TextStyle(color: _white)),
+                subtitle: const Text('Sử dụng máy ảnh', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndUploadAvatar(staffId, uid, ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: _gold.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.photo_library_rounded, color: _gold),
+                ),
+                title: const Text('Chọn từ thư viện', style: TextStyle(color: _white)),
+                subtitle: const Text('Tải ảnh từ bộ sưu tập', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndUploadAvatar(staffId, uid, ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickAndUploadAvatar(int staffId, String uid, ImageSource source) async {
+    final hasPermission = await _requestPermission(source);
+    if (!hasPermission) return;
+
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        imageQuality: 90,
+        maxWidth: 1000,
+        maxHeight: 1000,
+      );
+
+      if (pickedFile == null || !mounted) return;
+
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(
+          child: CircularProgressIndicator(color: _gold),
+        ),
+      );
+
+      // Upload avatar to Cloudinary
+      final downloadUrl = await _dataService.uploadAvatar(staffId, pickedFile);
+      await _dataService.updateStaffAvatar(staffId, downloadUrl, uid: uid);
+
+      if (!mounted) return;
+      Navigator.pop(context); // pop loading
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã cập nhật ảnh đại diện từ Cloudinary thành công!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      _loadDashboard(showLoading: false);
+    } catch (e) {
+      if (!mounted) return;
+      if (Navigator.canPop(context)) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi tải ảnh đại diện: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
+  // ─── CHỈNH SỬA HỒ SƠ BARBER ───────────────────────────────────────────
+  void _showEditProfileDialog(UserModel user, BarberModel barber) {
+    final nameCtrl = TextEditingController(text: user.fullName);
+    final phoneCtrl = TextEditingController(text: user.phone);
+    final emailCtrl = TextEditingController(text: user.email ?? '');
+    final addressCtrl = TextEditingController(text: user.address ?? '');
+    final specialtyCtrl = TextEditingController(text: barber.specialty);
+    final bioCtrl = TextEditingController(text: barber.bio);
+    final expCtrl = TextEditingController(
+      text: barber.yearsExperience > 0 ? '${barber.yearsExperience}' : '3',
+    );
+    final formKey = GlobalKey<FormState>();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _cardDark,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.88,
+          maxChildSize: 0.95,
+          minChildSize: 0.5,
+          expand: false,
+          builder: (ctx, scrollController) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.edit_note_rounded, color: _gold),
+                            SizedBox(width: 8),
+                            Text(
+                              'Chỉnh Sửa Hồ Sơ Thợ',
+                              style: TextStyle(
+                                color: _white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, color: Colors.grey),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(color: Colors.white10),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                      child: Form(
+                        key: formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Avatar section
+                            Center(
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        colors: [_gold, _goldLight],
+                                      ),
+                                    ),
+                                    child: ClipOval(
+                                      child: user.avatarUrl != null && user.avatarUrl!.isNotEmpty
+                                          ? AppNetworkImage(
+                                              imageUrl: user.avatarUrl,
+                                              width: 86,
+                                              height: 86,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Container(
+                                              width: 86,
+                                              height: 86,
+                                              color: _cardDark2,
+                                              child: const Icon(
+                                                Icons.person,
+                                                color: _gold,
+                                                size: 40,
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.pop(ctx);
+                                        _showChangeAvatarDialog(user.id, user.uid);
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(7),
+                                        decoration: BoxDecoration(
+                                          color: _gold,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: _cardDark, width: 2),
+                                        ),
+                                        child: const Icon(
+                                          Icons.camera_alt_rounded,
+                                          color: Colors.black,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Center(
+                              child: TextButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  _showChangeAvatarDialog(user.id, user.uid);
+                                },
+                                icon: const Icon(Icons.cloud_upload_rounded, color: _gold, size: 16),
+                                label: const Text(
+                                  'Đổi ảnh đại diện (Cloudinary)',
+                                  style: TextStyle(color: _gold, fontSize: 13),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            _buildEditField(
+                              label: 'Họ và Tên (*)',
+                              controller: nameCtrl,
+                              icon: Icons.person_outline_rounded,
+                              validator: (v) =>
+                                  v == null || v.trim().isEmpty ? 'Vui lòng nhập họ và tên' : null,
+                            ),
+                            const SizedBox(height: 14),
+
+                            _buildEditField(
+                              label: 'Số Điện Thoại (*)',
+                              controller: phoneCtrl,
+                              icon: Icons.phone_android_rounded,
+                              keyboardType: TextInputType.phone,
+                              validator: (v) =>
+                                  v == null || v.trim().length < 9 ? 'Số điện thoại không hợp lệ' : null,
+                            ),
+                            const SizedBox(height: 14),
+
+                            _buildEditField(
+                              label: 'Email',
+                              controller: emailCtrl,
+                              icon: Icons.email_outlined,
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                            const SizedBox(height: 14),
+
+                            _buildEditField(
+                              label: 'Địa Chỉ',
+                              controller: addressCtrl,
+                              icon: Icons.location_on_outlined,
+                            ),
+                            const SizedBox(height: 14),
+
+                            _buildEditField(
+                              label: 'Chuyên Môn Cắt Tóc',
+                              controller: specialtyCtrl,
+                              icon: Icons.content_cut_rounded,
+                              hintText: 'VD: Fade Master, Uốn Hàn Quốc, Nhuộm tẩy...',
+                            ),
+                            const SizedBox(height: 14),
+
+                            _buildEditField(
+                              label: 'Số Năm Kinh Nghiệm',
+                              controller: expCtrl,
+                              icon: Icons.workspace_premium_outlined,
+                              keyboardType: TextInputType.number,
+                            ),
+                            const SizedBox(height: 14),
+
+                            _buildEditField(
+                              label: 'Giới Thiệu Bản Thân (Bio)',
+                              controller: bioCtrl,
+                              icon: Icons.badge_outlined,
+                              maxLines: 3,
+                              hintText: 'Giới thiệu ngắn về phong cách cắt và kinh nghiệm của bạn...',
+                            ),
+                            const SizedBox(height: 24),
+
+                            SizedBox(
+                              width: double.infinity,
+                              height: 48,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _gold,
+                                  foregroundColor: Colors.black,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  elevation: 2,
+                                ),
+                                onPressed: () async {
+                                  if (!formKey.currentState!.validate()) return;
+                                  Navigator.pop(ctx);
+
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (_) => const Center(
+                                      child: CircularProgressIndicator(color: _gold),
+                                    ),
+                                  );
+
+                                  try {
+                                    final exp = int.tryParse(expCtrl.text.trim()) ?? barber.yearsExperience;
+                                    await _dataService.updateStaffProfile(
+                                      userId: user.id,
+                                      uid: user.uid,
+                                      fullName: nameCtrl.text.trim(),
+                                      phone: phoneCtrl.text.trim(),
+                                      email: emailCtrl.text.trim(),
+                                      address: addressCtrl.text.trim(),
+                                      specialty: specialtyCtrl.text.trim(),
+                                      bio: bioCtrl.text.trim(),
+                                      yearsExperience: exp,
+                                    );
+
+                                    if (!mounted) return;
+                                    Navigator.pop(context); // pop loading
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Cập nhật hồ sơ thành công!'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+
+                                    _loadDashboard(showLoading: false);
+                                  } catch (e) {
+                                    if (!mounted) return;
+                                    if (Navigator.canPop(context)) Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Lỗi cập nhật hồ sơ: $e'),
+                                        backgroundColor: Colors.redAccent,
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Text(
+                                  'LƯU THAY ĐỔI',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildEditField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+    String? hintText,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: _gold,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+          validator: validator,
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
+            filled: true,
+            fillColor: _cardDark2,
+            prefixIcon: Icon(icon, color: _gold, size: 20),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: _gold, width: 1.5),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

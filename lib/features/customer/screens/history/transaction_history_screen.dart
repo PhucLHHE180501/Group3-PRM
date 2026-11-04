@@ -9,7 +9,8 @@ class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
 
   @override
-  State<TransactionHistoryScreen> createState() => _TransactionHistoryScreenState();
+  State<TransactionHistoryScreen> createState() =>
+      _TransactionHistoryScreenState();
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
@@ -80,18 +81,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
     switch (status) {
       case 'paid':
-        bg = Colors.green.withOpacity(0.2);
+        bg = Colors.green.withValues(alpha: 0.2);
         textColor = Colors.greenAccent;
         label = 'Đã thanh toán';
         break;
       case 'refunded':
-        bg = Colors.orange.withOpacity(0.2);
+        bg = Colors.orange.withValues(alpha: 0.2);
         textColor = Colors.orangeAccent;
         label = 'Hoàn tiền';
         break;
       case 'unpaid':
       default:
-        bg = Colors.red.withOpacity(0.2);
+        bg = Colors.red.withValues(alpha: 0.2);
         textColor = Colors.redAccent;
         label = 'Chưa thanh toán';
         break;
@@ -102,24 +103,37 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textColor.withOpacity(0.5)),
+        border: Border.all(color: textColor.withValues(alpha: 0.5)),
       ),
       child: Text(
         label,
-        style: TextStyle(color: textColor, fontSize: 12, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: textColor,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
 
   void _showTransactionDetailSheet(TransactionModel tx) {
     // Attempt to lookup associated booking if available
-    final BookingModel? associatedBooking = _dataService.getBookingById(tx.bookingId);
+    final BookingModel? associatedBooking = _dataService.getBookingById(
+      tx.bookingId,
+    );
 
-    final staffName = tx.staffName ?? associatedBooking?.staffName ?? 'Barber Salon';
+    final staffName =
+        tx.staffName ?? associatedBooking?.staffName ?? 'Barber Salon';
     final staffAvatar = tx.staffAvatar ?? associatedBooking?.staffAvatar;
-    final bookingDate = tx.bookingDate ?? associatedBooking?.bookingDate ?? tx.createdAt;
-    final timeSlot = tx.timeSlot ?? (associatedBooking != null ? '${associatedBooking.startTime} - ${associatedBooking.endTime}' : 'Theo ca hẹn');
-    final List<ServiceModel> services = tx.services ?? associatedBooking?.services ?? [];
+    final bookingDate =
+        tx.bookingDate ?? associatedBooking?.bookingDate ?? tx.createdAt;
+    final timeSlot =
+        tx.timeSlot ??
+        (associatedBooking != null
+            ? '${associatedBooking.startTime} - ${associatedBooking.endTime}'
+            : 'Theo ca hẹn');
+    final List<ServiceModel> services =
+        tx.services ?? associatedBooking?.services ?? [];
 
     showModalBottomSheet(
       context: context,
@@ -171,7 +185,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             const SizedBox(height: 2),
                             Text(
                               'Mã đặt lịch: #${tx.bookingId}',
-                              style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
+                              style: const TextStyle(
+                                color: Color(0xFFD4AF37),
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
@@ -187,7 +204,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF2A2A2A),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.3)),
+                        border: Border.all(
+                          color: const Color(0xFFD4AF37).withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -196,11 +215,16 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             backgroundColor: const Color(0xFFD4AF37),
                             child: CircleAvatar(
                               radius: 24,
-                              backgroundImage: staffAvatar != null && staffAvatar.isNotEmpty
+                              backgroundImage:
+                                  staffAvatar != null && staffAvatar.isNotEmpty
                                   ? NetworkImage(staffAvatar)
                                   : null,
                               child: staffAvatar == null || staffAvatar.isEmpty
-                                  ? const Icon(Icons.person, color: Colors.white, size: 24)
+                                  ? const Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: 24,
+                                    )
                                   : null,
                             ),
                           ),
@@ -211,7 +235,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               children: [
                                 const Text(
                                   'Thợ Phục Vụ Cắt Tóc',
-                                  style: TextStyle(color: Colors.grey, fontSize: 11),
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 11,
+                                  ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
@@ -225,7 +252,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               ],
                             ),
                           ),
-                          const Icon(Icons.verified, color: Color(0xFFD4AF37), size: 20),
+                          const Icon(
+                            Icons.verified,
+                            color: Color(0xFFD4AF37),
+                            size: 20,
+                          ),
                         ],
                       ),
                     ),
@@ -296,29 +327,47 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           children: [
                             for (final s in services)
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 6,
+                                ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.content_cut, color: Color(0xFFD4AF37), size: 16),
+                                    const Icon(
+                                      Icons.content_cut,
+                                      color: Color(0xFFD4AF37),
+                                      size: 16,
+                                    ),
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             s.name,
-                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                            ),
                                           ),
                                           Text(
                                             '${s.durationMin} phút',
-                                            style: const TextStyle(color: Colors.grey, fontSize: 11),
+                                            style: const TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 11,
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
                                     Text(
                                       _formatPrice(s.price),
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -335,8 +384,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          tx.serviceSummary.isNotEmpty ? tx.serviceSummary : 'Dịch vụ Salon Barber',
-                          style: const TextStyle(color: Colors.white, fontSize: 13),
+                          tx.serviceSummary.isNotEmpty
+                              ? tx.serviceSummary
+                              : 'Dịch vụ Salon Barber',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
 
@@ -348,24 +402,41 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF141414),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.4)),
+                        border: Border.all(
+                          color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
+                        ),
                       ),
                       child: Column(
                         children: [
-                          _buildCostRow('Tạm tính (Tiền dịch vụ)', _formatPrice(tx.amount)),
+                          _buildCostRow(
+                            'Tạm tính (Tiền dịch vụ)',
+                            _formatPrice(tx.amount),
+                          ),
                           if (tx.discount > 0) ...[
                             const SizedBox(height: 6),
-                            _buildCostRow('Giảm giá / Ưu đãi', '- ${_formatPrice(tx.discount)}', isDiscount: true),
+                            _buildCostRow(
+                              'Giảm giá / Ưu đãi',
+                              '- ${_formatPrice(tx.discount)}',
+                              isDiscount: true,
+                            ),
                           ],
                           const SizedBox(height: 6),
-                          _buildCostRow('Tiền Tip cho thợ', '+ ${_formatPrice(tx.tipAmount)}', isTip: true),
+                          _buildCostRow(
+                            'Tiền Tip cho thợ',
+                            '+ ${_formatPrice(tx.tipAmount)}',
+                            isTip: true,
+                          ),
                           const Divider(color: Colors.white24, height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
                                 'TỔNG THANH TOÁN',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
                               ),
                               Text(
                                 _formatPrice(tx.finalAmount),
@@ -387,38 +458,51 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     if (tx.status == 'paid') ...[
                       const Text(
                         'Thưởng tiền Tip động viên thợ cắt:',
-                        style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 13),
+                        style: TextStyle(
+                          color: Color(0xFFD4AF37),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: [10000.0, 20000.0, 30000.0, 50000.0, 100000.0].map((tipVal) {
-                          final isSelected = tx.tipAmount == tipVal;
-                          return ChoiceChip(
-                            label: Text('+ ${_formatPrice(tipVal)}'),
-                            selected: isSelected,
-                            selectedColor: const Color(0xFFD4AF37),
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.black : Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                            backgroundColor: const Color(0xFF2A2A2A),
-                            onSelected: (_) async {
-                              await _dataService.addTipToTransaction(tx.id, tipVal);
-                              setModalState(() {});
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Cảm ơn bạn đã tip ${_formatPrice(tipVal)} cho $staffName!'),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
-                              }
-                            },
-                          );
-                        }).toList(),
+                        children: [10000.0, 20000.0, 30000.0, 50000.0, 100000.0]
+                            .map((tipVal) {
+                              final isSelected = tx.tipAmount == tipVal;
+                              return ChoiceChip(
+                                label: Text('+ ${_formatPrice(tipVal)}'),
+                                selected: isSelected,
+                                selectedColor: const Color(0xFFD4AF37),
+                                labelStyle: TextStyle(
+                                  color: isSelected
+                                      ? Colors.black
+                                      : Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                                backgroundColor: const Color(0xFF2A2A2A),
+                                onSelected: (_) async {
+                                  await _dataService.addTipToTransaction(
+                                    tx.id,
+                                    tipVal,
+                                  );
+                                  setModalState(() {});
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Cảm ơn bạn đã tip ${_formatPrice(tipVal)} cho $staffName!',
+                                        ),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
+                            })
+                            .toList(),
                       ),
                       const SizedBox(height: 20),
                     ],
@@ -431,10 +515,15 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFD4AF37),
                           foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () => Navigator.pop(ctx),
-                        child: const Text('ĐÓNG TẬP HÓA ĐƠN', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'ĐÓNG TẬP HÓA ĐƠN',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ],
@@ -458,12 +547,19 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         const SizedBox(width: 10),
         SizedBox(
           width: 140,
-          child: Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+          child: Text(
+            label,
+            style: const TextStyle(color: Colors.grey, fontSize: 13),
+          ),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
             textAlign: TextAlign.end,
           ),
         ),
@@ -471,7 +567,12 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     );
   }
 
-  Widget _buildCostRow(String label, String value, {bool isDiscount = false, bool isTip = false}) {
+  Widget _buildCostRow(
+    String label,
+    String value, {
+    bool isDiscount = false,
+    bool isTip = false,
+  }) {
     Color valColor = Colors.white70;
     if (isDiscount) valColor = Colors.greenAccent;
     if (isTip) valColor = const Color(0xFFD4AF37);
@@ -479,10 +580,17 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
         Text(
           value,
-          style: TextStyle(color: valColor, fontWeight: FontWeight.bold, fontSize: 13),
+          style: TextStyle(
+            color: valColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
         ),
       ],
     );
@@ -493,9 +601,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     final transactions = _dataService.getCurrentUserTransactions();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lịch Sử Giao Dịch'),
-      ),
+      appBar: AppBar(title: const Text('Lịch Sử Giao Dịch')),
       body: transactions.isEmpty
           ? const Center(
               child: Column(
@@ -548,7 +654,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           ),
                           const Divider(color: Colors.white10, height: 20),
                           Text(
-                            item.serviceSummary.isNotEmpty ? item.serviceSummary : 'Dịch vụ Barber',
+                            item.serviceSummary.isNotEmpty
+                                ? item.serviceSummary
+                                : 'Dịch vụ Barber',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -558,33 +666,55 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(Icons.person, size: 16, color: Color(0xFFD4AF37)),
+                              const Icon(
+                                Icons.person,
+                                size: 16,
+                                color: Color(0xFFD4AF37),
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 'Thợ cắt: $staffName',
-                                style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Icon(_getMethodIcon(item.method), size: 16, color: Colors.grey),
+                              Icon(
+                                _getMethodIcon(item.method),
+                                size: 16,
+                                color: Colors.grey,
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 'Phương thức: ${_getMethodName(item.method)}',
-                                style: const TextStyle(color: Colors.grey, fontSize: 13),
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                              const Icon(
+                                Icons.access_time,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 'Thời gian: ${_formatDate(item.createdAt)}',
-                                style: const TextStyle(color: Colors.grey, fontSize: 13),
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
@@ -596,7 +726,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                 children: [
                                   const Text(
                                     'Tổng tiền: ',
-                                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 13,
+                                    ),
                                   ),
                                   Text(
                                     _formatPrice(item.finalAmount),
@@ -612,14 +745,22 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                 children: [
                                   Text(
                                     'Chi tiết',
-                                    style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: Color(0xFFD4AF37),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   SizedBox(width: 2),
-                                  Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFFD4AF37)),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 12,
+                                    color: Color(0xFFD4AF37),
+                                  ),
                                 ],
                               ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),
