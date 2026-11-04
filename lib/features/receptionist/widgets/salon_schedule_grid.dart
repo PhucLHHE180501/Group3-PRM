@@ -352,7 +352,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                                                   ),
                                                   if (_isSameDay(_selectedDate, DateTime.now()) && _dataService.getCurrentTimeSlot() == slot)
                                                     Container(
-                                                      margin: const EdgeInsets.top(3),
+                                                      margin: const EdgeInsets.only(top: 3),
                                                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                                                       decoration: BoxDecoration(
                                                         color: const Color(0xFFD4AF37),
