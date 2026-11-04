@@ -387,8 +387,11 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                 const SizedBox(height: 12),
 
                 // Bottom Action buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 10,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,6 +408,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                       ],
                     ),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),

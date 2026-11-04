@@ -1,4 +1,5 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -61,12 +62,32 @@ class FirebaseService extends ChangeNotifier {
   ];
 
   bool _started = false;
+  bool get isStarted => _started;
   Future<void>? _startFuture;
   List<BarberModel> barbers = [];
   List<ServiceModel> services = [];
   List<BookingModel> bookings = [];
   List<TransactionModel> transactions = [];
   List<ReviewModel> reviews = [];
+
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _barberSub;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _serviceSub;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _bookingSub;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _transactionSub;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _reviewSub;
+
+  Future<void> _cancelSubscriptions() async {
+    await _barberSub?.cancel();
+    await _serviceSub?.cancel();
+    await _bookingSub?.cancel();
+    await _transactionSub?.cancel();
+    await _reviewSub?.cancel();
+    _barberSub = null;
+    _serviceSub = null;
+    _bookingSub = null;
+    _transactionSub = null;
+    _reviewSub = null;
+  }
 
   UserModel? get currentUser => _session.currentUser;
   set currentUser(UserModel? user) => _session.setUser(user);
@@ -82,6 +103,7 @@ class FirebaseService extends ChangeNotifier {
       await ensureSeedData();
       await _loadOnce();
     } catch (e) {
+      debugPrint('FirebaseService _startInternal error: $e');
       _startFuture = null;
       rethrow;
     }
@@ -607,6 +629,16 @@ class FirebaseService extends ChangeNotifier {
         'staffAvatar': newBarber.avatarUrl,
       });
     }
+    final txSnap = await _transactions
+        .where('bookingId', isEqualTo: bookingId)
+        .limit(1)
+        .get();
+    if (txSnap.docs.isNotEmpty) {
+      await txSnap.docs.first.reference.update({
+        'staffName': newBarber.fullName,
+        'staffAvatar': newBarber.avatarUrl,
+      });
+    }
   }
 
   Future<void> rescheduleBooking(
@@ -623,6 +655,16 @@ class FirebaseService extends ChangeNotifier {
         'bookingDate': Timestamp.fromDate(newDate),
         'startTime': newTimeSlot,
         'endTime': newTimeSlot,
+      });
+    }
+    final txSnap = await _transactions
+        .where('bookingId', isEqualTo: bookingId)
+        .limit(1)
+        .get();
+    if (txSnap.docs.isNotEmpty) {
+      await txSnap.docs.first.reference.update({
+        'bookingDate': Timestamp.fromDate(newDate),
+        'timeSlot': newTimeSlot,
       });
     }
   }
@@ -766,20 +808,65 @@ class FirebaseService extends ChangeNotifier {
   List<BookingModel> getBarberBookings(int staffId) =>
       bookings.where((b) => b.staffId == staffId).toList();
 
-  BookingModel? getBarberCurrentJob(int staffId) {
-    try {
-      return bookings.firstWhere(
-        (b) => b.staffId == staffId && b.status == 'in_progress',
-      );
-    } catch (_) {
-      return null;
+  /// Lấy time slot hiện tại (ví dụ: 09:25 -> "09:00")
+  String? getCurrentTimeSlot([DateTime? customNow]) {
+    final now = customNow ?? DateTime.now();
+    final currentHour = now.hour;
+    final hourStr = '${currentHour.toString().padLeft(2, '0')}:00';
+    if (allTimeSlots.contains(hourStr)) {
+      return hourStr;
     }
+    return null;
   }
 
-  String getBarberDynamicStatus(int staffId) {
-    if (getBarberCurrentJob(staffId) != null) return 'busy';
+  /// Lấy đơn đặt lịch hiện tại mà thợ đang phụ trách (lọc theo ngày hôm nay và mapping theo slot làm việc)
+  BookingModel? getBarberCurrentJob(int staffId, [DateTime? customNow]) {
+    final now = customNow ?? DateTime.now();
+
+    // 1. Ưu tiên tìm đơn đang cắt (in_progress) trong ngày hôm nay
     try {
-      return barbers.firstWhere((b) => b.userId == staffId).status;
+      return bookings.firstWhere(
+        (b) =>
+            b.staffId == staffId &&
+            b.status == 'in_progress' &&
+            b.bookingDate.year == now.year &&
+            b.bookingDate.month == now.month &&
+            b.bookingDate.day == now.day,
+      );
+    } catch (_) {}
+
+    // 2. Mapping theo slot làm việc hiện tại: đơn đã check-in hoặc confirmed trong khung giờ này hôm nay
+    final currentSlot = getCurrentTimeSlot(now);
+    if (currentSlot != null) {
+      try {
+        return bookings.firstWhere(
+          (b) =>
+              b.staffId == staffId &&
+              (b.status == 'checked_in' || b.status == 'confirmed') &&
+              b.bookingDate.year == now.year &&
+              b.bookingDate.month == now.month &&
+              b.bookingDate.day == now.day &&
+              getOccupiedSlotsForBooking(b).contains(currentSlot),
+        );
+      } catch (_) {}
+    }
+
+    return null;
+  }
+
+  /// Trạng thái linh hoạt của thợ: lọc theo ngày và mapping theo slot làm việc hiện tại
+  String getBarberDynamicStatus(int staffId) {
+    final currentJob = getBarberCurrentJob(staffId);
+    if (currentJob != null) {
+      return 'busy';
+    }
+    try {
+      final barber = barbers.firstWhere((b) => b.userId == staffId);
+      // Nếu thợ đã chủ động đặt trạng thái nghỉ
+      if (barber.status == 'break' || barber.status == 'off') {
+        return barber.status;
+      }
+      return 'available';
     } catch (_) {
       return 'available';
     }
@@ -870,7 +957,8 @@ class FirebaseService extends ChangeNotifier {
         .map((snap) => snap.docs.map((d) => _txFromDoc(d)).toList());
   }
 
-  Future<void> markPaymentPaid(int bookingId, String method) async {
+
+  Future<void> markPaymentPaid(int bookingId, String method, {double tipAmount = 0.0}) async {
     // Update local memory instantly
     final txIdx = transactions.indexWhere((t) => t.bookingId == bookingId);
     if (txIdx != -1) {
@@ -891,9 +979,23 @@ class FirebaseService extends ChangeNotifier {
       await txSnap.docs.first.reference.update({
         'status': 'paid',
         'method': method,
+        'tipAmount': tipAmount,
         'paidAt': FieldValue.serverTimestamp(),
       });
     }
+
+    // Optimistic local update
+    final idx = transactions.indexWhere((t) => t.bookingId == bookingId);
+    if (idx != -1) {
+      transactions[idx] = transactions[idx].copyWith(
+        status: 'paid',
+        method: method,
+        tipAmount: tipAmount,
+        paidAt: DateTime.now(),
+      );
+      notifyListeners();
+    }
+
     // Auto-complete booking
     await updateBookingStatusById(bookingId, 'completed');
   }
@@ -1326,6 +1428,9 @@ class FirebaseService extends ChangeNotifier {
   // =========================================================================
 
   Future<void> logout() async {
+    await _cancelSubscriptions();
+    _started = false;
+    _startFuture = null;
     _session.logout();
     notifyListeners();
     await FirebaseAuthService().logout();
