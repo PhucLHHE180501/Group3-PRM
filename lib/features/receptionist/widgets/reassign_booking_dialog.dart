@@ -167,7 +167,7 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
             ),
             if (widget.booking.customerPhone != null)
               Text(
-                'S�T: ${widget.booking.customerPhone}',
+                'SĐT: ${widget.booking.customerPhone}',
                 style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
             Text(
@@ -193,6 +193,7 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
                 final isAvail = status == 'available';
                 return DropdownMenuItem<BarberModel>(
                   value: b,
+                  // isExpanded: true,
                   child: Row(
                     children: [
                       CircleAvatar(
@@ -250,7 +251,7 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
                 TextButton.icon(
                   style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
                   icon: const Icon(Icons.cancel_outlined, size: 16),
-                  label: const Text('H?y L?ch H?n'),
+                  label: const Text('Hủy Lịch'),
                   onPressed: _handleCancelBooking,
                 ),
                 ElevatedButton(
@@ -259,7 +260,7 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
                     foregroundColor: Colors.black,
                   ),
                   onPressed: _handleSave,
-                  child: const Text('Lưu Thay Đổi', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text('Lưu', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

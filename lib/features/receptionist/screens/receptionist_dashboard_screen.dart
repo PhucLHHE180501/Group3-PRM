@@ -751,7 +751,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               if (booking.status == 'confirmed')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.qr_code_scanner, size: 16, color: Colors.black),
-                  label: const Text('Check-in Khách'),
+                  label: const Text('Check-in'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purpleAccent,
                     foregroundColor: Colors.black,
@@ -779,7 +779,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               if (!isPaid && booking.status != 'cancelled')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.attach_money, size: 16, color: Colors.black),
-                  label: const Text('Thu Tiền & Đóng Đơn'),
+                  label: const Text('Thu Tiền'),
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37)),
                   onPressed: () => _openCheckoutDialog(booking),
                 ),
@@ -809,7 +809,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Chi Ti?t �on #${booking.id}',
+                    'Chi Tiết đơn #${booking.id}',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   IconButton(

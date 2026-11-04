@@ -371,7 +371,7 @@ class _WalkInBookingDialogState extends State<WalkInBookingDialog> {
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           labelText: 'Ghi chú kiểu tóc hoặc yêu cầu riêng',
-                          hintText: 'Ví dụ: C?o s�t vi?n, kh�ng d�ng t�ng do c?o tr?ng...',
+                          hintText: 'Ví dụ: kiểu tóc,...',
                           prefixIcon: const Icon(Icons.note_alt, color: Colors.white70, size: 20),
                           filled: true,
                           fillColor: const Color(0xFF2A2A2A),

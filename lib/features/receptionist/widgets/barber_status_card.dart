@@ -31,7 +31,7 @@ class BarberStatusCard extends StatelessWidget {
   String _getStatusText(String status) {
     switch (status) {
       case 'available':
-        return 'Sẵn sàng đón khách';
+        return 'Sẵn sàng';
       case 'busy':
         return 'Đang phục vụ';
       case 'break':
