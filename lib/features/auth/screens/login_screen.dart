@@ -58,7 +58,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (phone.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập đầy đủ Số điện thoại và Mật khẩu!')),
+        const SnackBar(
+          content: Text('Vui lòng nhập đầy đủ Số điện thoại và Mật khẩu!'),
+        ),
       );
       return;
     }
@@ -115,9 +117,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFD4AF37).withOpacity(0.15),
+                        color: const Color(0xFFD4AF37).withValues(alpha: 0.15),
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFD4AF37), width: 2),
+                        border: Border.all(
+                          color: const Color(0xFFD4AF37),
+                          width: 2,
+                        ),
                       ),
                       child: const Icon(
                         Icons.content_cut_rounded,
@@ -148,7 +153,10 @@ class _LoginScreenState extends State<LoginScreen> {
               // Phone Field
               const Text(
                 'Số Điện Thoại',
-                style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -165,7 +173,10 @@ class _LoginScreenState extends State<LoginScreen> {
               // Password Field
               const Text(
                 'Mật Khẩu',
-                style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -174,10 +185,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Nhập mật khẩu',
-                  prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
+                  prefixIcon: const Icon(
+                    Icons.lock_outline,
+                    color: Colors.grey,
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: Colors.grey,
                     ),
                     onPressed: () {
@@ -213,7 +229,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   Expanded(child: Divider(color: Colors.white24)),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text('ĐĂNG NHẬP NHANH THEO ROLE', style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'ĐĂNG NHẬP NHANH THEO ROLE',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                   Expanded(child: Divider(color: Colors.white24)),
                 ],
@@ -262,7 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -276,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
+                    color: color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(icon, color: color, size: 22),
@@ -288,11 +311,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                       Text(
                         subtitle,
-                        style: const TextStyle(color: Colors.grey, fontSize: 11),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 11,
+                        ),
                       ),
                     ],
                   ),

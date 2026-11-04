@@ -12,6 +12,7 @@ import '../models/service_model.dart';
 import '../models/transaction_model.dart';
 import '../models/user_model.dart';
 import 'auth_session.dart';
+import 'cloudinary_service.dart';
 import 'firebase_auth_service.dart';
 
 // ---------------------------------------------------------------------------
@@ -58,7 +59,6 @@ class FirebaseService extends ChangeNotifier {
     '16:00',
     '17:00',
     '18:00',
-
   ];
 
   bool _started = false;
@@ -108,75 +108,37 @@ class FirebaseService extends ChangeNotifier {
       rethrow;
     }
     _started = true;
-
-    await _cancelSubscriptions();
-
-    _barberSub = _barbers.snapshots().listen(
-      (snap) {
-        barbers = snap.docs.map(_barberFromDoc).toList();
-        notifyListeners();
-      },
-      onError: (e) {
-        debugPrint('Firestore barbers stream error: $e');
-      },
-    );
-
-    _serviceSub = _services.snapshots().listen(
-      (snap) {
-        services = snap.docs.map((d) {
-          final j = d.data();
-          return ServiceModel(
-            id: (j['id'] as num?)?.toInt() ?? 0,
-            name: j['name'] as String? ?? '',
-            description: j['description'] as String? ?? '',
-            price: (j['price'] as num?)?.toDouble() ?? 0,
-            durationMin: (j['durationMin'] as num?)?.toInt() ?? 0,
-            imageUrl: j['imageUrl'] as String? ?? '',
-            isActive: j['isActive'] as bool? ?? true,
-          );
-        }).toList()
-          ..sort((a, b) => a.id.compareTo(b.id));
-        notifyListeners();
-      },
-      onError: (e) {
-        debugPrint('Firestore services stream error: $e');
-      },
-    );
-
-    _bookingSub = _bookings.snapshots().listen(
-      (snap) {
-        bookings = snap.docs.map(_bookingFromDoc).toList()
-          ..sort((a, b) {
-            final cmpDate = b.bookingDate.compareTo(a.bookingDate);
-            if (cmpDate != 0) return cmpDate;
-            return a.startTime.compareTo(b.startTime);
-          });
-        notifyListeners();
-      },
-      onError: (e) {
-        debugPrint('Firestore bookings stream error: $e');
-      },
-    );
-
-    _transactionSub = _transactions.snapshots().listen(
-      (snap) {
-        transactions = snap.docs.map(_txFromDoc).toList();
-        notifyListeners();
-      },
-      onError: (e) {
-        debugPrint('Firestore transactions stream error: $e');
-      },
-    );
-
-    _reviewSub = _reviews.snapshots().listen(
-      (snap) {
-        reviews = snap.docs.map(_reviewFromDoc).toList();
-        notifyListeners();
-      },
-      onError: (e) {
-        debugPrint('Firestore reviews stream error: $e');
-      },
-    );
+    _barbers.snapshots().listen((snap) {
+      barbers = snap.docs.map(_barberFromDoc).toList();
+      notifyListeners();
+    });
+    _services.snapshots().listen((snap) {
+      services = snap.docs.map((d) {
+        final j = d.data();
+        return ServiceModel(
+          id: (j['id'] as num?)?.toInt() ?? 0,
+          name: j['name'] as String? ?? '',
+          description: j['description'] as String? ?? '',
+          price: (j['price'] as num?)?.toDouble() ?? 0,
+          durationMin: (j['durationMin'] as num?)?.toInt() ?? 0,
+          imageUrl: j['imageUrl'] as String? ?? '',
+          isActive: j['isActive'] as bool? ?? true,
+        );
+      }).toList()..sort((a, b) => a.id.compareTo(b.id));
+      notifyListeners();
+    });
+    _bookings.snapshots().listen((snap) {
+      bookings = snap.docs.map(_bookingFromDoc).toList();
+      notifyListeners();
+    });
+    _transactions.snapshots().listen((snap) {
+      transactions = snap.docs.map(_txFromDoc).toList();
+      notifyListeners();
+    });
+    _reviews.snapshots().listen((snap) {
+      reviews = snap.docs.map(_reviewFromDoc).toList();
+      notifyListeners();
+    });
   }
 
   Future<void> _loadOnce() async {
@@ -204,7 +166,8 @@ class FirebaseService extends ChangeNotifier {
           'price': 120000,
           'durationMin': 45,
           'imageUrl':
-              'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600',
+              'https://easysalon.vn/wp-content/uploads/2021/09/cach-tra-luong-cho-tho-toc.jpg',
+
           'isActive': true,
         },
         {
@@ -214,7 +177,8 @@ class FirebaseService extends ChangeNotifier {
           'price': 150000,
           'durationMin': 60,
           'imageUrl':
-              'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600',
+              'https://tse1.mm.bing.net/th/id/OIP.NJaXo6XGrkIZl4gLLUx8ygHaFl?r=0&rs=1&pid=ImgDetMain&o=7&rm=3',
+
           'isActive': true,
         },
         {
@@ -224,7 +188,8 @@ class FirebaseService extends ChangeNotifier {
           'price': 80000,
           'durationMin': 30,
           'imageUrl':
-              'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=600',
+              'https://vioprodsgsa.blob.core.windows.net/prod-sg-vio-public-storage/1046/services/20240619/9d41608d-0201-49e9-9842-b329598a221a_1718789671119623_1000006042.png',
+
           'isActive': true,
         },
         {
@@ -234,7 +199,8 @@ class FirebaseService extends ChangeNotifier {
           'price': 70000,
           'durationMin': 25,
           'imageUrl':
-              'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600',
+              'https://file.hstatic.net/200000362771/file/size_noi_dung_web__21__eac9bfdb768d47f09648ab67c6c108bc.png',
+
           'isActive': true,
         },
       ];
@@ -266,8 +232,7 @@ class FirebaseService extends ChangeNotifier {
         'userId': 102,
         'fullName': 'Lê Hoàng Nam (Nam Barber)',
         'phone': '0922334455',
-        'avatarUrl':
-            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
+        'avatarUrl': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
         'bio': 'Phong cách cổ điển Classic & Side Part.',
         'specialty': 'Classic Cut, Side Part',
         'yearsExperience': 4,
@@ -282,8 +247,7 @@ class FirebaseService extends ChangeNotifier {
         'userId': 103,
         'fullName': 'Phạm Minh Đức (Đức Barber)',
         'phone': '0933445566',
-        'avatarUrl':
-            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+        'avatarUrl': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
         'bio': 'Uốn texture, nhuộm màu thời trang.',
         'specialty': 'Uốn Texture, Nhuộm, Mullet',
         'yearsExperience': 5,
@@ -359,6 +323,11 @@ class FirebaseService extends ChangeNotifier {
   }
 
   Future<void> updateBarberStatus(int userId, String newStatus) async {
+    final idx = barbers.indexWhere((b) => b.userId == userId);
+    if (idx != -1) {
+      barbers[idx] = barbers[idx].copyWith(status: newStatus);
+      notifyListeners();
+    }
     final snap = await _barbers
         .where('userId', isEqualTo: userId)
         .limit(1)
@@ -448,6 +417,19 @@ class FirebaseService extends ChangeNotifier {
   }
 
   Future<void> updateBookingStatusById(int bookingId, String newStatus) async {
+    final bIdx = bookings.indexWhere((b) => b.id == bookingId);
+    if (bIdx != -1) {
+      bookings[bIdx] = bookings[bIdx].copyWith(status: newStatus);
+      notifyListeners();
+    }
+    final txIdx = transactions.indexWhere((t) => t.bookingId == bookingId);
+    if (txIdx != -1 && (newStatus == 'completed' || newStatus == 'cancelled')) {
+      transactions[txIdx] = transactions[txIdx].copyWith(
+        status: newStatus == 'completed' ? 'paid' : 'cancelled',
+      );
+      notifyListeners();
+    }
+
     final snap = await _bookings
         .where('id', isEqualTo: bookingId)
         .limit(1)
@@ -492,7 +474,9 @@ class FirebaseService extends ChangeNotifier {
       0,
       (sum, s) => sum + s.durationMin,
     );
-    final slotsCount = (totalMin / 60.0).ceil() < 1 ? 1 : (totalMin / 60.0).ceil();
+    final slotsCount = (totalMin / 60.0).ceil() < 1
+        ? 1
+        : (totalMin / 60.0).ceil();
     final endTimeSlot = calculateEndTime(timeSlot, slotsCount);
 
     final status = immediateStart ? 'in_progress' : 'confirmed';
@@ -573,6 +557,32 @@ class FirebaseService extends ChangeNotifier {
       'timeSlot': timeSlot,
       'services': selectedServices.map((s) => s.toJson()).toList(),
     });
+
+    final newTx = TransactionModel(
+      id: autoId + 1,
+      bookingId: autoId,
+      customerId: booking.customerId,
+      customerUid: booking.customerUid,
+      customerName: booking.customerName,
+      customerPhone: booking.customerPhone,
+      amount: totalPrice,
+      discount: 0,
+      tipAmount: 0,
+      method: 'cash',
+      status: 'unpaid',
+      createdAt: now,
+      serviceSummary: selectedServices.map((s) => s.name).join(', '),
+      staffName: barber.fullName,
+      staffAvatar: barber.avatarUrl,
+      bookingDate: date,
+      timeSlot: timeSlot,
+      services: selectedServices,
+    );
+
+    // Cập nhật ngay bộ nhớ local & thông báo UI
+    bookings.insert(0, booking);
+    transactions.insert(0, newTx);
+    notifyListeners();
 
     if (immediateStart) {
       updateBarberStatus(barber.userId, 'busy');
@@ -688,7 +698,11 @@ class FirebaseService extends ChangeNotifier {
     if (startIndex == -1) return [b.startTime];
 
     final result = <String>[];
-    for (var i = 0; i < slotsCount && (startIndex + i) < allTimeSlots.length; i++) {
+    for (
+      var i = 0;
+      i < slotsCount && (startIndex + i) < allTimeSlots.length;
+      i++
+    ) {
       result.add(allTimeSlots[startIndex + i]);
     }
     return result;
@@ -723,7 +737,11 @@ class FirebaseService extends ChangeNotifier {
   }
 
   /// Kiểm tra 1 barber có rảnh toàn bộ requiredSlots vào ngày date không
-  bool isBarberAvailable(int staffId, DateTime date, List<String> requiredSlots) {
+  bool isBarberAvailable(
+    int staffId,
+    DateTime date,
+    List<String> requiredSlots,
+  ) {
     final activeBookings = bookings.where(
       (b) =>
           b.staffId == staffId &&
@@ -764,7 +782,9 @@ class FirebaseService extends ChangeNotifier {
     final requiredSlots = getRequiredSlots(timeSlot, requiredSlotsCount);
     if (requiredSlots == null) return [];
 
-    return barbers.where((b) => isBarberAvailable(b.userId, date, requiredSlots)).toList();
+    return barbers
+        .where((b) => isBarberAvailable(b.userId, date, requiredSlots))
+        .toList();
   }
 
   /// Lấy đơn đặt lịch gần nhất của Khách hàng theo User UID
@@ -860,14 +880,18 @@ class FirebaseService extends ChangeNotifier {
     updateBookingStatusById(bookingId, newStatus);
   }
 
-  /// Lấy danh sách giao dịch của Khách hàng hiện tại dựa theo User UID
+  /// Lấy danh sách giao dịch của Khách hàng hiện tại dựa theo User UID hoặc ID
   List<TransactionModel> getCurrentUserTransactions() {
     final user = currentUser;
-    if (user == null || user.uid.isEmpty) return [];
+    if (user == null) return [];
 
-    final list = transactions
-        .where((t) => t.customerUid == user.uid)
-        .toList();
+    final list = transactions.where((t) {
+      if (user.uid.isNotEmpty && t.customerUid.isNotEmpty) {
+        return t.customerUid == user.uid;
+      }
+      return t.customerId == user.id || (user.uid.isNotEmpty && t.customerUid == user.uid);
+    }).toList();
+
 
     list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return list;
@@ -916,7 +940,9 @@ class FirebaseService extends ChangeNotifier {
   // TRANSACTIONS
   // =========================================================================
 
-  Stream<List<TransactionModel>> customerTransactionsStream(String customerUid) {
+  Stream<List<TransactionModel>> customerTransactionsStream(
+    String customerUid,
+  ) {
     return _transactions
         .where('customerUid', isEqualTo: customerUid)
         .orderBy('createdAt', descending: true)
@@ -931,11 +957,19 @@ class FirebaseService extends ChangeNotifier {
         .map((snap) => snap.docs.map((d) => _txFromDoc(d)).toList());
   }
 
-  Future<void> markPaymentPaid(
-    int bookingId,
-    String method, {
-    double tipAmount = 0.0,
-  }) async {
+
+  Future<void> markPaymentPaid(int bookingId, String method, {double tipAmount = 0.0}) async {
+    // Update local memory instantly
+    final txIdx = transactions.indexWhere((t) => t.bookingId == bookingId);
+    if (txIdx != -1) {
+      transactions[txIdx] = transactions[txIdx].copyWith(
+        status: 'paid',
+        method: method,
+        paidAt: DateTime.now(),
+      );
+      notifyListeners();
+    }
+
     // Update transaction on Firestore
     final txSnap = await _transactions
         .where('bookingId', isEqualTo: bookingId)
@@ -967,6 +1001,12 @@ class FirebaseService extends ChangeNotifier {
   }
 
   Future<void> addTipToTransaction(int txId, double tipAmount) async {
+    final idx = transactions.indexWhere((t) => t.id == txId);
+    if (idx != -1) {
+      transactions[idx] = transactions[idx].copyWith(tipAmount: tipAmount);
+      notifyListeners();
+    }
+
     final txSnap = await _transactions
         .where('id', isEqualTo: txId)
         .limit(1)
@@ -975,12 +1015,7 @@ class FirebaseService extends ChangeNotifier {
       await txSnap.docs.first.reference.update({
         'tipAmount': tipAmount,
       });
-    } else {
-      final idx = transactions.indexWhere((t) => t.id == txId);
-      if (idx != -1) {
-        transactions[idx] = transactions[idx].copyWith(tipAmount: tipAmount);
-        notifyListeners();
-      }
+
     }
   }
 
@@ -1047,9 +1082,7 @@ class FirebaseService extends ChangeNotifier {
   bool hasUserReviewedBarber(int staffId) {
     final user = _session.currentUser;
     if (user == null) return false;
-    return reviews.any(
-      (r) => r.staffId == staffId && r.customerId == user.id,
-    );
+    return reviews.any((r) => r.staffId == staffId && r.customerId == user.id);
   }
 
   bool canUserReviewBarber(int staffId) => !hasUserReviewedBarber(staffId);
@@ -1226,9 +1259,9 @@ class FirebaseService extends ChangeNotifier {
     await _users.doc(docId).update({
       'fullName': fullName,
       'phone': phone,
-      if (email != null) 'email': email,
-      if (address != null) 'address': address,
-      if (avatarUrl != null) 'avatarUrl': avatarUrl,
+      'email': ?email,
+      'address': ?address,
+      'avatarUrl': ?avatarUrl,
     });
     // Cập nhật lại session
     final user = _session.currentUser;
@@ -1246,19 +1279,122 @@ class FirebaseService extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateStaffProfile({
+    required int userId,
+    String? uid,
+    required String fullName,
+    required String phone,
+    String? email,
+    String? address,
+    String? avatarUrl,
+    String? specialty,
+    String? bio,
+    int? yearsExperience,
+  }) async {
+    // 1. Cập nhật bảng users
+    final docId = uid ?? currentUser?.uid;
+    if (docId != null && docId.isNotEmpty) {
+      final userMap = <String, dynamic>{
+        'fullName': fullName,
+        'phone': phone,
+      };
+      if (email != null) userMap['email'] = email;
+      if (address != null) userMap['address'] = address;
+      if (avatarUrl != null) userMap['avatarUrl'] = avatarUrl;
+      await _users.doc(docId).update(userMap);
+    }
+
+    // 2. Cập nhật bảng barbers
+    final barberSnap =
+        await _barbers.where('userId', isEqualTo: userId).limit(1).get();
+    if (barberSnap.docs.isNotEmpty) {
+      final barberMap = <String, dynamic>{
+        'fullName': fullName,
+        'phone': phone,
+      };
+      if (avatarUrl != null) barberMap['avatarUrl'] = avatarUrl;
+      if (specialty != null) barberMap['specialty'] = specialty;
+      if (bio != null) barberMap['bio'] = bio;
+      if (yearsExperience != null) {
+        barberMap['yearsExperience'] = yearsExperience;
+      }
+      await barberSnap.docs.first.reference.update(barberMap);
+    }
+
+    // 3. Cập nhật Session
+    final user = _session.currentUser;
+    if (user != null) {
+      _session.setUser(
+        user.copyWith(
+          fullName: fullName,
+          phone: phone,
+          email: email ?? user.email,
+          address: address ?? user.address,
+          avatarUrl: avatarUrl ?? user.avatarUrl,
+        ),
+      );
+    }
+    notifyListeners();
+  }
+
+  Future<void> updateStaffAvatar(int userId, String avatarUrl, {String? uid}) async {
+    final docId = uid ?? currentUser?.uid;
+    if (docId != null && docId.isNotEmpty) {
+      await _users.doc(docId).update({'avatarUrl': avatarUrl});
+    }
+    final barberSnap =
+        await _barbers.where('userId', isEqualTo: userId).limit(1).get();
+    if (barberSnap.docs.isNotEmpty) {
+      await barberSnap.docs.first.reference.update({'avatarUrl': avatarUrl});
+    }
+    final user = _session.currentUser;
+    if (user != null) {
+      _session.setUser(user.copyWith(avatarUrl: avatarUrl));
+    }
+    notifyListeners();
+  }
+
   // =========================================================================
   // PORTFOLIO
   // =========================================================================
 
   Future<String> uploadPortfolioImage(int userId, XFile imageFile) async {
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('portfolio')
-        .child('$userId')
-        .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
-    final bytes = await imageFile.readAsBytes();
-    await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
-    return await ref.getDownloadURL();
+    try {
+      // 1. Tải ảnh lên Cloudinary
+      return await CloudinaryService().uploadImage(
+        imageFile,
+        folder: 'portfolio/$userId',
+      );
+    } catch (e) {
+      debugPrint('Cloudinary upload error, fallback to Firebase Storage: $e');
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('portfolio')
+          .child('$userId')
+          .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final bytes = await imageFile.readAsBytes();
+      await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
+      return await ref.getDownloadURL();
+    }
+  }
+
+  Future<String> uploadAvatar(int userId, XFile imageFile) async {
+    try {
+      return await CloudinaryService().uploadImage(
+        imageFile,
+        folder: 'avatars/$userId',
+      );
+    } catch (e) {
+      debugPrint('Cloudinary upload error, fallback to Firebase Storage: $e');
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('avatars')
+          .child('$userId')
+          .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final bytes = await imageFile.readAsBytes();
+      await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
+      return await ref.getDownloadURL();
+    }
   }
 
   Future<void> addPortfolioImage(int userId, String imageUrl) async {
@@ -1269,6 +1405,19 @@ class FirebaseService extends ChangeNotifier {
     if (snap.docs.isNotEmpty) {
       await snap.docs.first.reference.update({
         'portfolioImages': FieldValue.arrayUnion([imageUrl]),
+      });
+      notifyListeners();
+    }
+  }
+
+  Future<void> removePortfolioImage(int userId, String imageUrl) async {
+    final snap = await _barbers
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
+    if (snap.docs.isNotEmpty) {
+      await snap.docs.first.reference.update({
+        'portfolioImages': FieldValue.arrayRemove([imageUrl]),
       });
       notifyListeners();
     }

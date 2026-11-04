@@ -69,7 +69,8 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
   String _formatDateHeader(DateTime date) {
     final now = DateTime.now();
     if (_isSameDay(date, now)) return 'Hôm nay (${date.day}/${date.month})';
-    if (_isSameDay(date, now.add(const Duration(days: 1)))) return 'Ngày mai (${date.day}/${date.month})';
+    if (_isSameDay(date, now.add(const Duration(days: 1))))
+      return 'Ngày mai (${date.day}/${date.month})';
     return '${date.day}/${date.month}/${date.year}';
   }
 
@@ -112,7 +113,11 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
           color: const Color(0xFF1E1E1E),
           child: Row(
             children: [
-              const Icon(Icons.calendar_today, color: Color(0xFFD4AF37), size: 20),
+              const Icon(
+                Icons.calendar_today,
+                color: Color(0xFFD4AF37),
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -128,10 +133,16 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
               ),
               // Quick date chips
               IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.white70, size: 16),
+                icon: const Icon(
+                  Icons.arrow_back_ios,
+                  color: Colors.white70,
+                  size: 16,
+                ),
                 onPressed: () {
                   setState(() {
-                    _selectedDate = _selectedDate.subtract(const Duration(days: 1));
+                    _selectedDate = _selectedDate.subtract(
+                      const Duration(days: 1),
+                    );
                   });
                 },
               ),
@@ -142,10 +153,17 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                   });
                   _scrollToCurrentTimeSlot();
                 },
-                child: const Text('Hôm nay', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13)),
+                child: const Text(
+                  'Hôm nay',
+                  style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13),
+                ),
               ),
               IconButton(
-                icon: const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
+                icon: const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.white70,
+                  size: 16,
+                ),
                 onPressed: () {
                   setState(() {
                     _selectedDate = _selectedDate.add(const Duration(days: 1));
@@ -153,12 +171,18 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.edit_calendar, color: Color(0xFFD4AF37), size: 20),
+                icon: const Icon(
+                  Icons.edit_calendar,
+                  color: Color(0xFFD4AF37),
+                  size: 20,
+                ),
                 onPressed: () async {
                   final picked = await showDatePicker(
                     context: context,
                     initialDate: _selectedDate,
-                    firstDate: DateTime.now().subtract(const Duration(days: 30)),
+                    firstDate: DateTime.now().subtract(
+                      const Duration(days: 30),
+                    ),
                     lastDate: DateTime.now().add(const Duration(days: 60)),
                     builder: (context, child) {
                       return Theme(
@@ -200,7 +224,11 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
               ),
               const Text(
                 'Chạm ô để xếp khách hoặc xem chi tiết',
-                style: TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontStyle: FontStyle.italic),
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ],
           ),
@@ -231,40 +259,56 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                     'Đang tải danh sách thợ cắt tóc...',
                     style: TextStyle(color: Colors.white54),
                   ),
-                )
-              : SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: SizedBox(
-                      width: 70.0 + (barbers.length * 130.0),
-                      child: Column(
-                        children: [
-                          // 1. PINNED TABLE HEADER (No vertical scroll - remains sticky at top)
-                          Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF252525),
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                              border: Border.all(color: Colors.white12),
+                  children: [
+                    // Table Header: Barbers
+                    TableRow(
+                      decoration: const BoxDecoration(color: Color(0xFF252525)),
+                      children: [
+                        const TableCell(
+                          verticalAlignment: TableCellVerticalAlignment.middle,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 4,
                             ),
-                            child: Table(
-                              defaultColumnWidth: const FixedColumnWidth(130),
-                              columnWidths: const {
-                                0: FixedColumnWidth(70),
-                              },
-                              children: [
-                                TableRow(
-                                  children: [
-                                    const TableCell(
-                                      verticalAlignment: TableCellVerticalAlignment.middle,
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-                                        child: Text(
-                                          'Giờ',
-                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
+                            child: Text(
+                              'Giờ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        for (final barber in barbers)
+                          TableCell(
+                            verticalAlignment:
+                                TableCellVerticalAlignment.middle,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 6,
+                              ),
+                              child: Column(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 16,
+                                    backgroundImage: barber.avatarUrl != null
+                                        ? NetworkImage(barber.avatarUrl!)
+                                        : null,
+                                    child: barber.avatarUrl == null
+                                        ? const Icon(Icons.person, size: 16)
+                                        : null,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    barber.fullName.split('(').first.trim(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
                                     ),
                                     for (final barber in barbers)
                                       TableCell(
@@ -300,83 +344,26 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                             ),
                           ),
 
-                          // 2. SCROLLABLE TABLE BODY (Vertical Scroll with Auto-Scroll to current slot)
-                          Expanded(
-                            child: SingleChildScrollView(
-                              controller: _verticalScrollController,
-                              scrollDirection: Axis.vertical,
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  border: Border(
-                                    left: BorderSide(color: Colors.white12),
-                                    right: BorderSide(color: Colors.white12),
-                                    bottom: BorderSide(color: Colors.white12),
-                                  ),
-                                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(8)),
-                                ),
-                                child: Table(
-                                  defaultColumnWidth: const FixedColumnWidth(130),
-                                  columnWidths: const {
-                                    0: FixedColumnWidth(70),
-                                  },
-                                  border: TableBorder.all(
-                                    color: Colors.white12,
-                                  ),
-                                  children: [
-                                    for (final slot in timeSlots)
-                                      TableRow(
-                                        decoration: BoxDecoration(
-                                          color: (_isSameDay(_selectedDate, DateTime.now()) && _dataService.getCurrentTimeSlot() == slot)
-                                              ? const Color(0xFFD4AF37).withOpacity(0.08)
-                                              : const Color(0xFF191919),
-                                        ),
-                                        children: [
-                                          TableCell(
-                                            verticalAlignment: TableCellVerticalAlignment.middle,
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(vertical: 14),
-                                              color: const Color(0xFF202020),
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(
-                                                    slot,
-                                                    style: TextStyle(
-                                                      color: (_isSameDay(_selectedDate, DateTime.now()) && _dataService.getCurrentTimeSlot() == slot)
-                                                          ? const Color(0xFFD4AF37)
-                                                          : Colors.white70,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 12,
-                                                    ),
-                                                    textAlign: TextAlign.center,
-                                                  ),
-                                                  if (_isSameDay(_selectedDate, DateTime.now()) && _dataService.getCurrentTimeSlot() == slot)
-                                                    Container(
-                                                      margin: const EdgeInsets.only(top: 3),
-                                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                                      decoration: BoxDecoration(
-                                                        color: const Color(0xFFD4AF37),
-                                                        borderRadius: BorderRadius.circular(4),
-                                                      ),
-                                                      child: const Text(
-                                                        'Hiện tại',
-                                                        style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.bold),
-                                                      ),
-                                                    ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                          for (final barber in barbers) ...[
-                                            _buildSlotCell(
-                                              barber: barber,
-                                              slot: slot,
-                                              bookings: dateBookings,
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                  ],
+                    // Table Body: Time Slots x Barbers
+                    for (final slot in timeSlots)
+                      TableRow(
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF191919),
+                        ),
+                        children: [
+                          // Time Cell
+                          TableCell(
+                            verticalAlignment:
+                                TableCellVerticalAlignment.middle,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              color: const Color(0xFF202020),
+                              child: Text(
+                                slot,
+                                style: const TextStyle(
+                                  color: Color(0xFFD4AF37),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
                                 ),
                               ),
                             ),
@@ -404,7 +391,10 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
           ),
         ),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white70, fontSize: 11),
+        ),
       ],
     );
   }
@@ -416,7 +406,10 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
   }) {
     // Find matching booking for this barber and time slot
     final match = bookings.cast<BookingModel?>().firstWhere(
-      (b) => b != null && b.staffId == barber.userId && _dataService.getOccupiedSlotsForBooking(b).contains(slot),
+      (b) =>
+          b != null &&
+          b.staffId == barber.userId &&
+          _dataService.getOccupiedSlotsForBooking(b).contains(slot),
       orElse: () => null,
     );
 
@@ -432,7 +425,10 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
             decoration: BoxDecoration(
               color: const Color(0xFF222222),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.white12, style: BorderStyle.solid),
+              border: Border.all(
+                color: Colors.white12,
+                style: BorderStyle.solid,
+              ),
             ),
             child: const Center(
               child: Row(
@@ -440,7 +436,10 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                 children: [
                   Icon(Icons.add, color: Colors.greenAccent, size: 14),
                   SizedBox(width: 2),
-                  Text('Trống', style: TextStyle(color: Colors.greenAccent, fontSize: 11)),
+                  Text(
+                    'Trống',
+                    style: TextStyle(color: Colors.greenAccent, fontSize: 11),
+                  ),
                 ],
               ),
             ),
@@ -461,7 +460,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
           margin: const EdgeInsets.all(3),
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: statusColor.withOpacity(0.18),
+            color: statusColor.withValues(alpha: 0.18),
             borderRadius: BorderRadius.circular(6),
             border: Border.all(color: statusColor, width: 1.2),
           ),
@@ -485,18 +484,29 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                   ),
                   if (match.isWalkIn)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 3,
+                        vertical: 1,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.3),
+                        color: Colors.orange.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(3),
                       ),
-                      child: const Text('Tại quầy', style: TextStyle(color: Colors.orangeAccent, fontSize: 8)),
+                      child: const Text(
+                        'Tại quầy',
+                        style: TextStyle(
+                          color: Colors.orangeAccent,
+                          fontSize: 8,
+                        ),
+                      ),
                     ),
                 ],
               ),
               const SizedBox(height: 2),
               Text(
-                match.services.isNotEmpty ? match.services.first.name : 'Dịch vụ',
+                match.services.isNotEmpty
+                    ? match.services.first.name
+                    : 'Dịch vụ',
                 style: const TextStyle(color: Colors.white70, fontSize: 10),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
