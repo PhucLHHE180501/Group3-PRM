@@ -337,7 +337,7 @@ class _BarberDetailScreenState extends State<BarberDetailScreen>
                             if (cloudinaryImages.isEmpty) {
                               return const Center(
                                 child: Text(
-                                  'Chưa có hình ảnh sản phẩm từ Cloudinary',
+                                  'Chưa có hình ảnh sản phẩm',
                                   style: TextStyle(color: Colors.grey),
                                 ),
                               );

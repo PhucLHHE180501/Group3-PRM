@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -1566,7 +1566,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
           ),
           const SizedBox(height: 4),
           Text(
-            '${cloudinaryImages.length} ảnh portfolio (Cloudinary)',
+            '${cloudinaryImages.length} ảnh portfolio',
             style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
           const SizedBox(height: 16),
@@ -1574,7 +1574,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
             _buildEmptyState(
               icon: Icons.photo_library_outlined,
               message:
-                  'Chưa có ảnh portfolio nào từ Cloudinary.\nHãy bấm nút "+" bên dưới để tải ảnh tác phẩm lên!',
+                  'Chưa có ảnh portfolio nào.\nHãy bấm nút "+" bên dưới để tải ảnh tác phẩm lên!',
             )
           else
             _buildPortfolioGrid(displayImages, cloudinaryImages, hasMore),
@@ -2387,7 +2387,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
               ),
               const SizedBox(height: 6),
               const Text(
-                'Ảnh sẽ được tải lên và lưu trữ qua Cloudinary',
+                'Chọn ảnh từ thư viện hoặc chụp ảnh mới',
                 style: TextStyle(color: Colors.grey, fontSize: 12),
               ),
               const SizedBox(height: 20),
@@ -2463,7 +2463,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Đã cập nhật ảnh đại diện từ Cloudinary thành công!'),
+          content: Text('Đã cập nhật ảnh đại diện thành công!'),
           backgroundColor: Colors.green,
         ),
       );
@@ -2627,7 +2627,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                                 },
                                 icon: const Icon(Icons.cloud_upload_rounded, color: _gold, size: 16),
                                 label: const Text(
-                                  'Đổi ảnh đại diện (Cloudinary)',
+                                  'Đổi ảnh đại diện',
                                   style: TextStyle(color: _gold, fontSize: 13),
                                 ),
                               ),

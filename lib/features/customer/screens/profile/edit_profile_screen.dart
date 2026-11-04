@@ -158,7 +158,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Ảnh sẽ được tải lên và lưu trữ qua Cloudinary',
+                'Chọn ảnh từ thư viện hoặc chụp ảnh mới',
                 style: TextStyle(color: Colors.grey, fontSize: 12),
               ),
               const SizedBox(height: 20),
@@ -235,7 +235,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Đã tải ảnh lên Cloudinary thành công!'),
+          content: Text('Đã cập nhật ảnh đại diện thành công!'),
           backgroundColor: Colors.green,
         ),
       );
@@ -357,7 +357,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         size: 18,
                       ),
                       label: const Text(
-                        'Đổi ảnh đại diện (Cloudinary)',
+                        'Đổi ảnh đại diện',
                         style: TextStyle(
                           color: Color(0xFFD4AF37),
                           fontSize: 13,
