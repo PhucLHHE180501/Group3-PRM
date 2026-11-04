@@ -259,56 +259,40 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                     'Đang tải danh sách thợ cắt tóc...',
                     style: TextStyle(color: Colors.white54),
                   ),
-                  children: [
-                    // Table Header: Barbers
-                    TableRow(
-                      decoration: const BoxDecoration(color: Color(0xFF252525)),
-                      children: [
-                        const TableCell(
-                          verticalAlignment: TableCellVerticalAlignment.middle,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 4,
+                )
+              : SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: SizedBox(
+                      width: 70.0 + (barbers.length * 130.0),
+                      child: Column(
+                        children: [
+                          // 1. PINNED TABLE HEADER (No vertical scroll - remains sticky at top)
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF252525),
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                              border: Border.all(color: Colors.white12),
                             ),
-                            child: Text(
-                              'Giờ',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                        for (final barber in barbers)
-                          TableCell(
-                            verticalAlignment:
-                                TableCellVerticalAlignment.middle,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 8,
-                                horizontal: 6,
-                              ),
-                              child: Column(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 16,
-                                    backgroundImage: barber.avatarUrl != null
-                                        ? NetworkImage(barber.avatarUrl!)
-                                        : null,
-                                    child: barber.avatarUrl == null
-                                        ? const Icon(Icons.person, size: 16)
-                                        : null,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    barber.fullName.split('(').first.trim(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
+                            child: Table(
+                              defaultColumnWidth: const FixedColumnWidth(130),
+                              columnWidths: const {
+                                0: FixedColumnWidth(70),
+                              },
+                              children: [
+                                TableRow(
+                                  children: [
+                                    const TableCell(
+                                      verticalAlignment: TableCellVerticalAlignment.middle,
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                                        child: Text(
+                                          'Giờ',
+                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
                                     ),
                                     for (final barber in barbers)
                                       TableCell(
@@ -344,26 +328,83 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                             ),
                           ),
 
-                    // Table Body: Time Slots x Barbers
-                    for (final slot in timeSlots)
-                      TableRow(
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF191919),
-                        ),
-                        children: [
-                          // Time Cell
-                          TableCell(
-                            verticalAlignment:
-                                TableCellVerticalAlignment.middle,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              color: const Color(0xFF202020),
-                              child: Text(
-                                slot,
-                                style: const TextStyle(
-                                  color: Color(0xFFD4AF37),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                          // 2. SCROLLABLE TABLE BODY (Vertical Scroll with Auto-Scroll to current slot)
+                          Expanded(
+                            child: SingleChildScrollView(
+                              controller: _verticalScrollController,
+                              scrollDirection: Axis.vertical,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(color: Colors.white12),
+                                    right: BorderSide(color: Colors.white12),
+                                    bottom: BorderSide(color: Colors.white12),
+                                  ),
+                                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(8)),
+                                ),
+                                child: Table(
+                                  defaultColumnWidth: const FixedColumnWidth(130),
+                                  columnWidths: const {
+                                    0: FixedColumnWidth(70),
+                                  },
+                                  border: TableBorder.all(
+                                    color: Colors.white12,
+                                  ),
+                                  children: [
+                                    for (final slot in timeSlots)
+                                      TableRow(
+                                        decoration: BoxDecoration(
+                                          color: (_isSameDay(_selectedDate, DateTime.now()) && _dataService.getCurrentTimeSlot() == slot)
+                                              ? const Color(0xFFD4AF37).withOpacity(0.08)
+                                              : const Color(0xFF191919),
+                                        ),
+                                        children: [
+                                          TableCell(
+                                            verticalAlignment: TableCellVerticalAlignment.middle,
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(vertical: 14),
+                                              color: const Color(0xFF202020),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    slot,
+                                                    style: TextStyle(
+                                                      color: (_isSameDay(_selectedDate, DateTime.now()) && _dataService.getCurrentTimeSlot() == slot)
+                                                          ? const Color(0xFFD4AF37)
+                                                          : Colors.white70,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                  if (_isSameDay(_selectedDate, DateTime.now()) && _dataService.getCurrentTimeSlot() == slot)
+                                                    Container(
+                                                      margin: const EdgeInsets.only(top: 3),
+                                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0xFFD4AF37),
+                                                        borderRadius: BorderRadius.circular(4),
+                                                      ),
+                                                      child: const Text(
+                                                        'Hiện tại',
+                                                        style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.bold),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          for (final barber in barbers) ...[
+                                            _buildSlotCell(
+                                              barber: barber,
+                                              slot: slot,
+                                              bookings: dateBookings,
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                  ],
                                 ),
                               ),
                             ),

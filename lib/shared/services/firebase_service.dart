@@ -108,37 +108,75 @@ class FirebaseService extends ChangeNotifier {
       rethrow;
     }
     _started = true;
-    _barbers.snapshots().listen((snap) {
-      barbers = snap.docs.map(_barberFromDoc).toList();
-      notifyListeners();
-    });
-    _services.snapshots().listen((snap) {
-      services = snap.docs.map((d) {
-        final j = d.data();
-        return ServiceModel(
-          id: (j['id'] as num?)?.toInt() ?? 0,
-          name: j['name'] as String? ?? '',
-          description: j['description'] as String? ?? '',
-          price: (j['price'] as num?)?.toDouble() ?? 0,
-          durationMin: (j['durationMin'] as num?)?.toInt() ?? 0,
-          imageUrl: j['imageUrl'] as String? ?? '',
-          isActive: j['isActive'] as bool? ?? true,
-        );
-      }).toList()..sort((a, b) => a.id.compareTo(b.id));
-      notifyListeners();
-    });
-    _bookings.snapshots().listen((snap) {
-      bookings = snap.docs.map(_bookingFromDoc).toList();
-      notifyListeners();
-    });
-    _transactions.snapshots().listen((snap) {
-      transactions = snap.docs.map(_txFromDoc).toList();
-      notifyListeners();
-    });
-    _reviews.snapshots().listen((snap) {
-      reviews = snap.docs.map(_reviewFromDoc).toList();
-      notifyListeners();
-    });
+
+    await _cancelSubscriptions();
+
+    _barberSub = _barbers.snapshots().listen(
+      (snap) {
+        barbers = snap.docs.map(_barberFromDoc).toList();
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('Firestore barbers stream error: $e');
+      },
+    );
+
+    _serviceSub = _services.snapshots().listen(
+      (snap) {
+        services = snap.docs.map((d) {
+          final j = d.data();
+          return ServiceModel(
+            id: (j['id'] as num?)?.toInt() ?? 0,
+            name: j['name'] as String? ?? '',
+            description: j['description'] as String? ?? '',
+            price: (j['price'] as num?)?.toDouble() ?? 0,
+            durationMin: (j['durationMin'] as num?)?.toInt() ?? 0,
+            imageUrl: j['imageUrl'] as String? ?? '',
+            isActive: j['isActive'] as bool? ?? true,
+          );
+        }).toList()
+          ..sort((a, b) => a.id.compareTo(b.id));
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('Firestore services stream error: $e');
+      },
+    );
+
+    _bookingSub = _bookings.snapshots().listen(
+      (snap) {
+        bookings = snap.docs.map(_bookingFromDoc).toList()
+          ..sort((a, b) {
+            final cmpDate = b.bookingDate.compareTo(a.bookingDate);
+            if (cmpDate != 0) return cmpDate;
+            return a.startTime.compareTo(b.startTime);
+          });
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('Firestore bookings stream error: $e');
+      },
+    );
+
+    _transactionSub = _transactions.snapshots().listen(
+      (snap) {
+        transactions = snap.docs.map(_txFromDoc).toList();
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('Firestore transactions stream error: $e');
+      },
+    );
+
+    _reviewSub = _reviews.snapshots().listen(
+      (snap) {
+        reviews = snap.docs.map(_reviewFromDoc).toList();
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('Firestore reviews stream error: $e');
+      },
+    );
   }
 
   Future<void> _loadOnce() async {
@@ -957,9 +995,8 @@ class FirebaseService extends ChangeNotifier {
         .map((snap) => snap.docs.map((d) => _txFromDoc(d)).toList());
   }
 
-
   Future<void> markPaymentPaid(int bookingId, String method, {double tipAmount = 0.0}) async {
-    // Update local memory instantly
+
     final txIdx = transactions.indexWhere((t) => t.bookingId == bookingId);
     if (txIdx != -1) {
       transactions[txIdx] = transactions[txIdx].copyWith(
@@ -970,7 +1007,7 @@ class FirebaseService extends ChangeNotifier {
       notifyListeners();
     }
 
-    // Update transaction on Firestore
+    // Update transaction
     final txSnap = await _transactions
         .where('bookingId', isEqualTo: bookingId)
         .limit(1)
