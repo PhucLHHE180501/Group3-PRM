@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:barber_booking_app/features/auth/screens/login_screen.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
+
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -45,13 +46,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               const Icon(Icons.account_circle, size: 64, color: Colors.grey),
               const SizedBox(height: 16),
-              const Text('Bạn chưa đăng nhập', style: TextStyle(color: Colors.white, fontSize: 16)),
+              const Text(
+                'Bạn chưa đăng nhập',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
                   );
                 },
                 child: const Text('Đăng Nhập Ngay'),
@@ -78,7 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
               );
             },
-          )
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -99,7 +105,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ? NetworkImage(avatar)
                           : null,
                       child: avatar.isEmpty
-                          ? const Icon(Icons.person, size: 50, color: Colors.white)
+                          ? const Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.white,
+                            )
                           : null,
                     ),
                   ),
@@ -119,12 +129,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFD4AF37).withOpacity(0.2),
+                color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: const Color(0xFFD4AF37)),
               ),
               child: Text(
-                u.role == 'customer' ? 'Khách Hàng Thân Thiết' : 'Tài Khoản ${u.role.toUpperCase()}',
+                u.role == 'customer'
+                    ? 'Khách Hàng Thân Thiết'
+                    : 'Tài Khoản ${u.role.toUpperCase()}',
                 style: const TextStyle(
                   color: Color(0xFFD4AF37),
                   fontSize: 12,
@@ -201,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFD4AF37).withOpacity(0.15),
+              color: const Color(0xFFD4AF37).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: const Color(0xFFD4AF37), size: 22),
@@ -213,10 +225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 Text(

@@ -16,9 +16,7 @@ class CskhScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chăm Sóc Khách Hàng (CSKH)'),
-      ),
+      appBar: AppBar(title: const Text('Chăm Sóc Khách Hàng (CSKH)')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -35,14 +33,16 @@ class CskhScreen extends StatelessWidget {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.3)),
+                border: Border.all(
+                  color: const Color(0xFFD4AF37).withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFD4AF37).withOpacity(0.2),
+                      color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -71,7 +71,7 @@ class CskhScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -96,7 +96,10 @@ class CskhScreen extends StatelessWidget {
               subtitle: '1900 8888 (Miễn phí cuộc gọi)',
               actionText: 'Gọi ngay',
               onTap: () {
-                _showContactSnackbar(context, 'Đang kết nối cuộc gọi đến Hotline: 1900 8888');
+                _showContactSnackbar(
+                  context,
+                  'Đang kết nối cuộc gọi đến Hotline: 1900 8888',
+                );
               },
             ),
             const SizedBox(height: 12),
@@ -124,7 +127,10 @@ class CskhScreen extends StatelessWidget {
               subtitle: 'fb.com/barbershop.official',
               actionText: 'Truy cập',
               onTap: () {
-                _showContactSnackbar(context, 'Đang mở trang Fanpage Facebook...');
+                _showContactSnackbar(
+                  context,
+                  'Đang mở trang Fanpage Facebook...',
+                );
               },
             ),
             const SizedBox(height: 12),
@@ -138,7 +144,10 @@ class CskhScreen extends StatelessWidget {
               subtitle: '123 Đường Nam Kỳ Khởi Nghĩa, Quận 1, TP.HCM',
               actionText: 'Xem bản đồ',
               onTap: () {
-                _showContactSnackbar(context, 'Đang mở Google Maps chỉ đường...');
+                _showContactSnackbar(
+                  context,
+                  'Đang mở Google Maps chỉ đường...',
+                );
               },
             ),
           ],
@@ -174,7 +183,7 @@ class CskhScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.15),
+                    color: iconColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(icon, color: iconColor, size: 24),
@@ -195,16 +204,22 @@ class CskhScreen extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: const TextStyle(color: Colors.grey, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD4AF37).withOpacity(0.2),
+                    color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: const Color(0xFFD4AF37)),
                   ),

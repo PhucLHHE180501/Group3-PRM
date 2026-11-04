@@ -3,22 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
 import 'package:barber_booking_app/shared/widgets/add_review_dialog.dart';
+import 'package:barber_booking_app/shared/widgets/app_network_image.dart';
+import 'package:barber_booking_app/shared/widgets/full_screen_image_viewer.dart';
+
 import '../booking/booking_screen.dart';
 import '../profile/edit_profile_screen.dart';
 
 class BarberDetailScreen extends StatefulWidget {
   final BarberModel barber;
 
-  const BarberDetailScreen({
-    super.key,
-    required this.barber,
-  });
+  const BarberDetailScreen({super.key, required this.barber});
 
   @override
   State<BarberDetailScreen> createState() => _BarberDetailScreenState();
 }
 
-class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTickerProviderStateMixin {
+class _BarberDetailScreenState extends State<BarberDetailScreen>
+    with SingleTickerProviderStateMixin {
   final FirebaseService _dataService = FirebaseService();
   late TabController _tabController;
 
@@ -57,13 +58,26 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: const Color(0xFF1E1E1E),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: const Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: Color(0xFFD4AF37), size: 28),
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Color(0xFFD4AF37),
+                size: 28,
+              ),
               SizedBox(width: 8),
               Expanded(
-                child: Text('Yêu Cầu Thông Tin', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'Yêu Cầu Thông Tin',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -85,10 +99,15 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                 Navigator.pop(ctx);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const EditProfileScreen(),
+                  ),
                 );
               },
-              child: const Text('Cập Nhật Ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Cập Nhật Ngay',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -111,7 +130,9 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
     if (!canReview) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Bạn đã gửi đánh giá cho Barber này rồi! (Mỗi người dùng chỉ được đánh giá 1 lần)'),
+          content: Text(
+            'Bạn đã gửi đánh giá cho Barber này rồi! (Mỗi người dùng chỉ được đánh giá 1 lần)',
+          ),
           backgroundColor: Colors.orange,
         ),
       );
@@ -169,17 +190,14 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                 fit: StackFit.expand,
                 children: [
                   barber.avatarUrl != null && barber.avatarUrl!.isNotEmpty
-                      ? Image.network(
-                          barber.avatarUrl!,
-                          fit: BoxFit.cover,
-                        )
+                      ? Image.network(barber.avatarUrl!, fit: BoxFit.cover)
                       : Container(color: const Color(0xFF2C2C2C)),
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.8),
+                          Colors.black.withValues(alpha: 0.8),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -202,15 +220,22 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD4AF37).withOpacity(0.2),
+                          color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: const Color(0xFFD4AF37)),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.star, color: Color(0xFFD4AF37), size: 16),
+                            const Icon(
+                              Icons.star,
+                              color: Color(0xFFD4AF37),
+                              size: 16,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${barber.avgRating} (${barber.reviewCount} đánh giá)',
@@ -225,9 +250,12 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                       ),
                       const SizedBox(width: 10),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.2),
+                          color: Colors.blue.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: Colors.blueAccent),
                         ),
@@ -247,7 +275,11 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                   // Specialty
                   Row(
                     children: [
-                      const Icon(Icons.content_cut, color: Color(0xFFD4AF37), size: 20),
+                      const Icon(
+                        Icons.content_cut,
+                        color: Color(0xFFD4AF37),
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -266,7 +298,11 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                   // Bio
                   Text(
                     barber.bio,
-                    style: const TextStyle(color: Colors.grey, fontSize: 14, height: 1.4),
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                      height: 1.4,
+                    ),
                   ),
                   const SizedBox(height: 24),
 
@@ -277,7 +313,10 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                     labelColor: const Color(0xFFD4AF37),
                     unselectedLabelColor: Colors.grey,
                     tabs: [
-                      Tab(text: 'Kiểu Tóc Đã Làm (${barber.portfolioImages.length})'),
+                      Tab(
+                        text:
+                            'Kiểu Tóc Đã Làm (${barber.portfolioImages.where((u) => u.contains('cloudinary.com')).length})',
+                      ),
                       Tab(text: 'Đánh Giá (${reviews.length})'),
                     ],
                   ),
@@ -289,33 +328,53 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                     child: TabBarView(
                       controller: _tabController,
                       children: [
-                        // Tab 1: Portfolio Images Grid
-                        barber.portfolioImages.isEmpty
-                            ? const Center(
+                        // Tab 1: Portfolio Images Grid (Chỉ hiển thị ảnh Cloudinary & có thể phóng to xem toàn màn hình)
+                        Builder(
+                          builder: (context) {
+                            final cloudinaryImages = barber.portfolioImages
+                                .where((u) => u.contains('cloudinary.com'))
+                                .toList();
+                            if (cloudinaryImages.isEmpty) {
+                              return const Center(
                                 child: Text(
-                                  'Chưa có hình ảnh sản phẩm',
+                                  'Chưa có hình ảnh sản phẩm từ Cloudinary',
                                   style: TextStyle(color: Colors.grey),
                                 ),
-                              )
-                            : GridView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 10,
-                                  childAspectRatio: 1,
-                                ),
-                                itemCount: barber.portfolioImages.length,
-                                itemBuilder: (context, index) {
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      barber.portfolioImages[index],
-                                      fit: BoxFit.cover,
-                                    ),
-                                  );
-                                },
+                              );
+                            }
+                            return GridView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                                childAspectRatio: 1,
                               ),
+                              itemCount: cloudinaryImages.length,
+                              itemBuilder: (context, index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => FullScreenImageViewer(
+                                          images: cloudinaryImages,
+                                          initialIndex: index,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: AppNetworkImage(
+                                    imageUrl: cloudinaryImages[index],
+                                    fit: BoxFit.cover,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
 
                         // Tab 2: Reviews List
                         Column(
@@ -323,26 +382,40 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                             Padding(
                               padding: const EdgeInsets.only(bottom: 12.0),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text(
                                     'Nhận xét từ khách hàng',
-                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   OutlinedButton.icon(
                                     icon: Icon(
-                                      hasReviewed ? Icons.check : Icons.rate_review_outlined,
+                                      hasReviewed
+                                          ? Icons.check
+                                          : Icons.rate_review_outlined,
                                       size: 16,
-                                      color: hasReviewed ? Colors.grey : const Color(0xFFD4AF37),
+                                      color: hasReviewed
+                                          ? Colors.grey
+                                          : const Color(0xFFD4AF37),
                                     ),
                                     label: Text(
-                                      hasReviewed ? 'Đã đánh giá' : 'Viết đánh giá',
+                                      hasReviewed
+                                          ? 'Đã đánh giá'
+                                          : 'Viết đánh giá',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: hasReviewed ? Colors.grey : const Color(0xFFD4AF37),
+                                        color: hasReviewed
+                                            ? Colors.grey
+                                            : const Color(0xFFD4AF37),
                                       ),
                                     ),
-                                    onPressed: hasReviewed ? null : _openAddReviewDialog,
+                                    onPressed: hasReviewed
+                                        ? null
+                                        : _openAddReviewDialog,
                                   ),
                                 ],
                               ),
@@ -357,31 +430,41 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                                     )
                                   : ListView.separated(
                                       itemCount: reviews.length,
-                                      separatorBuilder: (context, index) => const SizedBox(height: 10),
+                                      separatorBuilder: (context, index) =>
+                                          const SizedBox(height: 10),
                                       itemBuilder: (context, index) {
                                         final rev = reviews[index];
                                         return Container(
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
                                             color: const Color(0xFF1E1E1E),
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(color: Colors.white10),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white10,
+                                            ),
                                           ),
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Row(
                                                 children: [
                                                   CircleAvatar(
                                                     radius: 16,
-                                                    backgroundColor: const Color(0xFFD4AF37),
+                                                    backgroundColor:
+                                                        const Color(0xFFD4AF37),
                                                     child: Text(
-                                                      rev.customerName.isNotEmpty
+                                                      rev
+                                                              .customerName
+                                                              .isNotEmpty
                                                           ? rev.customerName[0]
                                                           : 'K',
                                                       style: const TextStyle(
                                                         color: Colors.black,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
                                                   ),
@@ -391,21 +474,26 @@ class _BarberDetailScreenState extends State<BarberDetailScreen> with SingleTick
                                                       rev.customerName,
                                                       style: const TextStyle(
                                                         color: Colors.white,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
                                                   ),
                                                   Row(
-                                                    children: List.generate(5, (starIdx) {
+                                                    children: List.generate(5, (
+                                                      starIdx,
+                                                    ) {
                                                       return Icon(
                                                         starIdx < rev.rating
                                                             ? Icons.star
                                                             : Icons.star_border,
-                                                        color: const Color(0xFFD4AF37),
+                                                        color: const Color(
+                                                          0xFFD4AF37,
+                                                        ),
                                                         size: 14,
                                                       );
                                                     }),
-                                                  )
+                                                  ),
                                                 ],
                                               ),
                                               const SizedBox(height: 8),

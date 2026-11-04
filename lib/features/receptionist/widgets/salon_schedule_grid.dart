@@ -69,7 +69,8 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
   String _formatDateHeader(DateTime date) {
     final now = DateTime.now();
     if (_isSameDay(date, now)) return 'Hôm nay (${date.day}/${date.month})';
-    if (_isSameDay(date, now.add(const Duration(days: 1)))) return 'Ngày mai (${date.day}/${date.month})';
+    if (_isSameDay(date, now.add(const Duration(days: 1))))
+      return 'Ngày mai (${date.day}/${date.month})';
     return '${date.day}/${date.month}/${date.year}';
   }
 
@@ -112,7 +113,11 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
           color: const Color(0xFF1E1E1E),
           child: Row(
             children: [
-              const Icon(Icons.calendar_today, color: Color(0xFFD4AF37), size: 20),
+              const Icon(
+                Icons.calendar_today,
+                color: Color(0xFFD4AF37),
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -128,10 +133,16 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
               ),
               // Quick date chips
               IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.white70, size: 16),
+                icon: const Icon(
+                  Icons.arrow_back_ios,
+                  color: Colors.white70,
+                  size: 16,
+                ),
                 onPressed: () {
                   setState(() {
-                    _selectedDate = _selectedDate.subtract(const Duration(days: 1));
+                    _selectedDate = _selectedDate.subtract(
+                      const Duration(days: 1),
+                    );
                   });
                 },
               ),
@@ -142,10 +153,17 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                   });
                   _scrollToCurrentTimeSlot();
                 },
-                child: const Text('Hôm nay', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13)),
+                child: const Text(
+                  'Hôm nay',
+                  style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13),
+                ),
               ),
               IconButton(
-                icon: const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
+                icon: const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.white70,
+                  size: 16,
+                ),
                 onPressed: () {
                   setState(() {
                     _selectedDate = _selectedDate.add(const Duration(days: 1));
@@ -153,12 +171,18 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.edit_calendar, color: Color(0xFFD4AF37), size: 20),
+                icon: const Icon(
+                  Icons.edit_calendar,
+                  color: Color(0xFFD4AF37),
+                  size: 20,
+                ),
                 onPressed: () async {
                   final picked = await showDatePicker(
                     context: context,
                     initialDate: _selectedDate,
-                    firstDate: DateTime.now().subtract(const Duration(days: 30)),
+                    firstDate: DateTime.now().subtract(
+                      const Duration(days: 30),
+                    ),
                     lastDate: DateTime.now().add(const Duration(days: 60)),
                     builder: (context, child) {
                       return Theme(
@@ -200,7 +224,11 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
               ),
               const Text(
                 'Chạm ô để xếp khách hoặc xem chi tiết',
-                style: TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontStyle: FontStyle.italic),
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ],
           ),
@@ -404,7 +432,10 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
           ),
         ),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white70, fontSize: 11),
+        ),
       ],
     );
   }
@@ -416,7 +447,10 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
   }) {
     // Find matching booking for this barber and time slot
     final match = bookings.cast<BookingModel?>().firstWhere(
-      (b) => b != null && b.staffId == barber.userId && _dataService.getOccupiedSlotsForBooking(b).contains(slot),
+      (b) =>
+          b != null &&
+          b.staffId == barber.userId &&
+          _dataService.getOccupiedSlotsForBooking(b).contains(slot),
       orElse: () => null,
     );
 
@@ -432,7 +466,10 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
             decoration: BoxDecoration(
               color: const Color(0xFF222222),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.white12, style: BorderStyle.solid),
+              border: Border.all(
+                color: Colors.white12,
+                style: BorderStyle.solid,
+              ),
             ),
             child: const Center(
               child: Row(
@@ -440,7 +477,10 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                 children: [
                   Icon(Icons.add, color: Colors.greenAccent, size: 14),
                   SizedBox(width: 2),
-                  Text('Trống', style: TextStyle(color: Colors.greenAccent, fontSize: 11)),
+                  Text(
+                    'Trống',
+                    style: TextStyle(color: Colors.greenAccent, fontSize: 11),
+                  ),
                 ],
               ),
             ),
@@ -461,7 +501,7 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
           margin: const EdgeInsets.all(3),
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: statusColor.withOpacity(0.18),
+            color: statusColor.withValues(alpha: 0.18),
             borderRadius: BorderRadius.circular(6),
             border: Border.all(color: statusColor, width: 1.2),
           ),
@@ -485,18 +525,29 @@ class _SalonScheduleGridState extends State<SalonScheduleGrid> {
                   ),
                   if (match.isWalkIn)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 3,
+                        vertical: 1,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.3),
+                        color: Colors.orange.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(3),
                       ),
-                      child: const Text('Tại quầy', style: TextStyle(color: Colors.orangeAccent, fontSize: 8)),
+                      child: const Text(
+                        'Tại quầy',
+                        style: TextStyle(
+                          color: Colors.orangeAccent,
+                          fontSize: 8,
+                        ),
+                      ),
                     ),
                 ],
               ),
               const SizedBox(height: 2),
               Text(
-                match.services.isNotEmpty ? match.services.first.name : 'Dịch vụ',
+                match.services.isNotEmpty
+                    ? match.services.first.name
+                    : 'Dịch vụ',
                 style: const TextStyle(color: Colors.white70, fontSize: 10),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
