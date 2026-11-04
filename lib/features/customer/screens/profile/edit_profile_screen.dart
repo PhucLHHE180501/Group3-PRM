@@ -60,7 +60,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Cập nhật hồ sơ thành công! Bạn có thể tiếp tục đặt lịch.'),
+          content: Text(
+            'Cập nhật hồ sơ thành công! Bạn có thể tiếp tục đặt lịch.',
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -72,9 +74,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chỉnh Sửa Hồ Sơ'),
-      ),
+      appBar: AppBar(title: const Text('Chỉnh Sửa Hồ Sơ')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Form(
@@ -86,13 +86,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD4AF37).withOpacity(0.15),
+                  color: const Color(0xFFD4AF37).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.4)),
+                  border: Border.all(
+                    color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
+                  ),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.info_outline, color: Color(0xFFD4AF37), size: 20),
+                    Icon(
+                      Icons.info_outline,
+                      color: Color(0xFFD4AF37),
+                      size: 20,
+                    ),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -106,7 +112,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               const Text(
                 'Họ và Tên (*)',
-                style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -127,7 +136,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               const Text(
                 'Số Điện Thoại (*)',
-                style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -136,7 +148,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   hintText: 'Nhập số điện thoại liên hệ',
-                  prefixIcon: Icon(Icons.phone_android_outlined, color: Colors.grey),
+                  prefixIcon: Icon(
+                    Icons.phone_android_outlined,
+                    color: Colors.grey,
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -152,7 +167,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               const Text(
                 'Email',
-                style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -168,7 +186,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               const Text(
                 'Địa Chỉ',
-                style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -177,14 +198,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   hintText: 'Nhập địa chỉ nhà...',
-                  prefixIcon: Icon(Icons.location_on_outlined, color: Colors.grey),
+                  prefixIcon: Icon(
+                    Icons.location_on_outlined,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
 
               const Text(
                 'Hình Ảnh Đại Diện (URL)',
-                style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextFormField(

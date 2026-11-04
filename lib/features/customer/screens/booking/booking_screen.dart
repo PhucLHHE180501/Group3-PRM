@@ -3,15 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/models/service_model.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
+
 import '../profile/edit_profile_screen.dart';
 
 class BookingScreen extends StatefulWidget {
   final BarberModel? initialBarber;
 
-  const BookingScreen({
-    super.key,
-    this.initialBarber,
-  });
+  const BookingScreen({super.key, this.initialBarber});
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();
@@ -33,7 +31,8 @@ class _BookingScreenState extends State<BookingScreen> {
     _dataService.addListener(_onDataChanged);
 
     _selectedDate = DateTime.now();
-    _selectedTimeSlot = _dataService.allTimeSlots.first; // Default '08:00' or '09:00'
+    _selectedTimeSlot =
+        _dataService.allTimeSlots.first; // Default '08:00' or '09:00'
 
     // Default select first service
     if (_dataService.services.isNotEmpty) {
@@ -79,7 +78,9 @@ class _BookingScreenState extends State<BookingScreen> {
     // 3. Pre-fill barber choice from last booking if customer didn't pass initialBarber
     if (widget.initialBarber == null) {
       try {
-        final prevBarber = _dataService.barbers.firstWhere((b) => b.userId == last.staffId);
+        final prevBarber = _dataService.barbers.firstWhere(
+          (b) => b.userId == last.staffId,
+        );
         _selectedBarber = prevBarber;
         _autoAssignBarber = false;
       } catch (_) {
@@ -113,7 +114,10 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   int get totalDurationMin {
-    return _selectedServices.fold<int>(0, (sum, item) => sum + item.durationMin);
+    return _selectedServices.fold<int>(
+      0,
+      (sum, item) => sum + item.durationMin,
+    );
   }
 
   int get requiredSlotsCount {
@@ -126,16 +130,27 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   void _checkAndAdjustTimeSlot() {
-    final currentReq = _dataService.getRequiredSlots(_selectedTimeSlot, requiredSlotsCount);
+    final currentReq = _dataService.getRequiredSlots(
+      _selectedTimeSlot,
+      requiredSlotsCount,
+    );
     final currentAvail = currentReq != null
-        ? _dataService.getAvailableBarbers(_selectedDate, _selectedTimeSlot, requiredSlotsCount: requiredSlotsCount)
+        ? _dataService.getAvailableBarbers(
+            _selectedDate,
+            _selectedTimeSlot,
+            requiredSlotsCount: requiredSlotsCount,
+          )
         : <BarberModel>[];
 
     if (currentAvail.isEmpty) {
       for (final slot in _dataService.allTimeSlots) {
         final req = _dataService.getRequiredSlots(slot, requiredSlotsCount);
         if (req != null) {
-          final avail = _dataService.getAvailableBarbers(_selectedDate, slot, requiredSlotsCount: requiredSlotsCount);
+          final avail = _dataService.getAvailableBarbers(
+            _selectedDate,
+            slot,
+            requiredSlotsCount: requiredSlotsCount,
+          );
           if (avail.isNotEmpty) {
             _selectedTimeSlot = slot;
             break;
@@ -153,13 +168,26 @@ class _BookingScreenState extends State<BookingScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: const Color(0xFF1E1E1E),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: const Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: Color(0xFFD4AF37), size: 28),
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Color(0xFFD4AF37),
+                size: 28,
+              ),
               SizedBox(width: 8),
               Expanded(
-                child: Text('Yêu Cầu Thông Tin', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'Yêu Cầu Thông Tin',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -181,10 +209,15 @@ class _BookingScreenState extends State<BookingScreen> {
                 Navigator.pop(ctx);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const EditProfileScreen(),
+                  ),
                 );
               },
-              child: const Text('Cập Nhật Ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Cập Nhật Ngay',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -199,7 +232,10 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
-    final reqSlots = _dataService.getRequiredSlots(_selectedTimeSlot, requiredSlotsCount);
+    final reqSlots = _dataService.getRequiredSlots(
+      _selectedTimeSlot,
+      requiredSlotsCount,
+    );
     if (reqSlots == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -239,7 +275,9 @@ class _BookingScreenState extends State<BookingScreen> {
       finalBarber = availableBarbers.first;
     } else {
       // Check if selected barber is still free at this slot
-      final isStillFree = availableBarbers.any((b) => b.userId == _selectedBarber!.userId);
+      final isStillFree = availableBarbers.any(
+        (b) => b.userId == _selectedBarber!.userId,
+      );
       if (isStillFree) {
         finalBarber = _selectedBarber!;
       } else {
@@ -252,7 +290,9 @@ class _BookingScreenState extends State<BookingScreen> {
       selectedServices: _selectedServices,
       date: _selectedDate,
       timeSlot: _selectedTimeSlot,
-      note: _noteController.text.trim().isNotEmpty ? _noteController.text.trim() : null,
+      note: _noteController.text.trim().isNotEmpty
+          ? _noteController.text.trim()
+          : null,
     );
 
     showDialog(
@@ -264,26 +304,54 @@ class _BookingScreenState extends State<BookingScreen> {
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 28),
             SizedBox(width: 10),
-            Text('Đặt Lịch Thành Công!', style: TextStyle(color: Colors.white, fontSize: 18)),
+            Text(
+              'Đặt Lịch Thành Công!',
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Mã cuộc hẹn: #${booking.id}', style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
+            Text(
+              'Mã cuộc hẹn: #${booking.id}',
+              style: const TextStyle(
+                color: Color(0xFFD4AF37),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('Barber phục vụ: ${booking.staffName}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            Text('Ngày đặt: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}', style: const TextStyle(color: Colors.white)),
+            Text(
+              'Barber phục vụ: ${booking.staffName}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Ngày đặt: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+              style: const TextStyle(color: Colors.white),
+            ),
             Text(
               requiredSlotsCount > 1
                   ? 'Khung giờ: ${booking.startTime} - ${booking.endTime} ($requiredSlotsCount slot liên tiếp)'
                   : 'Khung giờ: ${booking.startTime} - ${booking.endTime}',
               style: const TextStyle(color: Colors.white),
             ),
-            Text('Dịch vụ: ${_selectedServices.map((s) => s.name).join(", ")}', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            Text(
+              'Dịch vụ: ${_selectedServices.map((s) => s.name).join(", ")}',
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
             const SizedBox(height: 8),
-            Text('Tổng tiền: ${_formatPrice(booking.totalPrice)}', style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              'Tổng tiền: ${_formatPrice(booking.totalPrice)}',
+              style: const TextStyle(
+                color: Color(0xFFD4AF37),
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
           ],
         ),
         actions: [
@@ -296,8 +364,11 @@ class _BookingScreenState extends State<BookingScreen> {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Back to previous screen
             },
-            child: const Text('Hoàn Tất', style: TextStyle(fontWeight: FontWeight.bold)),
-          )
+            child: const Text(
+              'Hoàn Tất',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
         ],
       ),
     );
@@ -316,9 +387,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Đặt Lịch Cắt Tóc'),
-      ),
+      appBar: AppBar(title: const Text('Đặt Lịch Cắt Tóc')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -336,22 +405,35 @@ class _BookingScreenState extends State<BookingScreen> {
             if (_selectedServices.isNotEmpty) ...[
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD4AF37).withOpacity(0.12),
+                  color: const Color(0xFFD4AF37).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.3)),
+                  border: Border.all(
+                    color: const Color(0xFFD4AF37).withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.access_time_filled, color: Color(0xFFD4AF37), size: 18),
+                    const Icon(
+                      Icons.access_time_filled,
+                      color: Color(0xFFD4AF37),
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         requiredSlotsCount > 1
                             ? 'Tổng thời gian: $totalDurationMin phút ➔ Cần $requiredSlotsCount khung giờ liên tiếp'
                             : 'Tổng thời gian: $totalDurationMin phút (1 khung giờ)',
-                        style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 13, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Color(0xFFD4AF37),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -366,7 +448,9 @@ class _BookingScreenState extends State<BookingScreen> {
               separatorBuilder: (context, index) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 final service = services[index];
-                final isSelected = _selectedServices.any((s) => s.id == service.id);
+                final isSelected = _selectedServices.any(
+                  (s) => s.id == service.id,
+                );
 
                 return CheckboxListTile(
                   value: isSelected,
@@ -376,12 +460,18 @@ class _BookingScreenState extends State<BookingScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
-                      color: isSelected ? const Color(0xFFD4AF37) : Colors.white10,
+                      color: isSelected
+                          ? const Color(0xFFD4AF37)
+                          : Colors.white10,
                     ),
                   ),
                   title: Text(
                     service.name,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                   subtitle: Text(
                     '${_formatPrice(service.price)} • ${service.durationMin} phút',
@@ -392,7 +482,9 @@ class _BookingScreenState extends State<BookingScreen> {
                       if (checked == true) {
                         _selectedServices.add(service);
                       } else {
-                        _selectedServices.removeWhere((s) => s.id == service.id);
+                        _selectedServices.removeWhere(
+                          (s) => s.id == service.id,
+                        );
                       }
                       _checkAndAdjustTimeSlot();
                     });
@@ -416,7 +508,11 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
                 Text(
                   '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ],
             ),
@@ -438,7 +534,10 @@ class _BookingScreenState extends State<BookingScreen> {
                           : Colors.white70,
                     ),
                     icon: const Icon(Icons.today, size: 16),
-                    label: const Text('Hôm nay', style: TextStyle(fontSize: 12)),
+                    label: const Text(
+                      'Hôm nay',
+                      style: TextStyle(fontSize: 12),
+                    ),
                     onPressed: () {
                       setState(() {
                         _selectedDate = DateTime.now();
@@ -452,19 +551,32 @@ class _BookingScreenState extends State<BookingScreen> {
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(
-                        color: _isSameDay(_selectedDate, DateTime.now().add(const Duration(days: 1)))
+                        color:
+                            _isSameDay(
+                              _selectedDate,
+                              DateTime.now().add(const Duration(days: 1)),
+                            )
                             ? const Color(0xFFD4AF37)
                             : Colors.white24,
                       ),
-                      foregroundColor: _isSameDay(_selectedDate, DateTime.now().add(const Duration(days: 1)))
+                      foregroundColor:
+                          _isSameDay(
+                            _selectedDate,
+                            DateTime.now().add(const Duration(days: 1)),
+                          )
                           ? const Color(0xFFD4AF37)
                           : Colors.white70,
                     ),
                     icon: const Icon(Icons.event, size: 16),
-                    label: const Text('Ngày mai', style: TextStyle(fontSize: 12)),
+                    label: const Text(
+                      'Ngày mai',
+                      style: TextStyle(fontSize: 12),
+                    ),
                     onPressed: () {
                       setState(() {
-                        _selectedDate = DateTime.now().add(const Duration(days: 1));
+                        _selectedDate = DateTime.now().add(
+                          const Duration(days: 1),
+                        );
                         _checkAndAdjustTimeSlot();
                       });
                     },
@@ -472,7 +584,10 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.edit_calendar, color: Color(0xFFD4AF37)),
+                  icon: const Icon(
+                    Icons.edit_calendar,
+                    color: Color(0xFFD4AF37),
+                  ),
                   tooltip: 'Chọn ngày khác',
                   onPressed: () async {
                     final picked = await showDatePicker(
@@ -508,10 +623,17 @@ class _BookingScreenState extends State<BookingScreen> {
                 final slot = timeSlots[index];
                 final isSelected = _selectedTimeSlot == slot;
 
-                final reqSlots = _dataService.getRequiredSlots(slot, requiredSlotsCount);
+                final reqSlots = _dataService.getRequiredSlots(
+                  slot,
+                  requiredSlotsCount,
+                );
                 final isEnoughSlotsLeft = reqSlots != null;
                 final availableBarbersForSlot = isEnoughSlotsLeft
-                    ? _dataService.getAvailableBarbers(_selectedDate, slot, requiredSlotsCount: requiredSlotsCount)
+                    ? _dataService.getAvailableBarbers(
+                        _selectedDate,
+                        slot,
+                        requiredSlotsCount: requiredSlotsCount,
+                      )
                     : <BarberModel>[];
                 final isSlotAvailable = availableBarbersForSlot.isNotEmpty;
 
@@ -551,15 +673,15 @@ class _BookingScreenState extends State<BookingScreen> {
                       color: isSelected
                           ? const Color(0xFFD4AF37)
                           : isSlotAvailable
-                              ? const Color(0xFF1E1E1E)
-                              : const Color(0xFF141414),
+                          ? const Color(0xFF1E1E1E)
+                          : const Color(0xFF141414),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: isSelected
                             ? const Color(0xFFD4AF37)
                             : isSlotAvailable
-                                ? Colors.white12
-                                : Colors.red.withOpacity(0.3),
+                            ? Colors.white12
+                            : Colors.red.withValues(alpha: 0.3),
                         width: isSelected ? 2 : 1,
                       ),
                     ),
@@ -569,11 +691,13 @@ class _BookingScreenState extends State<BookingScreen> {
                         color: isSelected
                             ? Colors.black
                             : isSlotAvailable
-                                ? Colors.white
-                                : Colors.white30,
+                            ? Colors.white
+                            : Colors.white30,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
-                        decoration: !isSlotAvailable ? TextDecoration.lineThrough : null,
+                        decoration: !isSlotAvailable
+                            ? TextDecoration.lineThrough
+                            : null,
                       ),
                     ),
                   ),
@@ -595,15 +719,22 @@ class _BookingScreenState extends State<BookingScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.2),
+                    color: Colors.green.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.greenAccent),
                   ),
                   child: Text(
                     '${availableBarbers.length} thợ rảnh',
-                    style: const TextStyle(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.greenAccent,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -622,19 +753,29 @@ class _BookingScreenState extends State<BookingScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.15),
+                  color: Colors.red.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.redAccent.withOpacity(0.4)),
+                  border: Border.all(
+                    color: Colors.redAccent.withValues(alpha: 0.4),
+                  ),
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.event_busy, color: Colors.redAccent, size: 36),
+                    const Icon(
+                      Icons.event_busy,
+                      color: Colors.redAccent,
+                      size: 36,
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       requiredSlotsCount > 1
                           ? 'Rất tiếc! Không có thợ nào rảnh đủ $requiredSlotsCount khung giờ liên tiếp từ $_selectedTimeSlot.'
                           : 'Rất tiếc! Tất cả thợ đều đã có khách vào lúc $_selectedTimeSlot.',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 4),
@@ -658,10 +799,14 @@ class _BookingScreenState extends State<BookingScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: _autoAssignBarber ? const Color(0xFFD4AF37).withOpacity(0.15) : const Color(0xFF1E1E1E),
+                    color: _autoAssignBarber
+                        ? const Color(0xFFD4AF37).withValues(alpha: 0.15)
+                        : const Color(0xFF1E1E1E),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: _autoAssignBarber ? const Color(0xFFD4AF37) : Colors.white10,
+                      color: _autoAssignBarber
+                          ? const Color(0xFFD4AF37)
+                          : Colors.white10,
                       width: _autoAssignBarber ? 2 : 1,
                     ),
                   ),
@@ -670,12 +815,16 @@ class _BookingScreenState extends State<BookingScreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: _autoAssignBarber ? const Color(0xFFD4AF37) : const Color(0xFF2A2A2A),
+                          color: _autoAssignBarber
+                              ? const Color(0xFFD4AF37)
+                              : const Color(0xFF2A2A2A),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.shuffle,
-                          color: _autoAssignBarber ? Colors.black : Colors.white70,
+                          color: _autoAssignBarber
+                              ? Colors.black
+                              : Colors.white70,
                           size: 20,
                         ),
                       ),
@@ -687,20 +836,29 @@ class _BookingScreenState extends State<BookingScreen> {
                             Text(
                               'Salon tự xếp thợ (Rảnh ngẫu nhiên)',
                               style: TextStyle(
-                                color: _autoAssignBarber ? const Color(0xFFD4AF37) : Colors.white,
+                                color: _autoAssignBarber
+                                    ? const Color(0xFFD4AF37)
+                                    : Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                               ),
                             ),
                             const Text(
                               'Hệ thống tự động phân công thợ rảnh phục vụ bạn nhanh nhất',
-                              style: TextStyle(color: Colors.grey, fontSize: 11),
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 11,
+                              ),
                             ),
                           ],
                         ),
                       ),
                       if (_autoAssignBarber)
-                        const Icon(Icons.check_circle, color: Color(0xFFD4AF37), size: 20),
+                        const Icon(
+                          Icons.check_circle,
+                          color: Color(0xFFD4AF37),
+                          size: 20,
+                        ),
                     ],
                   ),
                 ),
@@ -716,7 +874,9 @@ class _BookingScreenState extends State<BookingScreen> {
                   itemCount: availableBarbers.length,
                   itemBuilder: (context, index) {
                     final barber = availableBarbers[index];
-                    final isSelected = !_autoAssignBarber && _selectedBarber?.userId == barber.userId;
+                    final isSelected =
+                        !_autoAssignBarber &&
+                        _selectedBarber?.userId == barber.userId;
 
                     return GestureDetector(
                       onTap: () {
@@ -733,7 +893,9 @@ class _BookingScreenState extends State<BookingScreen> {
                           color: const Color(0xFF1E1E1E),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected ? const Color(0xFFD4AF37) : Colors.white10,
+                            color: isSelected
+                                ? const Color(0xFFD4AF37)
+                                : Colors.white10,
                             width: isSelected ? 2 : 1,
                           ),
                         ),
@@ -745,13 +907,17 @@ class _BookingScreenState extends State<BookingScreen> {
                               backgroundImage: barber.avatarUrl != null
                                   ? NetworkImage(barber.avatarUrl!)
                                   : null,
-                              child: barber.avatarUrl == null ? const Icon(Icons.person, size: 20) : null,
+                              child: barber.avatarUrl == null
+                                  ? const Icon(Icons.person, size: 20)
+                                  : null,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               barber.fullName.split('(').first.trim(),
                               style: TextStyle(
-                                color: isSelected ? const Color(0xFFD4AF37) : Colors.white,
+                                color: isSelected
+                                    ? const Color(0xFFD4AF37)
+                                    : Colors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -761,26 +927,40 @@ class _BookingScreenState extends State<BookingScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.star, color: Color(0xFFD4AF37), size: 12),
+                                const Icon(
+                                  Icons.star,
+                                  color: Color(0xFFD4AF37),
+                                  size: 12,
+                                ),
                                 const SizedBox(width: 2),
                                 Text(
                                   '${barber.avgRating}',
-                                  style: const TextStyle(color: Colors.grey, fontSize: 11),
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 11,
+                                  ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 2),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 1,
+                              ),
                               decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.2),
+                                color: Colors.green.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 requiredSlotsCount > 1
                                     ? 'Rảnh $requiredSlotsCount slot từ $_selectedTimeSlot'
                                     : 'Rảnh lúc $_selectedTimeSlot',
-                                style: const TextStyle(color: Colors.greenAccent, fontSize: 9, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  color: Colors.greenAccent,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],
@@ -823,7 +1003,10 @@ class _BookingScreenState extends State<BookingScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Tổng thanh toán:', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                const Text(
+                  'Tổng thanh toán:',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
                 Text(
                   _formatPrice(totalPrice),
                   style: const TextStyle(
@@ -844,10 +1027,13 @@ class _BookingScreenState extends State<BookingScreen> {
                     foregroundColor: Colors.black,
                   ),
                   onPressed: _confirmBooking,
-                  child: const Text('XÁC NHẬN ĐẶT LỊCH', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'XÁC NHẬN ĐẶT LỊCH',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

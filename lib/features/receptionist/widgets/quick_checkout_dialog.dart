@@ -5,10 +5,7 @@ import 'package:barber_booking_app/shared/services/firebase_service.dart';
 class QuickCheckoutDialog extends StatefulWidget {
   final BookingModel booking;
 
-  const QuickCheckoutDialog({
-    super.key,
-    required this.booking,
-  });
+  const QuickCheckoutDialog({super.key, required this.booking});
 
   @override
   State<QuickCheckoutDialog> createState() => _QuickCheckoutDialogState();
@@ -57,7 +54,11 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                       Expanded(
                         child: Text(
                           'Thanh Toán & Hóa Đơn',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -81,7 +82,11 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                 Expanded(
                   child: Text(
                     'Khách: ${widget.booking.customerName ?? "Khách #${widget.booking.customerId}"}',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -89,7 +94,10 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                 const SizedBox(width: 8),
                 Text(
                   'Mã: #${widget.booking.id}',
-                  style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
+                  style: const TextStyle(
+                    color: Color(0xFFD4AF37),
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -115,9 +123,21 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: Text(service.name, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                            child: Text(
+                              service.name,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
-                          Text(_formatPrice(service.price), style: const TextStyle(color: Colors.white, fontSize: 13)),
+                          Text(
+                            _formatPrice(service.price),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -125,7 +145,13 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('TỔNG CỘNG:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      const Text(
+                        'TỔNG CỘNG:',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       Text(
                         _formatPrice(widget.booking.totalPrice),
                         style: const TextStyle(
@@ -143,7 +169,11 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
             const SizedBox(height: 16),
             const Text(
               'Phương thức thanh toán:',
-              style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 13),
+              style: TextStyle(
+                color: Color(0xFFD4AF37),
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
             ),
             const SizedBox(height: 8),
 
@@ -154,29 +184,40 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                   child: InkWell(
                     onTap: () => setState(() => _paymentMethod = 'cash'),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: _paymentMethod == 'cash'
-                            ? const Color(0xFFD4AF37).withOpacity(0.15)
+                            ? const Color(0xFFD4AF37).withValues(alpha: 0.15)
                             : const Color(0xFF2A2A2A),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: _paymentMethod == 'cash' ? const Color(0xFFD4AF37) : Colors.transparent,
+                          color: _paymentMethod == 'cash'
+                              ? const Color(0xFFD4AF37)
+                              : Colors.transparent,
                         ),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             Icons.money,
-                            color: _paymentMethod == 'cash' ? const Color(0xFFD4AF37) : Colors.white54,
+                            color: _paymentMethod == 'cash'
+                                ? const Color(0xFFD4AF37)
+                                : Colors.white54,
                             size: 18,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'Tiền mặt',
                             style: TextStyle(
-                              color: _paymentMethod == 'cash' ? Colors.white : Colors.white70,
-                              fontWeight: _paymentMethod == 'cash' ? FontWeight.bold : FontWeight.normal,
+                              color: _paymentMethod == 'cash'
+                                  ? Colors.white
+                                  : Colors.white70,
+                              fontWeight: _paymentMethod == 'cash'
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                               fontSize: 13,
                             ),
                           ),
@@ -188,31 +229,43 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: InkWell(
-                    onTap: () => setState(() => _paymentMethod = 'bank_transfer'),
+                    onTap: () =>
+                        setState(() => _paymentMethod = 'bank_transfer'),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: _paymentMethod == 'bank_transfer'
-                            ? const Color(0xFFD4AF37).withOpacity(0.15)
+                            ? const Color(0xFFD4AF37).withValues(alpha: 0.15)
                             : const Color(0xFF2A2A2A),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: _paymentMethod == 'bank_transfer' ? const Color(0xFFD4AF37) : Colors.transparent,
+                          color: _paymentMethod == 'bank_transfer'
+                              ? const Color(0xFFD4AF37)
+                              : Colors.transparent,
                         ),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             Icons.qr_code,
-                            color: _paymentMethod == 'bank_transfer' ? const Color(0xFFD4AF37) : Colors.white54,
+                            color: _paymentMethod == 'bank_transfer'
+                                ? const Color(0xFFD4AF37)
+                                : Colors.white54,
                             size: 18,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'Chuyển khoản QR',
                             style: TextStyle(
-                              color: _paymentMethod == 'bank_transfer' ? Colors.white : Colors.white70,
-                              fontWeight: _paymentMethod == 'bank_transfer' ? FontWeight.bold : FontWeight.normal,
+                              color: _paymentMethod == 'bank_transfer'
+                                  ? Colors.white
+                                  : Colors.white70,
+                              fontWeight: _paymentMethod == 'bank_transfer'
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                               fontSize: 12,
                             ),
                           ),
@@ -230,7 +283,10 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Đóng', style: TextStyle(color: Colors.white54)),
+                  child: const Text(
+                    'Đóng',
+                    style: TextStyle(color: Colors.white54),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton.icon(
@@ -239,7 +295,10 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                     foregroundColor: Colors.black,
                   ),
                   icon: const Icon(Icons.check_circle, size: 18),
-                  label: const Text('Xác Nhận Ðã Thu Tiền', style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: const Text(
+                    'Xác Nhận Ðã Thu Tiền',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   onPressed: _handleConfirmPayment,
                 ),
               ],

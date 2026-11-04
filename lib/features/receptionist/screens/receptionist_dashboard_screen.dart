@@ -14,10 +14,12 @@ class ReceptionistDashboardScreen extends StatefulWidget {
   const ReceptionistDashboardScreen({super.key});
 
   @override
-  State<ReceptionistDashboardScreen> createState() => _ReceptionistDashboardScreenState();
+  State<ReceptionistDashboardScreen> createState() =>
+      _ReceptionistDashboardScreenState();
 }
 
-class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScreen> {
+class _ReceptionistDashboardScreenState
+    extends State<ReceptionistDashboardScreen> {
   final FirebaseService _dataService = FirebaseService();
   int _currentIndex = 0;
 
@@ -114,7 +116,9 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
   // View individual barber schedule modal
   void _viewBarberSchedule(BarberModel barber) {
     final now = DateTime.now();
-    final barberBookings = _dataService.getBarberBookings(barber.userId).where((b) {
+    final barberBookings = _dataService.getBarberBookings(barber.userId).where((
+      b,
+    ) {
       return b.bookingDate.year == now.year &&
           b.bookingDate.month == now.month &&
           b.bookingDate.day == now.day &&
@@ -138,8 +142,12 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: barber.avatarUrl != null ? NetworkImage(barber.avatarUrl!) : null,
-                    child: barber.avatarUrl == null ? const Icon(Icons.person, size: 20) : null,
+                    backgroundImage: barber.avatarUrl != null
+                        ? NetworkImage(barber.avatarUrl!)
+                        : null,
+                    child: barber.avatarUrl == null
+                        ? const Icon(Icons.person, size: 20)
+                        : null,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -148,11 +156,18 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                       children: [
                         Text(
                           barber.fullName,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                         Text(
                           'Lịch làm việc hôm nay (${now.day}/${now.month})',
-                          style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
+                          style: const TextStyle(
+                            color: Color(0xFFD4AF37),
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -179,7 +194,8 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                   child: ListView.separated(
                     shrinkWrap: true,
                     itemCount: barberBookings.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 8),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 8),
                     itemBuilder: (context, idx) {
                       final b = barberBookings[idx];
                       final color = _getStatusColor(b.status);
@@ -188,7 +204,9 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                         decoration: BoxDecoration(
                           color: const Color(0xFF2A2A2A),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: color.withOpacity(0.4)),
+                          border: Border.all(
+                            color: color.withValues(alpha: 0.4),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -198,23 +216,37 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                               children: [
                                 Text(
                                   '${b.startTime} - ${b.customerName ?? "Khách #${b.customerId}"}',
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
                                 ),
                                 Text(
                                   b.services.map((s) => s.name).join(', '),
-                                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 11,
+                                  ),
                                 ),
                               ],
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
-                                color: color.withOpacity(0.2),
+                                color: color.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 _getStatusText(b.status),
-                                style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: color,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],
@@ -237,11 +269,14 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
 
     // Filter bookings by status & search
     final filteredBookings = allBookings.where((b) {
-      final matchStatus = _selectedStatusFilter == 'all' || b.status == _selectedStatusFilter;
+      final matchStatus =
+          _selectedStatusFilter == 'all' || b.status == _selectedStatusFilter;
       final query = _searchQuery.toLowerCase().trim();
-      final matchSearch = query.isEmpty ||
+      final matchSearch =
+          query.isEmpty ||
           b.id.toString().contains(query) ||
-          (b.customerName != null && b.customerName!.toLowerCase().contains(query)) ||
+          (b.customerName != null &&
+              b.customerName!.toLowerCase().contains(query)) ||
           (b.customerPhone != null && b.customerPhone!.contains(query)) ||
           b.staffName.toLowerCase().contains(query);
       return matchStatus && matchSearch;
@@ -255,7 +290,8 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           leading: CircleAvatar(
             radius: 20,
             backgroundColor: const Color(0xFF2A2A2A),
-            child: (user?.avatarUrl != null && user!.avatarUrl!.trim().isNotEmpty)
+            child:
+                (user?.avatarUrl != null && user!.avatarUrl!.trim().isNotEmpty)
                 ? ClipOval(
                     child: Image.network(
                       user.avatarUrl!,
@@ -300,10 +336,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           ),
           subtitle: const Text(
             'Lễ Tân Điều Phối Salon',
-            style: TextStyle(
-              color: Color(0xFFD4AF37),
-              fontSize: 11,
-            ),
+            style: TextStyle(color: Color(0xFFD4AF37), fontSize: 11),
           ),
         ),
         actions: [
@@ -370,7 +403,10 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           backgroundColor: const Color(0xFF1E1E1E),
           selectedItemColor: const Color(0xFFD4AF37),
           unselectedItemColor: Colors.white54,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
           unselectedLabelStyle: const TextStyle(fontSize: 11),
           type: BottomNavigationBarType.fixed,
           items: const [
@@ -398,8 +434,14 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
   // TAB 2: BARBERS MONITOR
   Widget _buildBarbersMonitorTab() {
     final barbers = _dataService.barbers;
-    final availableCount = barbers.where((b) => _dataService.getBarberDynamicStatus(b.userId) == 'available').length;
-    final busyCount = barbers.where((b) => _dataService.getBarberDynamicStatus(b.userId) == 'busy').length;
+    final availableCount = barbers
+        .where(
+          (b) => _dataService.getBarberDynamicStatus(b.userId) == 'available',
+        )
+        .length;
+    final busyCount = barbers
+        .where((b) => _dataService.getBarberDynamicStatus(b.userId) == 'busy')
+        .length;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -439,7 +481,11 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
 
         const Text(
           'Giám sát thợ cắt tóc thời gian thực:',
-          style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 15),
+          style: TextStyle(
+            color: Color(0xFFD4AF37),
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
         ),
         const SizedBox(height: 10),
 
@@ -467,7 +513,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -490,7 +536,11 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           const SizedBox(height: 4),
           Text(
             value,
-            style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 20),
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
         ],
       ),
@@ -510,10 +560,18 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             decoration: InputDecoration(
               hintText: 'Tìm theo SĐT, Tên khách hoặc Mã booking...',
               hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
-              prefixIcon: const Icon(Icons.search, color: Color(0xFFD4AF37), size: 20),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: Color(0xFFD4AF37),
+                size: 20,
+              ),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.clear, color: Colors.white54, size: 18),
+                      icon: const Icon(
+                        Icons.clear,
+                        color: Colors.white54,
+                        size: 18,
+                      ),
                       onPressed: () {
                         _searchController.clear();
                         setState(() => _searchQuery = '');
@@ -522,7 +580,10 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                   : null,
               filled: true,
               fillColor: const Color(0xFF1E1E1E),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: Colors.white12),
@@ -564,14 +625,18 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                     children: [
                       Icon(Icons.event_busy, color: Colors.white24, size: 48),
                       SizedBox(height: 10),
-                      Text('Không tìm thấy lịch hẹn phù hợp.', style: TextStyle(color: Colors.grey)),
+                      Text(
+                        'Không tìm thấy lịch hẹn phù hợp.',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ],
                   ),
                 )
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
                   itemCount: bookings.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final booking = bookings[index];
                     return _buildBookingCard(booking);
@@ -584,18 +649,21 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
 
   Widget _buildBookingCard(BookingModel booking) {
     final statusColor = _getStatusColor(booking.status);
-    final txIdx = _dataService.transactions.indexWhere((t) => t.bookingId == booking.id);
-    final isPaid = txIdx != -1 && _dataService.transactions[txIdx].status == 'paid';
+    final txIdx = _dataService.transactions.indexWhere(
+      (t) => t.bookingId == booking.id,
+    );
+    final isPaid =
+        txIdx != -1 && _dataService.transactions[txIdx].status == 'paid';
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: statusColor.withOpacity(0.3)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -616,19 +684,30 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                   children: [
                     Text(
                       '#${booking.id} • ${booking.startTime}',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
                     ),
                     if (booking.isWalkIn)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.2),
+                          color: Colors.orange.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(color: Colors.orangeAccent),
                         ),
                         child: const Text(
                           'Walk-in Tại Quầy',
-                          style: TextStyle(color: Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: Colors.orangeAccent,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                   ],
@@ -636,15 +715,22 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.2),
+                  color: statusColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: statusColor),
                 ),
                 child: Text(
                   _getStatusText(booking.status),
-                  style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -659,7 +745,11 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               Flexible(
                 child: Text(
                   booking.customerName ?? 'Khách #${booking.customerId}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -681,7 +771,11 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               const SizedBox(width: 6),
               Text(
                 'Thợ: ${booking.staffName}',
-                style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 13, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -696,7 +790,11 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             const SizedBox(height: 4),
             Text(
               'Ghi chú: ${booking.note}',
-              style: const TextStyle(color: Colors.white38, fontSize: 12, fontStyle: FontStyle.italic),
+              style: const TextStyle(
+                color: Colors.white38,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
           const SizedBox(height: 8),
@@ -707,12 +805,18 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             children: [
               Text(
                 'Tổng tiền: ${_formatPrice(booking.totalPrice)}',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: isPaid ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
+                  color: isPaid
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -735,22 +839,33 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             alignment: WrapAlignment.end,
             children: [
               // Reassign button (always available except cancelled/completed)
-              if (booking.status != 'cancelled' && booking.status != 'completed')
+              if (booking.status != 'cancelled' &&
+                  booking.status != 'completed')
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white70,
                     side: const BorderSide(color: Colors.white24),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                   ),
                   icon: const Icon(Icons.sync_alt, size: 15),
-                  label: const Text('Đổi thợ/giờ', style: TextStyle(fontSize: 12)),
+                  label: const Text(
+                    'Đổi thợ/giờ',
+                    style: TextStyle(fontSize: 12),
+                  ),
                   onPressed: () => _openReassignDialog(booking),
                 ),
 
               // Check-in button
               if (booking.status == 'confirmed')
                 ElevatedButton.icon(
-                  icon: const Icon(Icons.qr_code_scanner, size: 16, color: Colors.black),
+                  icon: const Icon(
+                    Icons.qr_code_scanner,
+                    size: 16,
+                    color: Colors.black,
+                  ),
                   label: const Text('Check-in Khách'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purpleAccent,
@@ -764,7 +879,11 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               // Start Haircut button
               if (booking.status == 'checked_in')
                 ElevatedButton.icon(
-                  icon: const Icon(Icons.play_arrow, size: 16, color: Colors.black),
+                  icon: const Icon(
+                    Icons.play_arrow,
+                    size: 16,
+                    color: Colors.black,
+                  ),
                   label: const Text('Vào Ghế Cắt'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
@@ -778,9 +897,15 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               // Quick Checkout / Payment button
               if (!isPaid && booking.status != 'cancelled')
                 ElevatedButton.icon(
-                  icon: const Icon(Icons.attach_money, size: 16, color: Colors.black),
+                  icon: const Icon(
+                    Icons.attach_money,
+                    size: 16,
+                    color: Colors.black,
+                  ),
                   label: const Text('Thu Tiền & Đóng Đơn'),
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD4AF37),
+                  ),
                   onPressed: () => _openCheckoutDialog(booking),
                 ),
             ],
@@ -810,7 +935,11 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                 children: [
                   Text(
                     'Chi Ti?t �on #${booking.id}',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, color: Colors.white54),
@@ -820,13 +949,22 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               ),
               const Divider(color: Colors.white12),
               const SizedBox(height: 8),
-              _buildDetailRow('Khách hàng:', booking.customerName ?? 'Khách #${booking.customerId}'),
+              _buildDetailRow(
+                'Khách hàng:',
+                booking.customerName ?? 'Khách #${booking.customerId}',
+              ),
               if (booking.customerPhone != null)
                 _buildDetailRow('Số điện thoại:', booking.customerPhone!),
               _buildDetailRow('Thợ phục vụ:', booking.staffName),
-              _buildDetailRow('Khung giờ:', '${booking.startTime} - ${booking.endTime}'),
+              _buildDetailRow(
+                'Khung giờ:',
+                '${booking.startTime} - ${booking.endTime}',
+              ),
               _buildDetailRow('Trạng thái:', _getStatusText(booking.status)),
-              _buildDetailRow('Dịch vụ:', booking.services.map((s) => s.name).join(', ')),
+              _buildDetailRow(
+                'Dịch vụ:',
+                booking.services.map((s) => s.name).join(', '),
+              ),
               _buildDetailRow('Tổng tiền:', _formatPrice(booking.totalPrice)),
               const SizedBox(height: 16),
               Wrap(
@@ -834,30 +972,47 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  if (booking.status != 'cancelled' && booking.status != 'completed')
+                  if (booking.status != 'cancelled' &&
+                      booking.status != 'completed')
                     OutlinedButton(
                       onPressed: () {
                         Navigator.pop(context);
                         _openReassignDialog(booking);
                       },
-                      child: const Text('Đổi thợ/giờ', style: TextStyle(color: Colors.white70)),
+                      child: const Text(
+                        'Đổi thợ/giờ',
+                        style: TextStyle(color: Colors.white70),
+                      ),
                     ),
                   if (booking.status == 'confirmed')
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.purpleAccent),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purpleAccent,
+                      ),
                       onPressed: () {
                         _dataService.checkInBooking(booking.id);
                         Navigator.pop(context);
                       },
-                      child: const Text('Check-in Ngay', style: TextStyle(color: Colors.black)),
+                      child: const Text(
+                        'Check-in Ngay',
+                        style: TextStyle(color: Colors.black),
+                      ),
                     ),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4AF37),
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
                       _openCheckoutDialog(booking);
                     },
-                    child: const Text('Thu Tiền', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      'Thu Tiền',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -876,10 +1031,20 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         children: [
           SizedBox(
             width: 110,
-            child: Text(label, style: const TextStyle(color: Colors.white54, fontSize: 13)),
+            child: Text(
+              label,
+              style: const TextStyle(color: Colors.white54, fontSize: 13),
+            ),
           ),
           Expanded(
-            child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),

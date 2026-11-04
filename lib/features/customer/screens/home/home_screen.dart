@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:barber_booking_app/shared/models/user_model.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
+
 import '../barber/barber_detail_screen.dart';
 import '../barber/barber_list_screen.dart';
 import '../booking/booking_screen.dart';
@@ -48,13 +49,26 @@ class _BarberHomePageState extends State<BarberHomePage> {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: const Color(0xFF1E1E1E),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: const Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: Color(0xFFD4AF37), size: 28),
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Color(0xFFD4AF37),
+                size: 28,
+              ),
               SizedBox(width: 8),
               Expanded(
-                child: Text('Yêu Cầu Thông Tin', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'Yêu Cầu Thông Tin',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -76,10 +90,15 @@ class _BarberHomePageState extends State<BarberHomePage> {
                 Navigator.pop(ctx);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const EditProfileScreen(),
+                  ),
                 );
               },
-              child: const Text('Cập Nhật Ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Cập Nhật Ngay',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -120,20 +139,28 @@ class _BarberHomePageState extends State<BarberHomePage> {
               const SizedBox(height: 24),
 
               // --- Popular Services ---
-              _buildSectionTitle('Dịch Vụ Nổi Bật', onViewAll: () {
-                _navigateToBooking(context);
-              }),
+              _buildSectionTitle(
+                'Dịch Vụ Nổi Bật',
+                onViewAll: () {
+                  _navigateToBooking(context);
+                },
+              ),
               const SizedBox(height: 12),
               _buildServicesGrid(services),
               const SizedBox(height: 24),
 
               // --- Top Barbers ---
-              _buildSectionTitle('Barber Hàng Đầu', onViewAll: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const BarberListScreen()),
-                );
-              }),
+              _buildSectionTitle(
+                'Barber Hàng Đầu',
+                onViewAll: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const BarberListScreen(),
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: 12),
               _buildBarbersList(barbers),
             ],
@@ -145,7 +172,9 @@ class _BarberHomePageState extends State<BarberHomePage> {
 
   // Header Widget (Click user image -> open Profile)
   Widget _buildHeader(UserModel? user) {
-    final userName = (user?.fullName.isNotEmpty == true) ? user!.fullName : 'Khách Hàng';
+    final userName = (user?.fullName.isNotEmpty == true)
+        ? user!.fullName
+        : 'Khách Hàng';
     final avatarUrl = user?.avatarUrl;
 
     return Row(
@@ -157,7 +186,9 @@ class _BarberHomePageState extends State<BarberHomePage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
                 );
               },
               child: Stack(
@@ -184,9 +215,13 @@ class _BarberHomePageState extends State<BarberHomePage> {
                         color: Color(0xFFD4AF37),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.edit, size: 10, color: Colors.black),
+                      child: const Icon(
+                        Icons.edit,
+                        size: 10,
+                        color: Colors.black,
+                      ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -195,7 +230,9 @@ class _BarberHomePageState extends State<BarberHomePage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
                 );
               },
               child: Column(
@@ -248,7 +285,9 @@ class _BarberHomePageState extends State<BarberHomePage> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.3)),
+        border: Border.all(
+          color: const Color(0xFFD4AF37).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -257,7 +296,10 @@ class _BarberHomePageState extends State<BarberHomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFD4AF37),
                     borderRadius: BorderRadius.circular(6),
@@ -296,11 +338,7 @@ class _BarberHomePageState extends State<BarberHomePage> {
             ),
           ),
           const SizedBox(width: 10),
-          const Icon(
-            Icons.content_cut,
-            size: 70,
-            color: Color(0xFFD4AF37),
-          ),
+          const Icon(Icons.content_cut, size: 70, color: Color(0xFFD4AF37)),
         ],
       ),
     );
@@ -317,7 +355,11 @@ class _BarberHomePageState extends State<BarberHomePage> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.headset_mic_outlined, color: Color(0xFFD4AF37), size: 28),
+          const Icon(
+            Icons.headset_mic_outlined,
+            color: Color(0xFFD4AF37),
+            size: 28,
+          ),
           const SizedBox(width: 12),
           const Expanded(
             child: Column(
@@ -325,7 +367,11 @@ class _BarberHomePageState extends State<BarberHomePage> {
               children: [
                 Text(
                   'Cần Hỗ Trợ Từ Salon?',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
                 Text(
                   'Liên hệ CSKH 24/7 để được giải đáp',
@@ -403,7 +449,11 @@ class _BarberHomePageState extends State<BarberHomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(Icons.content_cut, color: Color(0xFFD4AF37), size: 24),
+                  const Icon(
+                    Icons.content_cut,
+                    color: Color(0xFFD4AF37),
+                    size: 24,
+                  ),
                   Text(
                     _formatPrice(service.price),
                     style: const TextStyle(
@@ -499,7 +549,11 @@ class _BarberHomePageState extends State<BarberHomePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.star, color: Color(0xFFD4AF37), size: 14),
+                      const Icon(
+                        Icons.star,
+                        color: Color(0xFFD4AF37),
+                        size: 14,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${barber.avgRating}',
