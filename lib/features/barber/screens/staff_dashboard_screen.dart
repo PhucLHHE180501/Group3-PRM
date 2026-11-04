@@ -12,6 +12,7 @@ import 'package:barber_booking_app/shared/models/user_model.dart';
 import 'package:barber_booking_app/shared/services/auth_session.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
 import 'package:barber_booking_app/shared/widgets/app_network_image.dart';
+import 'package:barber_booking_app/shared/widgets/full_screen_image_viewer.dart';
 
 class StaffDashboardScreen extends StatefulWidget {
   const StaffDashboardScreen({super.key});
@@ -1494,9 +1495,32 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
   }
 
   // ─── PORTFOLIO TAB ────────────────────────────────────────────────────
+  void _openFullScreenImage(List<String> images, int index) {
+    if (images.isEmpty) return;
+    final staffId = _session.currentUser?.id ?? _dataService.currentUser?.id;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FullScreenImageViewer(
+          images: images,
+          initialIndex: index,
+          onDelete: staffId != null
+              ? (url) async {
+                  await _dataService.removePortfolioImage(staffId, url);
+                  _loadDashboard(showLoading: false);
+                }
+              : null,
+        ),
+      ),
+    );
+  }
+
   Widget _buildPortfolioTab(List<String> images) {
-    final displayImages = images.take(4).toList();
-    final hasMore = images.length > 4;
+    // Chỉ hiển thị ảnh tải từ Cloudinary
+    final cloudinaryImages =
+        images.where((url) => url.contains('cloudinary.com')).toList();
+    final displayImages = cloudinaryImages.take(4).toList();
+    final hasMore = cloudinaryImages.length > 4;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -1514,9 +1538,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              if (hasMore || images.isNotEmpty)
+              if (hasMore || cloudinaryImages.isNotEmpty)
                 GestureDetector(
-                  onTap: () => _showAllPortfolio(images),
+                  onTap: () => _showAllPortfolio(cloudinaryImages),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -1542,17 +1566,18 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
           ),
           const SizedBox(height: 4),
           Text(
-            '${images.length} ảnh portfolio',
+            '${cloudinaryImages.length} ảnh portfolio (Cloudinary)',
             style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
           const SizedBox(height: 16),
           if (displayImages.isEmpty)
             _buildEmptyState(
               icon: Icons.photo_library_outlined,
-              message: 'Chưa có ảnh portfolio nào',
+              message:
+                  'Chưa có ảnh portfolio nào từ Cloudinary.\nHãy bấm nút "+" bên dưới để tải ảnh tác phẩm lên!',
             )
           else
-            _buildPortfolioGrid(displayImages, images, hasMore),
+            _buildPortfolioGrid(displayImages, cloudinaryImages, hasMore),
         ],
       ),
     );
@@ -1564,30 +1589,42 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     bool hasMore,
   ) {
     if (displayImages.length == 1) {
-      return AppNetworkImage(
-        imageUrl: displayImages[0],
-        height: 280,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        borderRadius: BorderRadius.circular(14),
+      return GestureDetector(
+        onTap: () => _openFullScreenImage(allImages, 0),
+        child: AppNetworkImage(
+          imageUrl: displayImages[0],
+          height: 280,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          borderRadius: BorderRadius.circular(14),
+        ),
       );
     }
 
     return Column(
       children: [
-        _buildPortfolioImageTile(displayImages[0], height: 200),
+        GestureDetector(
+          onTap: () => _openFullScreenImage(allImages, 0),
+          child: _buildPortfolioImageTile(displayImages[0], height: 200),
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
-              child: _buildPortfolioImageTile(displayImages[1], height: 130),
+              child: GestureDetector(
+                onTap: () => _openFullScreenImage(allImages, 1),
+                child: _buildPortfolioImageTile(displayImages[1], height: 130),
+              ),
             ),
             const SizedBox(width: 8),
             if (displayImages.length >= 3)
               Expanded(
                 child: Stack(
                   children: [
-                    _buildPortfolioImageTile(displayImages[2], height: 130),
+                    GestureDetector(
+                      onTap: () => _openFullScreenImage(allImages, 2),
+                      child: _buildPortfolioImageTile(displayImages[2], height: 130),
+                    ),
                     if (hasMore)
                       Positioned.fill(
                         child: GestureDetector(
@@ -1705,10 +1742,13 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                   childAspectRatio: 0.85,
                 ),
                 itemCount: images.length,
-                itemBuilder: (_, i) => AppNetworkImage(
-                  imageUrl: images[i],
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(12),
+                itemBuilder: (_, i) => GestureDetector(
+                  onTap: () => _openFullScreenImage(images, i),
+                  child: AppNetworkImage(
+                    imageUrl: images[i],
+                    fit: BoxFit.cover,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),

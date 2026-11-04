@@ -4,6 +4,7 @@ import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
 import 'package:barber_booking_app/shared/widgets/add_review_dialog.dart';
 import 'package:barber_booking_app/shared/widgets/app_network_image.dart';
+import 'package:barber_booking_app/shared/widgets/full_screen_image_viewer.dart';
 
 import '../booking/booking_screen.dart';
 import '../profile/edit_profile_screen.dart';
@@ -314,7 +315,7 @@ class _BarberDetailScreenState extends State<BarberDetailScreen>
                     tabs: [
                       Tab(
                         text:
-                            'Kiểu Tóc Đã Làm (${barber.portfolioImages.length})',
+                            'Kiểu Tóc Đã Làm (${barber.portfolioImages.where((u) => u.contains('cloudinary.com')).length})',
                       ),
                       Tab(text: 'Đánh Giá (${reviews.length})'),
                     ],
@@ -327,34 +328,53 @@ class _BarberDetailScreenState extends State<BarberDetailScreen>
                     child: TabBarView(
                       controller: _tabController,
                       children: [
-                        // Tab 1: Portfolio Images Grid
-                        barber.portfolioImages.isEmpty
-                            ? const Center(
+                        // Tab 1: Portfolio Images Grid (Chỉ hiển thị ảnh Cloudinary & có thể phóng to xem toàn màn hình)
+                        Builder(
+                          builder: (context) {
+                            final cloudinaryImages = barber.portfolioImages
+                                .where((u) => u.contains('cloudinary.com'))
+                                .toList();
+                            if (cloudinaryImages.isEmpty) {
+                              return const Center(
                                 child: Text(
-                                  'Chưa có hình ảnh sản phẩm',
+                                  'Chưa có hình ảnh sản phẩm từ Cloudinary',
                                   style: TextStyle(color: Colors.grey),
                                 ),
-                              )
-                            : GridView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      crossAxisSpacing: 10,
-                                      mainAxisSpacing: 10,
-                                      childAspectRatio: 1,
-                                    ),
-                                itemCount: barber.portfolioImages.length,
-                                itemBuilder: (context, index) {
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      barber.portfolioImages[index],
-                                      fit: BoxFit.cover,
-                                    ),
-                                  );
-                                },
+                              );
+                            }
+                            return GridView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                                childAspectRatio: 1,
                               ),
+                              itemCount: cloudinaryImages.length,
+                              itemBuilder: (context, index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => FullScreenImageViewer(
+                                          images: cloudinaryImages,
+                                          initialIndex: index,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: AppNetworkImage(
+                                    imageUrl: cloudinaryImages[index],
+                                    fit: BoxFit.cover,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
 
                         // Tab 2: Reviews List
                         Column(

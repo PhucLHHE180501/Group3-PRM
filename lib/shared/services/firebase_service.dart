@@ -1236,6 +1236,19 @@ class FirebaseService extends ChangeNotifier {
     }
   }
 
+  Future<void> removePortfolioImage(int userId, String imageUrl) async {
+    final snap = await _barbers
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
+    if (snap.docs.isNotEmpty) {
+      await snap.docs.first.reference.update({
+        'portfolioImages': FieldValue.arrayRemove([imageUrl]),
+      });
+      notifyListeners();
+    }
+  }
+
   // =========================================================================
   // LOGOUT
   // =========================================================================
