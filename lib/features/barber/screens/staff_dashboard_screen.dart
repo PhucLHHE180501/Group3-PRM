@@ -1,4 +1,4 @@
-﻿﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -40,7 +40,6 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
   static const Color _cardDark = Color(0xFF1A1A1A);
   static const Color _cardDark2 = Color(0xFF222222);
   static const Color _gold = Color(0xFFD4AF37);
-  static const Color _goldLight = Color(0xFFF0D060);
   static const Color _white = Colors.white;
 
   @override
@@ -332,7 +331,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
               ),
             )
           : null,
-      body: NestedScrollView(
+      body: SafeArea(
+        top: false,
+        child: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           _buildSliverAppBar(context, user, barberObj),
         ],
@@ -374,6 +375,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -390,20 +392,21 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
       pinned: true,
       backgroundColor: _cardDark,
       flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1A1200), Color(0xFF2C2000), Color(0xFF0F0F0F)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+        background: LayoutBuilder(
+          builder: (context, constraints) {
+            return ClipRect(
+              child: Container(
+                color: _cardDark,
+                child: SingleChildScrollView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                   const SizedBox(height: 48),
                   Row(
                     children: [
@@ -415,11 +418,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                               padding: const EdgeInsets.all(3),
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [_gold, _goldLight, _gold],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
+                                color: _gold,
                               ),
                               child: ClipOval(
                                 child: user.avatarUrl != null && user.avatarUrl!.isNotEmpty
@@ -481,12 +480,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                                 vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFFD4AF37),
-                                    Color(0xFFF0D060),
-                                  ],
-                                ),
+                                color: _gold,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Text(
@@ -558,10 +552,14 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                   ),
                   const SizedBox(height: 16),
                   _buildWorkStatusRow(barberObj),
-                ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
       title: const Text(
@@ -606,9 +604,10 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
           onPressed: () {
             _session.logout();
             _dataService.logout();
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => const LoginScreen()),
+              (route) => false,
             );
           },
         ),
@@ -814,15 +813,8 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
               width: 52,
               margin: const EdgeInsets.only(right: 8, top: 4, bottom: 4),
               decoration: BoxDecoration(
-                gradient: isSelected
-                    ? const LinearGradient(
-                        colors: [_gold, _goldLight],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
                 color: isSelected
-                    ? null
+                    ? _gold
                     : (isToday ? _gold.withValues(alpha: 0.12) : _cardDark2),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
@@ -833,15 +825,6 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                             : Colors.white10),
                   width: isSelected ? 2 : 1,
                 ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: _gold.withValues(alpha: 0.35),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : null,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -917,7 +900,28 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
         _selectedDate.month == now.month &&
         _selectedDate.day == now.day;
 
-    return Column(
+    final bookedSlots = <MapEntry<String, BookingModel>>[];
+    for (final slot in allSlots) {
+      BookingModel? b;
+      for (final item in selectedDayBookings) {
+        if (item is BookingModel && item.startTime == slot) {
+          b = item;
+          break;
+        }
+      }
+      if (b != null) bookedSlots.add(MapEntry(slot, b));
+    }
+
+    final pastCount = bookedSlots
+        .where((entry) => _isSlotPast(entry.key, entry.value))
+        .length;
+    final visibleSlots = bookedSlots.where((entry) {
+      if (_hidePastSlots && _isSlotPast(entry.key, entry.value)) return false;
+      return true;
+    }).toList();
+
+    return ListView(
+      padding: EdgeInsets.only(bottom: 24 + MediaQuery.paddingOf(context).bottom),
       children: [
         // ── Week strip
         Container(
@@ -954,12 +958,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _gold.withValues(alpha: 0.15),
-                  _gold.withValues(alpha: 0.05),
-                ],
-              ),
+              color: _cardDark2,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: _gold.withValues(alpha: 0.3)),
             ),
@@ -971,18 +970,23 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                   size: 18,
                 ),
                 const SizedBox(width: 10),
-                Column(
+                Expanded(
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Text(
+                        Flexible(
+                          child: Text(
                           _formatDate(_selectedDate),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: _gold,
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
                           ),
+                        ),
                         ),
                         if (isSelectedToday) ...[
                           const SizedBox(width: 8),
@@ -1014,206 +1018,142 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ],
+                  ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 _buildLegend(),
               ],
             ),
           ),
         ),
-        // ── Filter and Slot Counter Row
-        Builder(
-          builder: (context) {
-            final bookedSlots = <MapEntry<String, BookingModel>>[];
-            for (final slot in allSlots) {
-              BookingModel? b;
-              for (final item in selectedDayBookings) {
-                if (item is BookingModel && item.startTime == slot) {
-                  b = item;
-                  break;
-                }
-              }
-              if (b != null) {
-                bookedSlots.add(MapEntry(slot, b));
-              }
-            }
-
-            final pastCount = bookedSlots
-                .where((entry) => _isSlotPast(entry.key, entry.value))
-                .length;
-
-            final visibleSlots = bookedSlots.where((entry) {
-              if (_hidePastSlots && _isSlotPast(entry.key, entry.value)) {
-                return false;
-              }
-              return true;
-            }).toList();
-
-            return Expanded(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Lịch cắt (${visibleSlots.length})',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Flexible(
+                child: InkWell(
+                  onTap: () => setState(() => _hidePastSlots = !_hidePastSlots),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _hidePastSlots
+                          ? _gold.withValues(alpha: 0.15)
+                          : _cardDark2,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: _hidePastSlots ? _gold : Colors.white24,
+                      ),
+                    ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        Icon(
+                          _hidePastSlots
+                              ? Icons.visibility_off_rounded
+                              : Icons.visibility_rounded,
+                          size: 14,
+                          color: _hidePastSlots ? _gold : Colors.white70,
+                        ),
+                        const SizedBox(width: 5),
                         Text(
-                          'Lịch cắt (${visibleSlots.length})',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
+                          _hidePastSlots ? 'Ẩn slot đã qua' : 'Hiện tất cả',
+                          style: TextStyle(
+                            color: _hidePastSlots ? _gold : Colors.white70,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        InkWell(
-                          onTap: () => setState(() => _hidePastSlots = !_hidePastSlots),
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
+                        if (pastCount > 0 && _hidePastSlots) ...[
+                          const SizedBox(width: 5),
+                          Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
+                              horizontal: 5,
+                              vertical: 1,
                             ),
                             decoration: BoxDecoration(
-                              color: _hidePastSlots
-                                  ? _gold.withValues(alpha: 0.15)
-                                  : _cardDark2,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: _hidePastSlots ? _gold : Colors.white24,
+                              color: _gold,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '$pastCount',
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  _hidePastSlots
-                                      ? Icons.visibility_off_rounded
-                                      : Icons.visibility_rounded,
-                                  size: 14,
-                                  color: _hidePastSlots ? _gold : Colors.white70,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  _hidePastSlots
-                                      ? 'Ẩn slot đã qua'
-                                      : 'Hiện tất cả',
-                                  style: TextStyle(
-                                    color: _hidePastSlots ? _gold : Colors.white70,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                if (pastCount > 0 && _hidePastSlots) ...[
-                                  const SizedBox(width: 5),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 5,
-                                      vertical: 1,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: _gold,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      '$pastCount',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: visibleSlots.isEmpty
-                        ? LayoutBuilder(
-                            builder: (context, constraints) {
-                              return SingleChildScrollView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    minHeight: constraints.maxHeight,
-                                  ),
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                        vertical: 16,
-                                      ),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            pastCount > 0
-                                                ? Icons.history_toggle_off_rounded
-                                                : Icons.event_busy_rounded,
-                                            color: pastCount > 0
-                                                ? _gold
-                                                : Colors.grey,
-                                            size: 40,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Text(
-                                            pastCount > 0
-                                                ? 'Đã qua tất cả $pastCount slot lịch hẹn'
-                                                : 'Không có lịch hẹn nào',
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                          if (pastCount > 0 && _hidePastSlots) ...[
-                                            const SizedBox(height: 10),
-                                            TextButton.icon(
-                                              onPressed: () => setState(
-                                                  () => _hidePastSlots = false),
-                                              icon: const Icon(
-                                                Icons.visibility_rounded,
-                                                size: 16,
-                                                color: _gold,
-                                              ),
-                                              label: Text(
-                                                'Xem lại $pastCount slot đã qua',
-                                                style: const TextStyle(
-                                                  color: _gold,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                            itemCount: visibleSlots.length,
-                            itemBuilder: (context, index) {
-                              final entry = visibleSlots[index];
-                              return _buildTimeSlotRow(entry.key, entry.value);
-                            },
-                          ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (visibleSlots.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+            child: Column(
+              children: [
+                Icon(
+                  pastCount > 0
+                      ? Icons.history_toggle_off_rounded
+                      : Icons.event_busy_rounded,
+                  color: pastCount > 0 ? _gold : Colors.grey,
+                  size: 40,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  pastCount > 0
+                      ? 'Đã qua tất cả $pastCount slot lịch hẹn'
+                      : 'Không có lịch hẹn nào',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+                if (pastCount > 0 && _hidePastSlots) ...[
+                  const SizedBox(height: 10),
+                  TextButton.icon(
+                    onPressed: () => setState(() => _hidePastSlots = false),
+                    icon: const Icon(
+                      Icons.visibility_rounded,
+                      size: 16,
+                      color: _gold,
+                    ),
+                    label: Text(
+                      'Xem lại $pastCount slot đã qua',
+                      style: const TextStyle(
+                        color: _gold,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                 ],
-              ),
-            );
-          },
-        ),
+              ],
+            ),
+          )
+        else
+          ...visibleSlots.map(
+            (entry) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildTimeSlotRow(entry.key, entry.value),
+            ),
+          ),
       ],
     );
   }
@@ -1523,7 +1463,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     final hasMore = cloudinaryImages.length > 4;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1547,9 +1487,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [_gold, _goldLight],
-                      ),
+                      color: _gold,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
@@ -1764,7 +1702,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     final hasMore = reviews.length > 3;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1790,9 +1728,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [_gold, _goldLight],
-                      ),
+                      color: _gold,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
@@ -1829,14 +1765,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            _gold.withValues(alpha: 0.12),
-            _gold.withValues(alpha: 0.04),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: _cardDark2,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: _gold.withValues(alpha: 0.3)),
       ),
@@ -2568,9 +2497,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                                     padding: const EdgeInsets.all(3),
                                     decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
-                                      gradient: LinearGradient(
-                                        colors: [_gold, _goldLight],
-                                      ),
+                                      color: _gold,
                                     ),
                                     child: ClipOval(
                                       child: user.avatarUrl != null && user.avatarUrl!.isNotEmpty

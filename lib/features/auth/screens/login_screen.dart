@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:barber_booking_app/features/auth/screens/register_screen.dart';
 import 'package:barber_booking_app/features/barber/screens/staff_dashboard_screen.dart';
 import 'package:barber_booking_app/features/customer/screens/main_navigation_screen.dart';
 import 'package:barber_booking_app/features/receptionist/screens/receptionist_dashboard_screen.dart';
@@ -19,14 +20,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final FirebaseService _dataService = FirebaseService();
   final AuthSession _session = AuthSession();
   final FirebaseAuthService _firebaseAuth = FirebaseAuthService();
-  final _phoneController = TextEditingController(text: '0900000002');
-  final _passwordController = TextEditingController(text: '123456');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isSubmitting = false;
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -46,20 +47,22 @@ class _LoginScreenState extends State<LoginScreen> {
         break;
     }
 
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => targetScreen),
+      (route) => false,
     );
   }
 
   Future<void> _handleLogin() async {
-    final phone = _phoneController.text.trim();
+    final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (phone.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Vui lòng nhập đầy đủ Số điện thoại và Mật khẩu!'),
+          content: Text('Vui lòng nhập đầy đủ Email / Gmail và Mật khẩu!'),
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -67,18 +70,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isSubmitting = true);
     try {
-      final user = await _firebaseAuth.login(phone, password);
+      final user = await _firebaseAuth.login(email, password);
       _session.setUser(user);
       _dataService.currentUser = user;
       await _dataService.start();
       if (!mounted) return;
       _navigateToRoleScreen(user);
+    } on EmailNotVerifiedException catch (e) {
+      if (!mounted) return;
+      _showEmailNotVerifiedDialog(e.email, password);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString().replaceFirst('Exception: ', '')),
           backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     } finally {
@@ -86,19 +93,266 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _handleQuickRoleLogin(String role) async {
-    switch (role) {
-      case 'staff':
-        _phoneController.text = '0900000002';
-      case 'receptionist':
-        _phoneController.text = '0900000000';
-      case 'customer':
-      default:
-        _phoneController.text = '0987654321';
-    }
-    _passwordController.text = '123456';
-    await _handleLogin();
+  void _showEmailNotVerifiedDialog(String email, String password) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        bool isResending = false;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1E1E1E),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+              ),
+              title: Row(
+                children: const [
+                  Icon(
+                    Icons.mark_email_unread_rounded,
+                    color: Color(0xFFD4AF37),
+                    size: 28,
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Chưa Xác Thực Email',
+                      style: TextStyle(
+                        color: Color(0xFFD4AF37),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Tài khoản với địa chỉ $email chưa được kích hoạt qua liên kết email.',
+                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Vui lòng mở Gmail (cả hộp thư đến lẫn thư mục Thư rác / Spam) và bấm vào liên kết để kích hoạt tài khoản.',
+                    style: TextStyle(
+                      color: Colors.grey.shade400,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Nếu bạn chưa nhận được thư hoặc liên kết đã hết hạn, bấm nút bên dưới để gửi lại.',
+                    style: TextStyle(
+                      color: Colors.grey.shade400,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text(
+                    'Đóng',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: isResending
+                      ? null
+                      : () async {
+                          setDialogState(() => isResending = true);
+                          try {
+                            await _firebaseAuth.resendVerificationEmail(
+                              email,
+                              password,
+                            );
+                            if (ctx.mounted) Navigator.pop(ctx);
+                            if (mounted) {
+                              ScaffoldMessenger.of(this.context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Đã gửi lại email xác nhận đến $email. Vui lòng kiểm tra hộp thư!',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          } catch (err) {
+                            setDialogState(() => isResending = false);
+                            if (mounted) {
+                              ScaffoldMessenger.of(this.context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    err.toString().replaceFirst(
+                                      'Exception: ',
+                                      '',
+                                    ),
+                                  ),
+                                  backgroundColor: Colors.redAccent,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isResending
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('GỬI LẠI EMAIL'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
+
+  void _showForgotPasswordDialog() {
+    final resetEmailController = TextEditingController(
+      text: _emailController.text.trim(),
+    );
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        bool isSending = false;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1E1E1E),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              title: const Text(
+                'Quên Mật Khẩu',
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Nhập Gmail của bạn để nhận liên kết đặt lại mật khẩu:',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: resetEmailController,
+                    keyboardType: TextInputType.emailAddress,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      hintText: 'vidu@gmail.com',
+                      prefixIcon: Icon(
+                        Icons.email_outlined,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text(
+                    'Hủy',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: isSending
+                      ? null
+                      : () async {
+                          final em = resetEmailController.text.trim();
+                          if (em.isEmpty || !em.contains('@')) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
+                              const SnackBar(
+                                content: Text('Vui lòng nhập email hợp lệ'),
+                              ),
+                            );
+                            return;
+                          }
+                          setDialogState(() => isSending = true);
+                          try {
+                            await _firebaseAuth.sendPasswordReset(em);
+                            if (ctx.mounted) Navigator.pop(ctx);
+                            if (mounted) {
+                              ScaffoldMessenger.of(this.context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Đã gửi liên kết đặt lại mật khẩu tới $em.',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            setDialogState(() => isSending = false);
+                            if (mounted) {
+                              ScaffoldMessenger.of(this.context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    e.toString().replaceFirst(
+                                      'Exception: ',
+                                      '',
+                                    ),
+                                  ),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isSending
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('GỬI YÊU CẦU'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _openRegisterScreen() async {
+    final registeredEmail = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (context) => const RegisterScreen()),
+    );
+    if (registeredEmail != null && registeredEmail.isNotEmpty) {
+      setState(() {
+        _emailController.text = registeredEmail;
+        _passwordController.clear();
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Đã tạo tài khoản cho $registeredEmail. Vui lòng kiểm tra Gmail xác nhận rồi đăng nhập.',
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +363,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
               // Logo / Brand Icon
               Center(
                 child: Column(
@@ -127,10 +381,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: const Icon(
                         Icons.content_cut_rounded,
                         color: Color(0xFFD4AF37),
-                        size: 52,
+                        size: 50,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     const Text(
                       'BARBER SHOP',
                       style: TextStyle(
@@ -142,17 +396,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      'Đăng nhập theo quyền ứng dụng',
+                      'Đăng nhập bằng Gmail / Email hệ thống',
                       style: TextStyle(color: Colors.grey, fontSize: 13),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 36),
 
-              // Phone Field
+              // Email / Gmail Field
               const Text(
-                'Số Điện Thoại',
+                'Gmail / Email',
                 style: TextStyle(
                   color: Color(0xFFD4AF37),
                   fontWeight: FontWeight.bold,
@@ -160,23 +414,39 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 8),
               TextField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
-                  hintText: 'Nhập số điện thoại',
-                  prefixIcon: Icon(Icons.phone_android, color: Colors.grey),
+                  hintText: 'Nhập địa chỉ Gmail hoặc Email',
+                  prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
 
               // Password Field
-              const Text(
-                'Mật Khẩu',
-                style: TextStyle(
-                  color: Color(0xFFD4AF37),
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Mật Khẩu',
+                    style: TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: _showForgotPasswordDialog,
+                    child: const Text(
+                      'Quên mật khẩu?',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               TextField(
@@ -204,7 +474,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               // Login Button
               SizedBox(
@@ -216,120 +486,48 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? const SizedBox(
                           width: 22,
                           height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.black,
+                          ),
                         )
-                      : const Text('ĐĂNG NHẬP'),
+                      : const Text(
+                          'ĐĂNG NHẬP',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
                 ),
-              ),
-              const SizedBox(height: 40),
-
-              // Quick Role Login Section
-              Row(
-                children: const [
-                  Expanded(child: Divider(color: Colors.white24)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(
-                      'ĐĂNG NHẬP NHANH THEO ROLE',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: Colors.white24)),
-                ],
               ),
               const SizedBox(height: 16),
 
-              // Role Buttons
-              _buildRoleTile(
-                icon: Icons.person,
-                title: 'Khách Hàng (Customer)',
-                subtitle: 'SĐT: 0987654321 • Pass: 123456',
-                color: Colors.greenAccent,
-                onTap: () => _handleQuickRoleLogin('customer'),
+              // Registration Prompt
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Chưa có tài khoản? ',
+                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  ),
+                  GestureDetector(
+                    onTap: _openRegisterScreen,
+                    child: const Text(
+                      'Đăng ký ngay',
+                      style: TextStyle(
+                        color: Color(0xFFD4AF37),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        decoration: TextDecoration.underline,
+                        decorationColor: Color(0xFFD4AF37),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              _buildRoleTile(
-                icon: Icons.content_cut,
-                title: 'Thợ Cắt Tóc (Barber Staff)',
-                subtitle: 'SĐT: 0900000002 • Pass: 123456 (Firebase)',
-                color: const Color(0xFFD4AF37),
-                onTap: () => _handleQuickRoleLogin('staff'),
-              ),
-              const SizedBox(height: 10),
-              _buildRoleTile(
-                icon: Icons.support_agent,
-                title: 'Lễ Tân (Receptionist)',
-                subtitle: 'SĐT: 0900000000 • Pass: 123456',
-                color: Colors.blueAccent,
-                onTap: () => _handleQuickRoleLogin('receptionist'),
-              ),
+              const SizedBox(height: 24),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRoleTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: color, size: 22),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.arrow_forward_ios, color: color, size: 14),
-              ],
-            ),
           ),
         ),
       ),
