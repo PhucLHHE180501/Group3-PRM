@@ -20,6 +20,7 @@ class ReceptionistDashboardScreen extends StatefulWidget {
 class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScreen> {
   final FirebaseService _dataService = FirebaseService();
   int _currentIndex = 0;
+  bool _isLoading = false;
 
   String _selectedStatusFilter = 'all';
   String _searchQuery = '';
@@ -29,6 +30,20 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
   void initState() {
     super.initState();
     _dataService.addListener(_onDataChanged);
+    _initRealtime();
+  }
+
+  Future<void> _initRealtime() async {
+    if (!_dataService.isStarted) {
+      setState(() => _isLoading = true);
+      try {
+        await _dataService.start();
+      } catch (e) {
+        debugPrint('Error starting data service in receptionist: $e');
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -336,26 +351,40 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
         ),
         onPressed: () => _openWalkInDialog(),
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: [
-          // TAB 0: SALON SCHEDULE MATRIX
-          SalonScheduleGrid(
-            onBookSlot: (barber, date, slot) {
-              _openWalkInDialog(barber: barber, date: date, slot: slot);
-            },
-            onBookingTap: (booking) {
-              _showBookingDetailSheet(booking);
-            },
-          ),
+      body: _isLoading && _dataService.barbers.isEmpty
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                  SizedBox(height: 16),
+                  Text(
+                    'Đang kết nối dữ liệu Salon thời gian thực...',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ],
+              ),
+            )
+          : IndexedStack(
+              index: _currentIndex,
+              children: [
+                // TAB 0: SALON SCHEDULE MATRIX
+                SalonScheduleGrid(
+                  onBookSlot: (barber, date, slot) {
+                    _openWalkInDialog(barber: barber, date: date, slot: slot);
+                  },
+                  onBookingTap: (booking) {
+                    _showBookingDetailSheet(booking);
+                  },
+                ),
 
-          // TAB 1: BARBERS MONITOR
-          _buildBarbersMonitorTab(),
+                // TAB 1: BARBERS MONITOR
+                _buildBarbersMonitorTab(),
 
-          // TAB 2: BOOKINGS LIST & CASHIER
-          _buildBookingsHubTab(filteredBookings),
-        ],
-      ),
+                // TAB 2: BOOKINGS LIST & CASHIER
+                _buildBookingsHubTab(filteredBookings),
+              ],
+            ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           border: Border(top: BorderSide(color: Colors.white12, width: 0.8)),
