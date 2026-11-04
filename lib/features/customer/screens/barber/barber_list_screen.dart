@@ -108,15 +108,22 @@ class _BarberListScreenState extends State<BarberListScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 6),
-                          Row(
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 4,
                             children: [
-                              const Icon(Icons.star, color: Color(0xFFD4AF37), size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${barber.avgRating} (${barber.reviewCount} đánh giá)',
-                                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.star, color: Color(0xFFD4AF37), size: 14),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${barber.avgRating} (${barber.reviewCount} đánh giá)',
+                                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 12),
                               Text(
                                 '• ${barber.yearsExperience} năm kinh nghiệm',
                                 style: const TextStyle(color: Colors.grey, fontSize: 12),

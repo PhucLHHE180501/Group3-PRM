@@ -129,319 +129,282 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.88,
-              ),
-              padding: const EdgeInsets.all(20),
-              child: SingleChildScrollView(
-                child: Column(
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.88,
+          ),
+          padding: const EdgeInsets.all(20),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle Bar
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+
+                // Header Row
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Handle Bar
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white24,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Chi Tiết Giao Dịch #${tx.id}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Mã đặt lịch: #${tx.bookingId}',
+                            style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    _buildStatusChip(tx.status),
+                  ],
+                ),
 
-                    // Header Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
+                const Divider(color: Colors.white12, height: 24),
+
+                // 1. Barber / Staff Info
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2A2A2A),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 26,
+                        backgroundColor: const Color(0xFFD4AF37),
+                        child: CircleAvatar(
+                          radius: 24,
+                          backgroundImage: staffAvatar != null && staffAvatar.isNotEmpty
+                              ? NetworkImage(staffAvatar)
+                              : null,
+                          child: staffAvatar == null || staffAvatar.isEmpty
+                              ? const Icon(Icons.person, color: Colors.white, size: 24)
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Chi Tiết Giao Dịch #${tx.id}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
+                            const Text(
+                              'Thợ Phục Vụ Cắt Tóc',
+                              style: TextStyle(color: Colors.grey, fontSize: 11),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Mã đặt lịch: #${tx.bookingId}',
-                              style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
+                              staffName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
                             ),
                           ],
                         ),
-                        _buildStatusChip(tx.status),
-                      ],
-                    ),
-
-                    const Divider(color: Colors.white12, height: 24),
-
-                    // 1. Barber / Staff Info
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2A2A2A),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.3)),
                       ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 26,
-                            backgroundColor: const Color(0xFFD4AF37),
-                            child: CircleAvatar(
-                              radius: 24,
-                              backgroundImage: staffAvatar != null && staffAvatar.isNotEmpty
-                                  ? NetworkImage(staffAvatar)
-                                  : null,
-                              child: staffAvatar == null || staffAvatar.isEmpty
-                                  ? const Icon(Icons.person, color: Colors.white, size: 24)
-                                  : null,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                      const Icon(Icons.verified, color: Color(0xFFD4AF37), size: 20),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // 2. Date & Time Info
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF252525),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildDetailRow(
+                        icon: Icons.calendar_month,
+                        label: 'Ngày dịch vụ',
+                        value: _formatDayOnly(bookingDate),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildDetailRow(
+                        icon: Icons.access_time,
+                        label: 'Khung giờ cắt',
+                        value: timeSlot,
+                      ),
+                      if (tx.paidAt != null) ...[
+                        const SizedBox(height: 10),
+                        _buildDetailRow(
+                          icon: Icons.check_circle_outline,
+                          label: 'Thời gian thanh toán',
+                          value: _formatDate(tx.paidAt!),
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+                      _buildDetailRow(
+                        icon: _getMethodIcon(tx.method),
+                        label: 'Phương thức',
+                        value: _getMethodName(tx.method),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                // 3. Services Used List
+                const Text(
+                  'Dịch vụ đã sử dụng:',
+                  style: TextStyle(
+                    color: Color(0xFFD4AF37),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                if (services.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF252525),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white10),
+                    ),
+                    child: Column(
+                      children: [
+                        for (final s in services)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Row(
                               children: [
-                                const Text(
-                                  'Thợ Phục Vụ Cắt Tóc',
-                                  style: TextStyle(color: Colors.grey, fontSize: 11),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  staffName,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
+                                const Icon(Icons.content_cut, color: Color(0xFFD4AF37), size: 16),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        s.name,
+                                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                      ),
+                                      Text(
+                                        '${s.durationMin} phút',
+                                        style: const TextStyle(color: Colors.grey, fontSize: 11),
+                                      ),
+                                    ],
                                   ),
+                                ),
+                                Text(
+                                  _formatPrice(s.price),
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
                               ],
                             ),
                           ),
-                          const Icon(Icons.verified, color: Color(0xFFD4AF37), size: 20),
-                        ],
-                      ),
+                      ],
                     ),
+                  )
+                else
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF252525),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      tx.serviceSummary.isNotEmpty ? tx.serviceSummary : 'Dịch vụ Salon Barber',
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                  ),
 
-                    const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
-                    // 2. Date & Time Info
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF252525),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.white10),
-                      ),
-                      child: Column(
+                // 4. Payment Cost Breakdown
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF141414),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.4)),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildCostRow('Tạm tính (Tiền dịch vụ)', _formatPrice(tx.amount)),
+                      if (tx.discount > 0) ...[
+                        const SizedBox(height: 6),
+                        _buildCostRow('Giảm giá / Ưu đãi', '- ${_formatPrice(tx.discount)}', isDiscount: true),
+                      ],
+                      const SizedBox(height: 6),
+                      _buildCostRow('Tiền Tip cho thợ', '+ ${_formatPrice(tx.tipAmount)}', isTip: true),
+                      const Divider(color: Colors.white24, height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildDetailRow(
-                            icon: Icons.calendar_month,
-                            label: 'Ngày dịch vụ',
-                            value: _formatDayOnly(bookingDate),
+                          const Text(
+                            'TỔNG THANH TOÁN',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                           ),
-                          const SizedBox(height: 10),
-                          _buildDetailRow(
-                            icon: Icons.access_time,
-                            label: 'Khung giờ cắt',
-                            value: timeSlot,
-                          ),
-                          if (tx.paidAt != null) ...[
-                            const SizedBox(height: 10),
-                            _buildDetailRow(
-                              icon: Icons.check_circle_outline,
-                              label: 'Thời gian thanh toán',
-                              value: _formatDate(tx.paidAt!),
-                            ),
-                          ],
-                          const SizedBox(height: 10),
-                          _buildDetailRow(
-                            icon: _getMethodIcon(tx.method),
-                            label: 'Phương thức',
-                            value: _getMethodName(tx.method),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    // 3. Services Used List
-                    const Text(
-                      'Dịch vụ đã sử dụng:',
-                      style: TextStyle(
-                        color: Color(0xFFD4AF37),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    if (services.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF252525),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white10),
-                        ),
-                        child: Column(
-                          children: [
-                            for (final s in services)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 6),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.content_cut, color: Color(0xFFD4AF37), size: 16),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            s.name,
-                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                                          ),
-                                          Text(
-                                            '${s.durationMin} phút',
-                                            style: const TextStyle(color: Colors.grey, fontSize: 11),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Text(
-                                      _formatPrice(s.price),
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                      )
-                    else
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF252525),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          tx.serviceSummary.isNotEmpty ? tx.serviceSummary : 'Dịch vụ Salon Barber',
-                          style: const TextStyle(color: Colors.white, fontSize: 13),
-                        ),
-                      ),
-
-                    const SizedBox(height: 20),
-
-                    // 4. Payment Cost Breakdown
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF141414),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.4)),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildCostRow('Tạm tính (Tiền dịch vụ)', _formatPrice(tx.amount)),
-                          if (tx.discount > 0) ...[
-                            const SizedBox(height: 6),
-                            _buildCostRow('Giảm giá / Ưu đãi', '- ${_formatPrice(tx.discount)}', isDiscount: true),
-                          ],
-                          const SizedBox(height: 6),
-                          _buildCostRow('Tiền Tip cho thợ', '+ ${_formatPrice(tx.tipAmount)}', isTip: true),
-                          const Divider(color: Colors.white24, height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'TỔNG THANH TOÁN',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                              Text(
-                                _formatPrice(tx.finalAmount),
-                                style: const TextStyle(
-                                  color: Color(0xFFD4AF37),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // 5. Interactive Tip section for customer
-                    if (tx.status == 'paid') ...[
-                      const Text(
-                        'Thưởng tiền Tip động viên thợ cắt:',
-                        style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [10000.0, 20000.0, 30000.0, 50000.0, 100000.0].map((tipVal) {
-                          final isSelected = tx.tipAmount == tipVal;
-                          return ChoiceChip(
-                            label: Text('+ ${_formatPrice(tipVal)}'),
-                            selected: isSelected,
-                            selectedColor: const Color(0xFFD4AF37),
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.black : Colors.white,
+                          Text(
+                            _formatPrice(tx.finalAmount),
+                            style: const TextStyle(
+                              color: Color(0xFFD4AF37),
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                              fontSize: 18,
                             ),
-                            backgroundColor: const Color(0xFF2A2A2A),
-                            onSelected: (_) async {
-                              await _dataService.addTipToTransaction(tx.id, tipVal);
-                              setModalState(() {});
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Cảm ơn bạn đã tip ${_formatPrice(tipVal)} cho $staffName!'),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
-                              }
-                            },
-                          );
-                        }).toList(),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 20),
                     ],
-
-                    // Close Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD4AF37),
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text('ĐÓNG TẬP HÓA ĐƠN', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          },
+
+                const SizedBox(height: 20),
+
+                // Close Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4AF37),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('ĐÓNG TẬP HÓA ĐƠN', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
