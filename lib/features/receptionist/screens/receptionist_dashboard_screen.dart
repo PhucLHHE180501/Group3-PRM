@@ -739,9 +739,29 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Tổng tiền: ${_formatPrice(hasTip ? tx.finalAmount : booking.totalPrice)}',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Tổng tiền: ${_formatPrice(hasTip ? tx.finalAmount : booking.totalPrice)}',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: isPaid ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          isPaid ? 'ĐÃ THU TIỀN' : 'CHƯA THU TIỀN',
+                          style: TextStyle(
+                            color: isPaid ? Colors.greenAccent : Colors.redAccent,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   if (hasTip)
                     Text(
@@ -749,21 +769,6 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                       style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontWeight: FontWeight.w500),
                     ),
                 ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: isPaid ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  isPaid ? 'ĐÃ THU TIỀN' : 'CHƯA THU TIỀN',
-                  style: TextStyle(
-                    color: isPaid ? Colors.greenAccent : Colors.redAccent,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ),
             ],
           ),

@@ -170,7 +170,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Tiền Tip thợ (${widget.booking.staffName}):',
+                          'Tiền Tip thợ:',
                           style: const TextStyle(color: Colors.orangeAccent, fontSize: 13),
                         ),
                         Text(
@@ -185,7 +185,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'TỔNG THANH TOÁN:',
+                        'TỔNG:',
                         style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       Text(
@@ -210,7 +210,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                 const Icon(Icons.volunteer_activism, color: Color(0xFFD4AF37), size: 16),
                 const SizedBox(width: 6),
                 Text(
-                  'Tiền Tip động viên thợ (${widget.booking.staffName}):',
+                  'Tiền Tip động viên thợ:',
                   style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ],
@@ -338,7 +338,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Chuyển khoản QR',
+                            'QR',
                             style: TextStyle(
                               color: _paymentMethod == 'bank_transfer' ? Colors.white : Colors.white70,
                               fontWeight: _paymentMethod == 'bank_transfer' ? FontWeight.bold : FontWeight.normal,
@@ -370,7 +370,7 @@ class _QuickCheckoutDialogState extends State<QuickCheckoutDialog> {
                       backgroundColor: const Color(0xFFD4AF37),
                       foregroundColor: Colors.black,
                     ),
-                    icon: const Icon(Icons.check_circle, size: 18),
+                    icon: const Icon(Icons.check_circle, size: 16),
                     label: const Text('Xác Nhận', style: TextStyle(fontWeight: FontWeight.bold)),
                     onPressed: _handleConfirmPayment,
                   ),
