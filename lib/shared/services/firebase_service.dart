@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+﻿import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -51,8 +51,8 @@ class FirebaseService extends ChangeNotifier {
     '09:00',
     '10:00',
     '11:00',
-    '13:00',
     '12:00',
+    '13:00',
     '14:00',
     '15:00',
     '16:00',
@@ -143,7 +143,9 @@ class FirebaseService extends ChangeNotifier {
           'description': 'Cắt tóc tạo kiểu cơ bản',
           'price': 120000,
           'durationMin': 45,
-          'imageUrl': 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600',
+          'imageUrl':
+              'https://easysalon.vn/wp-content/uploads/2021/09/cach-tra-luong-cho-tho-toc.jpg',
+
           'isActive': true,
         },
         {
@@ -152,7 +154,9 @@ class FirebaseService extends ChangeNotifier {
           'description': 'Cắt fade hiện đại',
           'price': 150000,
           'durationMin': 60,
-          'imageUrl': 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600',
+          'imageUrl':
+              'https://tse1.mm.bing.net/th/id/OIP.NJaXo6XGrkIZl4gLLUx8ygHaFl?r=0&rs=1&pid=ImgDetMain&o=7&rm=3',
+
           'isActive': true,
         },
         {
@@ -161,7 +165,9 @@ class FirebaseService extends ChangeNotifier {
           'description': 'Gội đầu và sấy tạo kiểu',
           'price': 80000,
           'durationMin': 30,
-          'imageUrl': 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=600',
+          'imageUrl':
+              'https://vioprodsgsa.blob.core.windows.net/prod-sg-vio-public-storage/1046/services/20240619/9d41608d-0201-49e9-9842-b329598a221a_1718789671119623_1000006042.png',
+
           'isActive': true,
         },
         {
@@ -170,7 +176,9 @@ class FirebaseService extends ChangeNotifier {
           'description': 'Cạo râu truyền thống',
           'price': 70000,
           'durationMin': 25,
-          'imageUrl': 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600',
+          'imageUrl':
+              'https://file.hstatic.net/200000362771/file/size_noi_dung_web__21__eac9bfdb768d47f09648ab67c6c108bc.png',
+
           'isActive': true,
         },
       ];
@@ -293,6 +301,11 @@ class FirebaseService extends ChangeNotifier {
   }
 
   Future<void> updateBarberStatus(int userId, String newStatus) async {
+    final idx = barbers.indexWhere((b) => b.userId == userId);
+    if (idx != -1) {
+      barbers[idx] = barbers[idx].copyWith(status: newStatus);
+      notifyListeners();
+    }
     final snap = await _barbers
         .where('userId', isEqualTo: userId)
         .limit(1)
@@ -382,6 +395,19 @@ class FirebaseService extends ChangeNotifier {
   }
 
   Future<void> updateBookingStatusById(int bookingId, String newStatus) async {
+    final bIdx = bookings.indexWhere((b) => b.id == bookingId);
+    if (bIdx != -1) {
+      bookings[bIdx] = bookings[bIdx].copyWith(status: newStatus);
+      notifyListeners();
+    }
+    final txIdx = transactions.indexWhere((t) => t.bookingId == bookingId);
+    if (txIdx != -1 && (newStatus == 'completed' || newStatus == 'cancelled')) {
+      transactions[txIdx] = transactions[txIdx].copyWith(
+        status: newStatus == 'completed' ? 'paid' : 'cancelled',
+      );
+      notifyListeners();
+    }
+
     final snap = await _bookings
         .where('id', isEqualTo: bookingId)
         .limit(1)
@@ -509,6 +535,32 @@ class FirebaseService extends ChangeNotifier {
       'timeSlot': timeSlot,
       'services': selectedServices.map((s) => s.toJson()).toList(),
     });
+
+    final newTx = TransactionModel(
+      id: autoId + 1,
+      bookingId: autoId,
+      customerId: booking.customerId,
+      customerUid: booking.customerUid,
+      customerName: booking.customerName,
+      customerPhone: booking.customerPhone,
+      amount: totalPrice,
+      discount: 0,
+      tipAmount: 0,
+      method: 'cash',
+      status: 'unpaid',
+      createdAt: now,
+      serviceSummary: selectedServices.map((s) => s.name).join(', '),
+      staffName: barber.fullName,
+      staffAvatar: barber.avatarUrl,
+      bookingDate: date,
+      timeSlot: timeSlot,
+      services: selectedServices,
+    );
+
+    // Cập nhật ngay bộ nhớ local & thông báo UI
+    bookings.insert(0, booking);
+    transactions.insert(0, newTx);
+    notifyListeners();
 
     if (immediateStart) {
       updateBarberStatus(barber.userId, 'busy');
@@ -741,12 +793,18 @@ class FirebaseService extends ChangeNotifier {
     updateBookingStatusById(bookingId, newStatus);
   }
 
-  /// Lấy danh sách giao dịch của Khách hàng hiện tại dựa theo User UID
+  /// Lấy danh sách giao dịch của Khách hàng hiện tại dựa theo User UID hoặc ID
   List<TransactionModel> getCurrentUserTransactions() {
     final user = currentUser;
-    if (user == null || user.uid.isEmpty) return [];
+    if (user == null) return [];
 
-    final list = transactions.where((t) => t.customerUid == user.uid).toList();
+    final list = transactions.where((t) {
+      if (user.uid.isNotEmpty && t.customerUid.isNotEmpty) {
+        return t.customerUid == user.uid;
+      }
+      return t.customerId == user.id || (user.uid.isNotEmpty && t.customerUid == user.uid);
+    }).toList();
+
 
     list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return list;
@@ -813,7 +871,18 @@ class FirebaseService extends ChangeNotifier {
   }
 
   Future<void> markPaymentPaid(int bookingId, String method) async {
-    // Update transaction
+    // Update local memory instantly
+    final txIdx = transactions.indexWhere((t) => t.bookingId == bookingId);
+    if (txIdx != -1) {
+      transactions[txIdx] = transactions[txIdx].copyWith(
+        status: 'paid',
+        method: method,
+        paidAt: DateTime.now(),
+      );
+      notifyListeners();
+    }
+
+    // Update transaction on Firestore
     final txSnap = await _transactions
         .where('bookingId', isEqualTo: bookingId)
         .limit(1)
@@ -830,18 +899,21 @@ class FirebaseService extends ChangeNotifier {
   }
 
   Future<void> addTipToTransaction(int txId, double tipAmount) async {
+    final idx = transactions.indexWhere((t) => t.id == txId);
+    if (idx != -1) {
+      transactions[idx] = transactions[idx].copyWith(tipAmount: tipAmount);
+      notifyListeners();
+    }
+
     final txSnap = await _transactions
         .where('id', isEqualTo: txId)
         .limit(1)
         .get();
     if (txSnap.docs.isNotEmpty) {
-      await txSnap.docs.first.reference.update({'tipAmount': tipAmount});
-    } else {
-      final idx = transactions.indexWhere((t) => t.id == txId);
-      if (idx != -1) {
-        transactions[idx] = transactions[idx].copyWith(tipAmount: tipAmount);
-        notifyListeners();
-      }
+      await txSnap.docs.first.reference.update({
+        'tipAmount': tipAmount,
+      });
+
     }
   }
 

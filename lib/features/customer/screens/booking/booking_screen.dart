@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/models/service_model.dart';
@@ -47,6 +47,8 @@ class _BookingScreenState extends State<BookingScreen> {
       _selectedBarber = widget.initialBarber;
       _autoAssignBarber = false;
     }
+
+    _checkAndAdjustTimeSlot();
   }
 
   void _loadLastCustomerPreferences() {
@@ -129,21 +131,38 @@ class _BookingScreenState extends State<BookingScreen> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
+  bool _isSlotInPast(String slot, DateTime selectedDate) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final targetDate = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+
+    if (targetDate.isBefore(today)) {
+      return true;
+    }
+    if (targetDate.isAfter(today)) {
+      return false;
+    }
+
+    final parts = slot.split(':');
+    if (parts.length != 2) return false;
+    final slotHour = int.tryParse(parts[0]) ?? 0;
+    final slotMinute = int.tryParse(parts[1]) ?? 0;
+
+    final slotTime = DateTime(now.year, now.month, now.day, slotHour, slotMinute);
+    return slotTime.isBefore(now);
+  }
+
   void _checkAndAdjustTimeSlot() {
-    final currentReq = _dataService.getRequiredSlots(
-      _selectedTimeSlot,
-      requiredSlotsCount,
-    );
-    final currentAvail = currentReq != null
-        ? _dataService.getAvailableBarbers(
-            _selectedDate,
-            _selectedTimeSlot,
-            requiredSlotsCount: requiredSlotsCount,
-          )
+    final isPast = _isSlotInPast(_selectedTimeSlot, _selectedDate);
+    final currentReq = _dataService.getRequiredSlots(_selectedTimeSlot, requiredSlotsCount);
+    final currentAvail = (!isPast && currentReq != null)
+        ? _dataService.getAvailableBarbers(_selectedDate, _selectedTimeSlot, requiredSlotsCount: requiredSlotsCount)
+
         : <BarberModel>[];
 
     if (currentAvail.isEmpty) {
       for (final slot in _dataService.allTimeSlots) {
+        if (_isSlotInPast(slot, _selectedDate)) continue;
         final req = _dataService.getRequiredSlots(slot, requiredSlotsCount);
         if (req != null) {
           final avail = _dataService.getAvailableBarbers(
@@ -232,10 +251,18 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
-    final reqSlots = _dataService.getRequiredSlots(
-      _selectedTimeSlot,
-      requiredSlotsCount,
-    );
+    if (_isSlotInPast(_selectedTimeSlot, _selectedDate)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Khung giờ $_selectedTimeSlot đã trôi qua. Vui lòng chọn khung giờ khác!'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    final reqSlots = _dataService.getRequiredSlots(_selectedTimeSlot, requiredSlotsCount);
+
     if (reqSlots == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -622,23 +649,32 @@ class _BookingScreenState extends State<BookingScreen> {
               itemBuilder: (context, index) {
                 final slot = timeSlots[index];
                 final isSelected = _selectedTimeSlot == slot;
+                final isPast = _isSlotInPast(slot, _selectedDate);
 
                 final reqSlots = _dataService.getRequiredSlots(
                   slot,
                   requiredSlotsCount,
                 );
                 final isEnoughSlotsLeft = reqSlots != null;
-                final availableBarbersForSlot = isEnoughSlotsLeft
-                    ? _dataService.getAvailableBarbers(
-                        _selectedDate,
-                        slot,
-                        requiredSlotsCount: requiredSlotsCount,
-                      )
+                final availableBarbersForSlot = (!isPast && isEnoughSlotsLeft)
+                    ? _dataService.getAvailableBarbers(_selectedDate, slot, requiredSlotsCount: requiredSlotsCount)
+
                     : <BarberModel>[];
-                final isSlotAvailable = availableBarbersForSlot.isNotEmpty;
+                final isSlotAvailable = !isPast && availableBarbersForSlot.isNotEmpty;
 
                 return GestureDetector(
                   onTap: () {
+                    if (isPast) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Khung giờ $slot đã trôi qua. Vui lòng chọn khung giờ khác!',
+                          ),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                      return;
+                    }
                     if (!isEnoughSlotsLeft) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -695,9 +731,8 @@ class _BookingScreenState extends State<BookingScreen> {
                             : Colors.white30,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
-                        decoration: !isSlotAvailable
-                            ? TextDecoration.lineThrough
-                            : null,
+                        decoration: (isPast || !isSlotAvailable) ? TextDecoration.lineThrough : null,
+
                       ),
                     ),
                   ),
