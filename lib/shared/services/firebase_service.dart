@@ -541,7 +541,7 @@ class FirebaseService extends ChangeNotifier {
       cols.insert(
         0,
         BarberPortfolioCollection(
-          id: 'col_${j["userId"]}_uploads',
+          id: 'col_${userId}_uploads',
           title: 'Tác phẩm mới tải lên',
           description: 'Các tác phẩm vừa được cập nhật',
           coverUrl: customUploaded.first,
