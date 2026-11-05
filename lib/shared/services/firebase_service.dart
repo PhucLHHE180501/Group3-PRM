@@ -376,24 +376,180 @@ class FirebaseService extends ChangeNotifier {
   }
 
   BarberModel _barberFromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
-    final j = d.data()!;
-    return BarberModel(
-      userId: (j['userId'] as num).toInt(),
-      fullName: j['fullName'] as String? ?? '',
-      phone: j['phone'] as String? ?? '',
-      avatarUrl: j['avatarUrl'] as String?,
-      bio: j['bio'] as String? ?? '',
-      specialty: j['specialty'] as String? ?? '',
-      yearsExperience: (j['yearsExperience'] as num?)?.toInt() ?? 0,
-      status: j['status'] as String? ?? 'available',
-      avgRating: (j['avgRating'] as num?)?.toDouble() ?? 0.0,
-      reviewCount: (j['reviewCount'] as num?)?.toInt() ?? 0,
-      portfolioImages:
-          (j['portfolioImages'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          const [],
-    );
+    final j = Map<String, dynamic>.from(d.data()!);
+    final rawCollections = j['collections'] as List<dynamic>?;
+    final existingImages = (j['portfolioImages'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        const [];
+
+    if (rawCollections == null || rawCollections.isEmpty) {
+      final defaultCols = _getDefaultCollectionsForBarber(
+        (j['userId'] as num).toInt(),
+        existingImages,
+      );
+      j['collections'] = defaultCols.map((c) => c.toJson()).toList();
+    } else {
+      final cols = rawCollections
+          .map((e) =>
+              BarberPortfolioCollection.fromJson(e as Map<String, dynamic>))
+          .toList();
+      final allImagesInCols = cols.expand((c) => c.images).toSet();
+      final missingImages =
+          existingImages.where((img) => !allImagesInCols.contains(img)).toList();
+      if (missingImages.isNotEmpty) {
+        cols.insert(
+          0,
+          BarberPortfolioCollection(
+            id: 'col_${j["userId"]}_uploads',
+            title: 'Tác phẩm mới tải lên',
+            description: 'Các tác phẩm vừa được cập nhật',
+            coverUrl: missingImages.first,
+            images: missingImages,
+          ),
+        );
+        j['collections'] = cols.map((c) => c.toJson()).toList();
+      }
+    }
+
+    return BarberModel.fromJson(j);
+  }
+
+  List<BarberPortfolioCollection> _getDefaultCollectionsForBarber(
+    int userId,
+    List<String> existingImages,
+  ) {
+    List<BarberPortfolioCollection> cols;
+    if (userId == 101) {
+      cols = [
+        const BarberPortfolioCollection(
+          id: 'col_101_1',
+          title: 'Fade & Taper Sắc Nét',
+          description:
+              'Kỹ thuật cạo Fade chuyển sắc mịn màng, tôn đường nét nam tính hiện đại.',
+          coverUrl:
+              'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=800',
+          images: [
+            'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=800',
+            'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800',
+            'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=800',
+            'https://images.unsplash.com/photo-1517832606589-7629c3395909?w=800',
+          ],
+        ),
+        const BarberPortfolioCollection(
+          id: 'col_101_2',
+          title: 'Modern Pompadour & Quiff',
+          description:
+              'Phong cách chải phồng bồng bềnh, sang trọng chuẩn quý ông.',
+          coverUrl:
+              'https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=800',
+          images: [
+            'https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=800',
+            'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800',
+            'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=800',
+          ],
+        ),
+        const BarberPortfolioCollection(
+          id: 'col_101_3',
+          title: 'Undercut & Slick Back',
+          description:
+              'Undercut vuốt ngược cổ điển tạo diện mạo sắc bén và tự tin.',
+          coverUrl:
+              'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800',
+          images: [
+            'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800',
+            'https://images.unsplash.com/photo-1520338661084-680395057c93?w=800',
+          ],
+        ),
+      ];
+    } else if (userId == 102) {
+      cols = [
+        const BarberPortfolioCollection(
+          id: 'col_102_1',
+          title: 'Classic Side Part 7/3 & 6/4',
+          description:
+              'Đường rẽ ngôi lịch lãm, phong thái chỉn chu hoàn hảo cho công sở.',
+          coverUrl:
+              'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800',
+          images: [
+            'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800',
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800',
+            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800',
+          ],
+        ),
+        const BarberPortfolioCollection(
+          id: 'col_102_2',
+          title: 'Executive Contour & Ivy League',
+          description:
+              'Cắt tỉa gọn gàng, định hình phong cách đĩnh đạc và cuốn hút.',
+          coverUrl:
+              'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
+          images: [
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
+            'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=800',
+          ],
+        ),
+      ];
+    } else if (userId == 103) {
+      cols = [
+        const BarberPortfolioCollection(
+          id: 'col_103_1',
+          title: 'Uốn Texture & Ruffled Hàn Quốc',
+          description:
+              'Uốn gợn sóng bồng bềnh tự nhiên, tạo độ dày và texture trẻ trung.',
+          coverUrl:
+              'https://images.unsplash.com/photo-1567894340315-735d7c361db0?w=800',
+          images: [
+            'https://images.unsplash.com/photo-1567894340315-735d7c361db0?w=800',
+            'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800',
+            'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=800',
+          ],
+        ),
+        const BarberPortfolioCollection(
+          id: 'col_103_2',
+          title: 'Mullet & Modern Layer',
+          description:
+              'Phá cách cùng form tóc Mullet đuôi tôm và tỉa layer bay bổng.',
+          coverUrl:
+              'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800',
+          images: [
+            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800',
+            'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=800',
+          ],
+        ),
+        const BarberPortfolioCollection(
+          id: 'col_103_3',
+          title: 'Nhuộm Màu Thời Trang',
+          description:
+              'Nâu tây, xám khói, rêu trầm nâng tầm phong cách cá nhân.',
+          coverUrl:
+              'https://images.unsplash.com/photo-1521119989659-a83eee488004?w=800',
+          images: [
+            'https://images.unsplash.com/photo-1521119989659-a83eee488004?w=800',
+            'https://images.unsplash.com/photo-1496345875659-11f7dd282d1d?w=800',
+          ],
+        ),
+      ];
+    } else {
+      cols = [];
+    }
+
+    final allImagesInCols = cols.expand((c) => c.images).toSet();
+    final customUploaded =
+        existingImages.where((img) => !allImagesInCols.contains(img)).toList();
+    if (customUploaded.isNotEmpty) {
+      cols.insert(
+        0,
+        BarberPortfolioCollection(
+          id: 'col_${j["userId"]}_uploads',
+          title: 'Tác phẩm mới tải lên',
+          description: 'Các tác phẩm vừa được cập nhật',
+          coverUrl: customUploaded.first,
+          images: customUploaded,
+        ),
+      );
+    }
+    return cols;
   }
 
   // =========================================================================
@@ -1440,7 +1596,36 @@ class FirebaseService extends ChangeNotifier {
         .limit(1)
         .get();
     if (snap.docs.isNotEmpty) {
-      await snap.docs.first.reference.update({
+      final doc = snap.docs.first;
+      final data = doc.data();
+      final rawCollections = (data['collections'] as List<dynamic>?) ?? [];
+      final List<Map<String, dynamic>> cols = rawCollections
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+
+      if (cols.isEmpty) {
+        cols.add({
+          'id': 'col_${userId}_uploads',
+          'title': 'Tác phẩm mới tải lên',
+          'description': 'Các tác phẩm vừa được cập nhật',
+          'coverUrl': imageUrl,
+          'images': [imageUrl],
+        });
+      } else {
+        final targetCol = cols.firstWhere(
+          (c) => c['id'] == 'col_${userId}_uploads',
+          orElse: () => cols.first,
+        );
+        final imgs =
+            List<dynamic>.from(targetCol['images'] as List<dynamic>? ?? []);
+        if (!imgs.contains(imageUrl)) {
+          imgs.insert(0, imageUrl);
+          targetCol['images'] = imgs;
+        }
+      }
+
+      await doc.reference.update({
+        'collections': cols,
         'portfolioImages': FieldValue.arrayUnion([imageUrl]),
       });
       notifyListeners();
@@ -1453,7 +1638,132 @@ class FirebaseService extends ChangeNotifier {
         .limit(1)
         .get();
     if (snap.docs.isNotEmpty) {
-      await snap.docs.first.reference.update({
+      final doc = snap.docs.first;
+      final data = doc.data();
+      final rawCollections = (data['collections'] as List<dynamic>?) ?? [];
+      final List<Map<String, dynamic>> cols = rawCollections
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+
+      for (final col in cols) {
+        final imgs =
+            List<dynamic>.from(col['images'] as List<dynamic>? ?? []);
+        if (imgs.remove(imageUrl)) {
+          col['images'] = imgs;
+        }
+      }
+
+      await doc.reference.update({
+        'collections': cols,
+        'portfolioImages': FieldValue.arrayRemove([imageUrl]),
+      });
+      notifyListeners();
+    }
+  }
+
+  Future<void> addPortfolioCollection(
+    int userId,
+    BarberPortfolioCollection collection,
+  ) async {
+    final snap = await _barbers
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
+    if (snap.docs.isNotEmpty) {
+      final doc = snap.docs.first;
+      final data = doc.data();
+      final rawCollections = (data['collections'] as List<dynamic>?) ?? [];
+      final List<Map<String, dynamic>> cols = rawCollections
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+
+      cols.add(collection.toJson());
+
+      await doc.reference.update({
+        'collections': cols,
+        if (collection.images.isNotEmpty)
+          'portfolioImages': FieldValue.arrayUnion(collection.images),
+      });
+      notifyListeners();
+    }
+  }
+
+  Future<void> addImageToCollection(
+    int userId,
+    String collectionId,
+    String imageUrl,
+  ) async {
+    final snap = await _barbers
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
+    if (snap.docs.isNotEmpty) {
+      final doc = snap.docs.first;
+      final data = doc.data();
+      final rawCollections = (data['collections'] as List<dynamic>?) ?? [];
+      final List<Map<String, dynamic>> cols = rawCollections
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+
+      var found = false;
+      for (final col in cols) {
+        if (col['id'] == collectionId) {
+          final imgs =
+              List<dynamic>.from(col['images'] as List<dynamic>? ?? []);
+          if (!imgs.contains(imageUrl)) {
+            imgs.insert(0, imageUrl);
+            col['images'] = imgs;
+          }
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        cols.add({
+          'id': collectionId,
+          'title': 'Bộ sưu tập mới',
+          'images': [imageUrl],
+        });
+      }
+
+      await doc.reference.update({
+        'collections': cols,
+        'portfolioImages': FieldValue.arrayUnion([imageUrl]),
+      });
+      notifyListeners();
+    }
+  }
+
+  Future<void> removeImageFromCollection(
+    int userId,
+    String collectionId,
+    String imageUrl,
+  ) async {
+    final snap = await _barbers
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
+    if (snap.docs.isNotEmpty) {
+      final doc = snap.docs.first;
+      final data = doc.data();
+      final rawCollections = (data['collections'] as List<dynamic>?) ?? [];
+      final List<Map<String, dynamic>> cols = rawCollections
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+
+      for (final col in cols) {
+        if (col['id'] == collectionId) {
+          final imgs =
+              List<dynamic>.from(col['images'] as List<dynamic>? ?? []);
+          imgs.remove(imageUrl);
+          col['images'] = imgs;
+          break;
+        }
+      }
+
+      await doc.reference.update({
+        'collections': cols,
         'portfolioImages': FieldValue.arrayRemove([imageUrl]),
       });
       notifyListeners();

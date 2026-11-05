@@ -4,8 +4,8 @@ import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/services/firebase_service.dart';
 import 'package:barber_booking_app/shared/widgets/add_review_dialog.dart';
 import 'package:barber_booking_app/shared/widgets/app_network_image.dart';
-import 'package:barber_booking_app/shared/widgets/full_screen_image_viewer.dart';
 
+import 'barber_collection_detail_screen.dart';
 import '../booking/booking_screen.dart';
 import '../profile/edit_profile_screen.dart';
 
@@ -324,51 +324,172 @@ class _BarberDetailScreenState extends State<BarberDetailScreen>
 
                   // Tab Views Content inside SingleChildScrollView container
                   SizedBox(
-                    height: 360,
+                    height: 400,
                     child: TabBarView(
                       controller: _tabController,
                       children: [
-                        // Tab 1: Portfolio Images Grid (Chỉ hiển thị ảnh Cloudinary & có thể phóng to xem toàn màn hình)
+                        // Tab 1: Bộ Sưu Tập Kiểu Tóc (Collections)
                         Builder(
                           builder: (context) {
-                            final cloudinaryImages = barber.portfolioImages
-                                .where((u) => u.contains('cloudinary.com'))
-                                .toList();
-                            if (cloudinaryImages.isEmpty) {
+                            final collections = barber.collections;
+                            if (collections.isEmpty) {
                               return const Center(
                                 child: Text(
-                                  'Chưa có hình ảnh sản phẩm',
+                                  'Chưa có bộ sưu tập kiểu tóc nào',
                                   style: TextStyle(color: Colors.grey),
                                 ),
                               );
                             }
                             return GridView.builder(
-                              physics: const NeverScrollableScrollPhysics(),
+                              physics: const BouncingScrollPhysics(),
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
-                                childAspectRatio: 1,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: 0.82,
                               ),
-                              itemCount: cloudinaryImages.length,
+                              itemCount: collections.length,
                               itemBuilder: (context, index) {
+                                final col = collections[index];
                                 return GestureDetector(
                                   onTap: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => FullScreenImageViewer(
-                                          images: cloudinaryImages,
-                                          initialIndex: index,
+                                        builder: (_) =>
+                                            BarberCollectionDetailScreen(
+                                          collection: col,
+                                          barberName: barber.fullName,
                                         ),
                                       ),
                                     );
                                   },
-                                  child: AppNetworkImage(
-                                    imageUrl: cloudinaryImages[index],
-                                    fit: BoxFit.cover,
-                                    borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1E1E1E),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: Colors.white12,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.25,
+                                          ),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        // Cover Image
+                                        AppNetworkImage(
+                                          imageUrl: col.effectiveCoverUrl,
+                                          fit: BoxFit.cover,
+                                        ),
+                                        // Gradient Scrim
+                                        DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                Colors.transparent,
+                                                Colors.black.withValues(
+                                                  alpha: 0.4,
+                                                ),
+                                                Colors.black.withValues(
+                                                  alpha: 0.95,
+                                                ),
+                                              ],
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              stops: const [0.3, 0.65, 1.0],
+                                            ),
+                                          ),
+                                        ),
+                                        // Badge Số lượng ảnh
+                                        Positioned(
+                                          top: 8,
+                                          right: 8,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.65,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              border: Border.all(
+                                                color: const Color(0xFFD4AF37)
+                                                    .withValues(alpha: 0.5),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.photo_library_outlined,
+                                                  color: Color(0xFFD4AF37),
+                                                  size: 11,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  '${col.imageCount}',
+                                                  style: const TextStyle(
+                                                    color: Color(0xFFD4AF37),
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        // Info Footer
+                                        Positioned(
+                                          left: 10,
+                                          right: 10,
+                                          bottom: 10,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                col.title,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              if (col.description != null &&
+                                                  col.description!.isNotEmpty) ...[
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  col.description!,
+                                                  style: const TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 10,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },

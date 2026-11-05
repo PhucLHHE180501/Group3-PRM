@@ -368,7 +368,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                     barberBookings,
                     staffId,
                   ),
-                  _buildPortfolioTab(barberObj.portfolioImages),
+                  _buildPortfolioTab(barberObj),
                   _buildReviewsTab(myReviews, barberObj),
                 ],
               ),
@@ -1455,12 +1455,10 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     );
   }
 
-  Widget _buildPortfolioTab(List<String> images) {
-    // Chỉ hiển thị ảnh tải từ Cloudinary
-    final cloudinaryImages =
-        images.where((url) => url.contains('cloudinary.com')).toList();
-    final displayImages = cloudinaryImages.take(4).toList();
-    final hasMore = cloudinaryImages.length > 4;
+  Widget _buildPortfolioTab(BarberModel barberObj) {
+    final collections = barberObj.collections;
+    final totalPhotos =
+        collections.fold<int>(0, (sum, c) => sum + c.imageCount);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
@@ -1471,157 +1469,379 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Tác Phẩm Của Tôi',
+                'Bộ Sưu Tập Của Tôi',
                 style: TextStyle(
                   color: _white,
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              if (hasMore || cloudinaryImages.isNotEmpty)
-                GestureDetector(
-                  onTap: () => _showAllPortfolio(cloudinaryImages),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _gold,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'Xem tất cả',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+              GestureDetector(
+                onTap: () => _showCreateCollectionDialog(barberObj.userId),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _gold,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add, size: 14, color: Colors.black),
+                      SizedBox(width: 4),
+                      Text(
+                        'Tạo bộ sưu tập',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
+              ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
-            '${cloudinaryImages.length} ảnh portfolio',
+            '${collections.length} bộ sưu tập • $totalPhotos hình ảnh',
             style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
           const SizedBox(height: 16),
-          if (displayImages.isEmpty)
+          if (collections.isEmpty)
             _buildEmptyState(
               icon: Icons.photo_library_outlined,
               message:
-                  'Chưa có ảnh portfolio nào.\nHãy bấm nút "+" bên dưới để tải ảnh tác phẩm lên!',
+                  'Chưa có bộ sưu tập nào.\nHãy bấm nút \"Tạo bộ sưu tập\" hoặc bấm nút \"+\" bên dưới để tải ảnh lên!',
             )
           else
-            _buildPortfolioGrid(displayImages, cloudinaryImages, hasMore),
+            _buildStaffCollectionsGrid(collections, barberObj),
         ],
       ),
     );
   }
 
-  Widget _buildPortfolioGrid(
-    List<String> displayImages,
-    List<String> allImages,
-    bool hasMore,
+  Widget _buildStaffCollectionsGrid(
+    List<BarberPortfolioCollection> collections,
+    BarberModel barber,
   ) {
-    if (displayImages.length == 1) {
-      return GestureDetector(
-        onTap: () => _openFullScreenImage(allImages, 0),
-        child: AppNetworkImage(
-          imageUrl: displayImages[0],
-          height: 280,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          borderRadius: BorderRadius.circular(14),
-        ),
-      );
-    }
-
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () => _openFullScreenImage(allImages, 0),
-          child: _buildPortfolioImageTile(displayImages[0], height: 200),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _openFullScreenImage(allImages, 1),
-                child: _buildPortfolioImageTile(displayImages[1], height: 130),
-              ),
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.82,
+      ),
+      itemCount: collections.length,
+      itemBuilder: (context, index) {
+        final col = collections[index];
+        return GestureDetector(
+          onTap: () => _showCollectionImagesBottomSheet(col, barber.userId),
+          child: Container(
+            decoration: BoxDecoration(
+              color: _cardDark2,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            if (displayImages.length >= 3)
-              Expanded(
-                child: Stack(
-                  children: [
-                    GestureDetector(
-                      onTap: () => _openFullScreenImage(allImages, 2),
-                      child: _buildPortfolioImageTile(displayImages[2], height: 130),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                AppNetworkImage(
+                  imageUrl: col.effectiveCoverUrl,
+                  fit: BoxFit.cover,
+                ),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.4),
+                        Colors.black.withValues(alpha: 0.95),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: const [0.3, 0.65, 1.0],
                     ),
-                    if (hasMore)
-                      Positioned.fill(
-                        child: GestureDetector(
-                          onTap: () => _showAllPortfolio(allImages),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.black54,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.photo_library_rounded,
-                                  color: _white,
-                                  size: 28,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '+${allImages.length - 3} ảnh',
-                                  style: const TextStyle(
-                                    color: _white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: _gold.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.photo_library_outlined,
+                          color: _gold,
+                          size: 11,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${col.imageCount}',
+                          style: const TextStyle(
+                            color: _gold,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 10,
+                  right: 10,
+                  bottom: 10,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        col.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                  ],
+                      if (col.description != null &&
+                          col.description!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          col.description!,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 10,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCollectionImagesBottomSheet(
+    BarberPortfolioCollection collection,
+    int staffId,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _cardDark,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        maxChildSize: 0.95,
+        minChildSize: 0.5,
+        expand: false,
+        builder: (_, controller) => Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  const Icon(Icons.photo_library_rounded, color: _gold),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          collection.title,
+                          style: const TextStyle(
+                            color: _white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '${collection.images.length} ảnh trong bộ sưu tập',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (collection.images.isEmpty)
+              const Expanded(
+                child: Center(
+                  child: Text(
+                    'Bộ sưu tập này chưa có ảnh nào',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+              )
+            else
+              Expanded(
+                child: GridView.builder(
+                  controller: controller,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 0.85,
+                  ),
+                  itemCount: collection.images.length,
+                  itemBuilder: (_, i) => GestureDetector(
+                    onTap: () => _openFullScreenImage(collection.images, i),
+                    child: AppNetworkImage(
+                      imageUrl: collection.images[i],
+                      fit: BoxFit.cover,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
               ),
           ],
         ),
-      ],
-    );
-  }
-
-  Widget _buildPortfolioImageTile(String url, {double height = 160}) {
-    return AppNetworkImage(
-      imageUrl: url,
-      height: height,
-      width: double.infinity,
-      fit: BoxFit.cover,
-      borderRadius: BorderRadius.circular(12),
-    );
-  }
-
-  Widget _buildImageError(double height) {
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        color: _cardDark2,
-        borderRadius: BorderRadius.circular(12),
       ),
-      child: const Center(
-        child: Icon(Icons.broken_image_rounded, color: Colors.grey, size: 32),
+    );
+  }
+
+  void _showCreateCollectionDialog(int staffId) {
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _cardDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.create_new_folder_outlined, color: _gold),
+            SizedBox(width: 8),
+            Text(
+              'Tạo Bộ Sưu Tập Mới',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Tên bộ sưu tập *',
+                labelStyle: TextStyle(color: Colors.grey),
+                hintText: 'Ví dụ: Fade & Undercut',
+                hintStyle: TextStyle(color: Colors.white30),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: descController,
+              style: const TextStyle(color: Colors.white),
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: 'Mô tả phong cách (tùy chọn)',
+                labelStyle: TextStyle(color: Colors.grey),
+                hintText: 'Mô tả ngắn gọn về kiểu tóc...',
+                hintStyle: TextStyle(color: Colors.white30),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _gold,
+              foregroundColor: Colors.black,
+            ),
+            onPressed: () async {
+              final title = titleController.text.trim();
+              if (title.isEmpty) return;
+              Navigator.pop(ctx);
+
+              final newCol = BarberPortfolioCollection(
+                id: 'col_${staffId}_${DateTime.now().millisecondsSinceEpoch}',
+                title: title,
+                description: descController.text.trim().isNotEmpty
+                    ? descController.text.trim()
+                    : null,
+                images: const [],
+              );
+
+              await _dataService.addPortfolioCollection(staffId, newCol);
+              _loadDashboard(showLoading: false);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Đã tạo bộ sưu tập "$title" thành công!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+            child: const Text(
+              'Tạo ngay',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
     );
   }
