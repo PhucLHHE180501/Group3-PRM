@@ -1551,19 +1551,25 @@ class FirebaseService extends ChangeNotifier {
   // PORTFOLIO
   // =========================================================================
 
-  Future<String> uploadPortfolioImage(int userId, XFile imageFile) async {
+  Future<String> uploadPortfolioImage(
+    int userId,
+    XFile imageFile, {
+    String? collectionId,
+  }) async {
+    final folderPath = collectionId != null && collectionId.isNotEmpty
+        ? 'barbershop/barbers/$userId/collections/$collectionId'
+        : 'barbershop/barbers/$userId/portfolio';
     try {
-      // 1. Tải ảnh lên Cloudinary
+      // 1. Tải ảnh lên Cloudinary theo folder của collection
       return await CloudinaryService().uploadImage(
         imageFile,
-        folder: 'portfolio/$userId',
+        folder: folderPath,
       );
     } catch (e) {
       debugPrint('Cloudinary upload error, fallback to Firebase Storage: $e');
       final ref = FirebaseStorage.instance
           .ref()
-          .child('portfolio')
-          .child('$userId')
+          .child(folderPath)
           .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
       final bytes = await imageFile.readAsBytes();
       await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
@@ -1691,8 +1697,10 @@ class FirebaseService extends ChangeNotifier {
   Future<void> addImageToCollection(
     int userId,
     String collectionId,
-    String imageUrl,
-  ) async {
+    String imageUrl, {
+    String? collectionTitle,
+    String? collectionDescription,
+  }) async {
     final snap = await _barbers
         .where('userId', isEqualTo: userId)
         .limit(1)
@@ -1714,6 +1722,10 @@ class FirebaseService extends ChangeNotifier {
             imgs.insert(0, imageUrl);
             col['images'] = imgs;
           }
+          if (col['coverUrl'] == null ||
+              (col['coverUrl'] as String).isEmpty) {
+            col['coverUrl'] = imageUrl;
+          }
           found = true;
           break;
         }
@@ -1722,7 +1734,11 @@ class FirebaseService extends ChangeNotifier {
       if (!found) {
         cols.add({
           'id': collectionId,
-          'title': 'Bộ sưu tập mới',
+          'title': collectionTitle ?? 'Bộ sưu tập mới',
+          if (collectionDescription != null &&
+              collectionDescription.isNotEmpty)
+            'description': collectionDescription,
+          'coverUrl': imageUrl,
           'images': [imageUrl],
         });
       }

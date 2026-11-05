@@ -320,7 +320,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
       floatingActionButton: _tabController.index == 1
           ? FloatingActionButton.extended(
               backgroundColor: _gold,
-              onPressed: () => _showImageSourceDialog(staffId),
+              onPressed: () => _showImageSourceDialog(staffId, collections: barberObj.collections),
               icon: const Icon(Icons.add_a_photo_rounded, color: Colors.black),
               label: const Text(
                 'Thêm Ảnh Portfolio',
@@ -1714,6 +1714,31 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                       ],
                     ),
                   ),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _gold,
+                      side: const BorderSide(color: _gold),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                    ),
+                    icon: const Icon(Icons.add_a_photo, size: 14),
+                    label: const Text(
+                      'Thêm ảnh',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _showPickSourceDialogForCollection(staffId, collection);
+                    },
+                  ),
                 ],
               ),
             ),
@@ -2296,7 +2321,128 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     return '${date.day}/${date.month}/${date.year}';
   }
 
-  void _showImageSourceDialog(int staffId) {
+  void _showImageSourceDialog(
+    int staffId, {
+    List<BarberPortfolioCollection>? collections,
+    BarberPortfolioCollection? targetCollection,
+  }) {
+    if (targetCollection != null) {
+      _showPickSourceDialogForCollection(staffId, targetCollection);
+      return;
+    }
+
+    final list = collections ?? [];
+    if (list.isEmpty) {
+      _showCreateCollectionDialog(staffId);
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _cardDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Row(
+              children: [
+                Icon(Icons.folder_copy_outlined, color: _gold),
+                SizedBox(width: 8),
+                Text(
+                  'Chọn Bộ Sưu Tập Lưu Ảnh',
+                  style: TextStyle(
+                    color: _white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Ảnh sẽ được tải vào thư mục tương ứng trên Cloudinary và Firestore',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 250),
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: list.length,
+                separatorBuilder: (_, __) =>
+                    const Divider(color: Colors.white10),
+                itemBuilder: (context, idx) {
+                  final col = list[idx];
+                  return ListTile(
+                    leading: const CircleAvatar(
+                      backgroundColor: _cardDark2,
+                      child: Icon(Icons.photo_library_outlined, color: _gold),
+                    ),
+                    title: Text(
+                      col.title,
+                      style: const TextStyle(
+                        color: _white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${col.imageCount} ảnh',
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios,
+                        size: 14, color: Colors.grey),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showPickSourceDialogForCollection(staffId, col);
+                    },
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: _cardDark2,
+                child: Icon(Icons.create_new_folder_outlined, color: _gold),
+              ),
+              title: const Text(
+                '+ Tạo bộ sưu tập mới',
+                style: TextStyle(
+                  color: _gold,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                _showCreateCollectionDialog(staffId);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPickSourceDialogForCollection(
+    int staffId,
+    BarberPortfolioCollection collection,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: _cardDark,
@@ -2305,7 +2451,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
       ),
       builder: (ctx) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -2318,13 +2464,20 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Thêm ảnh portfolio',
-                style: TextStyle(
+              Text(
+                'Thêm ảnh vào "${collection.title}"',
+                style: const TextStyle(
                   color: _white,
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Lưu vào Cloudinary theo bộ sưu tập và Firestore',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
               ),
               const SizedBox(height: 20),
               ListTile(
@@ -2342,7 +2495,12 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _pickAndUploadImage(staffId, ImageSource.camera);
+                  _pickAndUploadImage(
+                    staffId,
+                    ImageSource.camera,
+                    collectionId: collection.id,
+                    collectionTitle: collection.title,
+                  );
                 },
               ),
               const Divider(color: Colors.white12),
@@ -2361,7 +2519,12 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _pickAndUploadImage(staffId, ImageSource.gallery);
+                  _pickAndUploadImage(
+                    staffId,
+                    ImageSource.gallery,
+                    collectionId: collection.id,
+                    collectionTitle: collection.title,
+                  );
                 },
               ),
             ],
@@ -2447,7 +2610,12 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
     );
   }
 
-  Future<void> _pickAndUploadImage(int staffId, ImageSource source) async {
+  Future<void> _pickAndUploadImage(
+    int staffId,
+    ImageSource source, {
+    String? collectionId,
+    String? collectionTitle,
+  }) async {
     final hasPermission = await _requestPermission(source);
     if (!hasPermission) return;
 
@@ -2470,19 +2638,36 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
             const Center(child: CircularProgressIndicator(color: _gold)),
       );
 
+      // Tải lên Cloudinary theo thư mục của Collection
       final downloadUrl = await _dataService.uploadPortfolioImage(
         staffId,
         pickedFile,
+        collectionId: collectionId,
       );
-      await _dataService.addPortfolioImage(staffId, downloadUrl);
+
+      // Lưu metadata vào Collection tương ứng trong Firestore
+      if (collectionId != null && collectionId.isNotEmpty) {
+        await _dataService.addImageToCollection(
+          staffId,
+          collectionId,
+          downloadUrl,
+          collectionTitle: collectionTitle,
+        );
+      } else {
+        await _dataService.addPortfolioImage(staffId, downloadUrl);
+      }
 
       if (!mounted) return;
       Navigator.pop(context); // Pop loading dialog
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đã thêm ảnh portfolio thành công!'),
+        SnackBar(
+          content: Text(
+            collectionTitle != null
+                ? 'Đã lưu ảnh vào bộ sưu tập "$collectionTitle" thành công!'
+                : 'Đã thêm ảnh portfolio thành công!',
+          ),
           backgroundColor: Colors.green,
         ),
       );
