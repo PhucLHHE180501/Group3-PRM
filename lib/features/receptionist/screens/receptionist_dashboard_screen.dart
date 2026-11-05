@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../auth/screens/login_screen.dart';
+import 'receptionist_profile_screen.dart';
 import '../widgets/barber_status_card.dart';
 import '../widgets/quick_checkout_dialog.dart';
 import '../widgets/reassign_booking_dialog.dart';
@@ -263,96 +264,108 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        titleSpacing: 12,
-        title: ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: CircleAvatar(
-            radius: 20,
-            backgroundColor: const Color(0xFF2A2A2A),
-            child: (user?.avatarUrl != null && user!.avatarUrl!.trim().isNotEmpty)
-                ? ClipOval(
-                    child: Image.network(
-                      user.avatarUrl!,
-                      width: 40,
-                      height: 40,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.storefront,
-                        color: Color(0xFFD4AF37),
-                        size: 20,
-                      ),
-                      loadingBuilder: (context, child, progress) {
-                        if (progress == null) return child;
-                        return const Center(
-                          child: SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Color(0xFFD4AF37),
+      appBar: _currentIndex == 3
+          ? null
+          : AppBar(
+              automaticallyImplyLeading: false,
+              titleSpacing: 12,
+              title: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  setState(() {
+                    _currentIndex = 3;
+                  });
+                },
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: const Color(0xFF2A2A2A),
+                    child: (user?.avatarUrl != null && user!.avatarUrl!.trim().isNotEmpty)
+                        ? ClipOval(
+                            child: Image.network(
+                              user.avatarUrl!,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => const Icon(
+                                Icons.storefront,
+                                color: Color(0xFFD4AF37),
+                                size: 20,
+                              ),
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                return const Center(
+                                  child: SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Color(0xFFD4AF37),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
+                          )
+                        : const Icon(
+                            Icons.storefront,
+                            color: Color(0xFFD4AF37),
+                            size: 20,
                           ),
-                        );
-                      },
-                    ),
-                  )
-                : const Icon(
-                    Icons.storefront,
-                    color: Color(0xFFD4AF37),
-                    size: 20,
                   ),
-          ),
-          title: Text(
-            user?.fullName ?? 'Lê Thị Mai (Lễ Tân)',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
+                  title: Text(
+                    user?.fullName ?? 'Lê Thị Mai (Lễ Tân)',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: const Text(
+                    'Lễ Tân Điều Phối Salon',
+                    style: TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.white70),
+                  tooltip: 'Làm mới dữ liệu',
+                  onPressed: () => setState(() {}),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.logout, color: Colors.redAccent),
+                  tooltip: 'Đăng xuất',
+                  onPressed: () {
+                    _dataService.logout();
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      (route) => false,
+                    );
+                  },
+                ),
+              ],
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: const Text(
-            'Lễ Tân Điều Phối Salon',
-            style: TextStyle(
-              color: Color(0xFFD4AF37),
-              fontSize: 11,
+      floatingActionButton: _currentIndex == 3
+          ? null
+          : FloatingActionButton(
+              backgroundColor: const Color(0xFFD4AF37),
+              foregroundColor: Colors.black,
+              elevation: 6,
+              child: const Icon(Icons.person_add_alt_1, size: 20),
+              // label: const Text(
+              //   'Tiếp Khách',
+              //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              // ),
+              onPressed: () => _openWalkInDialog(),
             ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white70),
-            tooltip: 'Làm mới dữ liệu',
-            onPressed: () => setState(() {}),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.redAccent),
-            tooltip: 'Đăng xuất',
-            onPressed: () {
-              _dataService.logout();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFD4AF37),
-        foregroundColor: Colors.black,
-        elevation: 6,
-        child: const Icon(Icons.person_add_alt_1, size: 20),
-        // label: const Text(
-        //   'Tiếp Khách',
-        //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        // ),
-        onPressed: () => _openWalkInDialog(),
-      ),
       body: _isLoading && _dataService.barbers.isEmpty
           ? const Center(
               child: Column(
@@ -385,6 +398,9 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
 
                 // TAB 2: BOOKINGS LIST & CASHIER
                 _buildBookingsHubTab(filteredBookings),
+
+                // TAB 3: RECEPTIONIST PROFILE
+                const ReceptionistProfileScreen(),
               ],
             ),
       bottomNavigationBar: Container(
@@ -419,6 +435,11 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               icon: Icon(Icons.list_alt),
               activeIcon: Icon(Icons.list_alt, color: Color(0xFFD4AF37)),
               label: 'Ðơn Tiếp Ðón',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person, color: Color(0xFFD4AF37)),
+              label: 'Hồ Sơ',
             ),
           ],
         ),
