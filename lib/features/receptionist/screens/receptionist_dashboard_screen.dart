@@ -822,7 +822,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
                 ),
 
               // Quick Checkout / Payment button
-              if (!isPaid && booking.status == 'in_progress')
+              if (!isPaid && booking.status == 'completed')
                 ElevatedButton.icon(
                   icon: const Icon(Icons.attach_money, size: 16, color: Colors.black),
                   label: const Text('Thu Tiền'),
@@ -854,10 +854,10 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  Expanded(child: Text(
                     'Chi Tiết đơn #${booking.id}',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
+                  ),),
                   IconButton(
                     icon: const Icon(Icons.close, color: Colors.white54),
                     onPressed: () => Navigator.pop(context),

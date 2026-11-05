@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import 'package:barber_booking_app/shared/models/barber_model.dart';
 import 'package:barber_booking_app/shared/models/service_model.dart';
