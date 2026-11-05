@@ -342,15 +342,15 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFD4AF37),
         foregroundColor: Colors.black,
         elevation: 6,
-        icon: const Icon(Icons.person_add_alt_1, size: 20),
-        label: const Text(
-          'Tiếp Khách',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
+        child: const Icon(Icons.person_add_alt_1, size: 20),
+        // label: const Text(
+        //   'Tiếp Khách',
+        //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+        // ),
         onPressed: () => _openWalkInDialog(),
       ),
       body: _isLoading && _dataService.barbers.isEmpty
