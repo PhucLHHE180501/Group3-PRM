@@ -264,6 +264,7 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         titleSpacing: 12,
         title: ListTile(
           contentPadding: EdgeInsets.zero,
@@ -332,9 +333,10 @@ class _ReceptionistDashboardScreenState extends State<ReceptionistDashboardScree
             tooltip: 'Đăng xuất',
             onPressed: () {
               _dataService.logout();
-              Navigator.pushReplacement(
+              Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
               );
             },
           ),

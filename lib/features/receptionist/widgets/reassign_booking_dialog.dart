@@ -48,7 +48,11 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
 
     // Check slot change
     if (_selectedSlot != widget.booking.startTime) {
-      _dataService.rescheduleBooking(widget.booking.id, widget.booking.bookingDate, _selectedSlot);
+      _dataService.rescheduleBooking(
+        widget.booking.id,
+        widget.booking.bookingDate,
+        _selectedSlot,
+      );
       hasChanged = true;
     }
 
@@ -57,7 +61,9 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
     if (hasChanged) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Ðã cập nhật lịch #${widget.booking.id}: Thợ ${_selectedBarber.fullName}, Giờ $_selectedSlot'),
+          content: Text(
+            'Đã cập nhật lịch #${widget.booking.id}: Thợ ${_selectedBarber.fullName}, Giờ $_selectedSlot',
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -69,13 +75,14 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E1E),
-        title: const Text('Xác nhận hủy lịch h?n?', style: TextStyle(color: Colors.white)),
+        title: const Text('Xác nhận hủy lịch hẹn?',
+            style: TextStyle(color: Colors.white)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Ðơn của: ${widget.booking.customerName ?? "Khách #${widget.booking.customerId}"}',
+              'Đơn của: ${widget.booking.customerName ?? "Khách #${widget.booking.customerId}"}',
               style: const TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 12),
@@ -107,12 +114,13 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
               );
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Ðã hủy lịch #${widget.booking.id}'),
+                  content: Text('Đã hủy lịch #${widget.booking.id}'),
                   backgroundColor: Colors.redAccent,
                 ),
               );
             },
-            child: const Text('Xác Nhận Hủy', style: TextStyle(color: Colors.white)),
+            child: const Text('Xác Nhận Hủy',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -127,144 +135,187 @@ class _ReassignBookingDialogState extends State<ReassignBookingDialog> {
     return Dialog(
       backgroundColor: const Color(0xFF1E1E1E),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.sync_alt, color: Color(0xFFD4AF37)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Điều Phối Lịch #${widget.booking.id}',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.sync_alt, color: Color(0xFFD4AF37)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Điều Phối Lịch #${widget.booking.id}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white54),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-            const Divider(color: Colors.white12),
-            const SizedBox(height: 8),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white54),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 8),
 
-            Text(
-              'Khách hàng: ${widget.booking.customerName ?? "Khách #${widget.booking.customerId}"}',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            if (widget.booking.customerPhone != null)
               Text(
-                'SĐT: ${widget.booking.customerPhone}',
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                'Khách hàng: ${widget.booking.customerName ?? "Khách #${widget.booking.customerId}"}',
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold),
               ),
-            Text(
-              'Dịch vụ: ${widget.booking.services.map((s) => s.name).join(", ")}',
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
-            ),
-            const SizedBox(height: 16),
+              if (widget.booking.customerPhone != null)
+                Text(
+                  'SĐT: ${widget.booking.customerPhone}',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              Text(
+                'Dịch vụ: ${widget.booking.services.map((s) => s.name).join(", ")}',
+                style: const TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
 
-            // Dropdown change barber
-            const Text('Chuyển thợ cắt:', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            DropdownButtonFormField<BarberModel>(
-              value: _selectedBarber,
-              dropdownColor: const Color(0xFF2A2A2A),
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: const Color(0xFF2A2A2A),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              // Dropdown change barber
+              const Text(
+                'Chuyển thợ cắt:',
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              items: barbers.map((b) {
-                final status = _dataService.getBarberDynamicStatus(b.userId);
-                final isAvail = status == 'available';
-                return DropdownMenuItem<BarberModel>(
-                  value: b,
-                  // isExpanded: true,
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 12,
-                        backgroundImage: b.avatarUrl != null ? NetworkImage(b.avatarUrl!) : null,
-                        child: b.avatarUrl == null ? const Icon(Icons.person, size: 14) : null,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(b.fullName),
-                      const SizedBox(width: 8),
-                      Text(
-                        isAvail ? '(Rảnh)' : '(Ðang bận)',
-                        style: TextStyle(
-                          color: isAvail ? Colors.greenAccent : Colors.orangeAccent,
-                          fontSize: 11,
+              const SizedBox(height: 6),
+              DropdownButtonFormField<BarberModel>(
+                initialValue: _selectedBarber,
+                isExpanded: true,
+                dropdownColor: const Color(0xFF2A2A2A),
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFF2A2A2A),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                items: barbers.map((b) {
+                  final status =
+                      _dataService.getBarberDynamicStatus(b.userId);
+                  final isAvail = status == 'available';
+                  return DropdownMenuItem<BarberModel>(
+                    value: b,
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 12,
+                          backgroundImage: b.avatarUrl != null &&
+                                  b.avatarUrl!.isNotEmpty
+                              ? NetworkImage(b.avatarUrl!)
+                              : null,
+                          child: (b.avatarUrl == null || b.avatarUrl!.isEmpty)
+                              ? const Icon(Icons.person, size: 14)
+                              : null,
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (val) {
-                if (val != null) setState(() => _selectedBarber = val);
-              },
-            ),
-            const SizedBox(height: 14),
-
-            // Dropdown change slot
-            const Text('Ðổi khung giờ:', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 13, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            DropdownButtonFormField<String>(
-              value: _selectedSlot,
-              dropdownColor: const Color(0xFF2A2A2A),
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: const Color(0xFF2A2A2A),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            b.fullName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          isAvail ? '(Rảnh)' : '(Đang bận)',
+                          style: TextStyle(
+                            color: isAvail
+                                ? Colors.greenAccent
+                                : Colors.orangeAccent,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedBarber = val);
+                },
               ),
-              items: timeSlots.map((slot) {
-                return DropdownMenuItem<String>(
-                  value: slot,
-                  child: Text(slot),
-                );
-              }).toList(),
-              onChanged: (val) {
-                if (val != null) setState(() => _selectedSlot = val);
-              },
-            ),
+              const SizedBox(height: 14),
 
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton.icon(
-                  style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
-                  icon: const Icon(Icons.cancel_outlined, size: 16),
-                  label: const Text('Hủy Lịch'),
-                  onPressed: _handleCancelBooking,
+              // Dropdown change slot
+              const Text(
+                'Đổi khung giờ:',
+                style: TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD4AF37),
-                    foregroundColor: Colors.black,
+              ),
+              const SizedBox(height: 6),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedSlot,
+                isExpanded: true,
+                dropdownColor: const Color(0xFF2A2A2A),
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFF2A2A2A),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  onPressed: _handleSave,
-                  child: const Text('Lưu', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
-              ],
-            ),
-          ],
+                items: timeSlots.map((slot) {
+                  return DropdownMenuItem<String>(
+                    value: slot,
+                    child: Text(slot),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedSlot = val);
+                },
+              ),
+
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton.icon(
+                    style:
+                        TextButton.styleFrom(foregroundColor: Colors.redAccent),
+                    icon: const Icon(Icons.cancel_outlined, size: 16),
+                    label: const Text('Hủy Lịch'),
+                    onPressed: _handleCancelBooking,
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4AF37),
+                      foregroundColor: Colors.black,
+                    ),
+                    onPressed: _handleSave,
+                    child: const Text('Lưu',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
