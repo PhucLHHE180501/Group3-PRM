@@ -317,20 +317,20 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen>
 
     return Scaffold(
       backgroundColor: _bgDark,
-      floatingActionButton: _tabController.index == 1
-          ? FloatingActionButton.extended(
-              backgroundColor: _gold,
-              onPressed: () => _showImageSourceDialog(staffId, collections: barberObj.collections),
-              icon: const Icon(Icons.add_a_photo_rounded, color: Colors.black),
-              label: const Text(
-                'Thêm Ảnh Portfolio',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
-          : null,
+      // floatingActionButton: _tabController.index == 1
+      //     ? FloatingActionButton.extended(
+      //         backgroundColor: _gold,
+      //         onPressed: () => _showImageSourceDialog(staffId, collections: barberObj.collections),
+      //         icon: const Icon(Icons.add_a_photo_rounded, color: Colors.black),
+      //         label: const Text(
+      //           'Thêm Ảnh Portfolio',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontWeight: FontWeight.bold,
+      //           ),
+      //         ),
+      //       )
+      //     : null,
       body: SafeArea(
         top: false,
         child: NestedScrollView(
